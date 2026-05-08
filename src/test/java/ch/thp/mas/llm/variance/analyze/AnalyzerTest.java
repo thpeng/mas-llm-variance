@@ -94,6 +94,39 @@ class AnalyzerTest {
     }
 
     @Test
+    void analyzesChunkAverageMinDistancesWithHierarchicalClustering() {
+        AnalysisConfig config = config(
+                SemanticRepresentation.CHUNK_AVERAGE_MIN,
+                ClusteringAlgorithm.HIERARCHICAL,
+                new HierarchicalConfig(0.1, HierarchicalLinkage.COMPLETE)
+        );
+        Analyzer analyzer = analyzer((texts, ignored) -> texts.stream()
+                .map(text -> {
+                    if (text.contains("Basel")) {
+                        return new EmbeddingResult(new double[]{0, 1}, false);
+                    }
+                    if (text.contains("Lausanne")) {
+                        return new EmbeddingResult(new double[]{-1, 0}, false);
+                    }
+                    return new EmbeddingResult(new double[]{1, 0}, false);
+                })
+                .toList(), config);
+
+        AnalysisResult result = analyzer.analyze(new NamedRunLog("chunked.json", runLog(
+                "Gemeinsame Einleitung.\n\nBasel als Abschluss.",
+                "Gemeinsame Einleitung.\n\nLausanne als Abschluss.",
+                "Gemeinsame Einleitung.\n\nBasel als Abschluss."
+        )));
+
+        assertThat(result.config().semanticRepresentation()).isEqualTo(SemanticRepresentation.CHUNK_AVERAGE_MIN);
+        assertThat(result.config().clusteringAlgorithm()).isEqualTo(ClusteringAlgorithm.HIERARCHICAL);
+        assertThat(result.semantic().clusters()).hasSize(2);
+        assertThat(result.semantic().clusters().get(0).repetitionIndices()).containsExactly(1, 3);
+        assertThat(result.semantic().clusters().get(1).repetitionIndices()).containsExactly(2);
+        assertThat(result.semantic().outliers()).isEmpty();
+    }
+
+    @Test
     void rejectsRunWithoutResponses() {
         Analyzer analyzer = analyzer((texts, config) -> List.of());
         OffsetDateTime now = OffsetDateTime.parse("2026-05-02T10:00:00+02:00");
@@ -165,16 +198,49 @@ class AnalyzerTest {
     }
 
     private static Analyzer analyzer(EmbeddingService embeddingService) {
+        return analyzer(embeddingService, AnalysisConfig.defaults());
+    }
+
+    private static Analyzer analyzer(EmbeddingService embeddingService, AnalysisConfig config) {
         TextTokenizer tokenizer = new TextTokenizer();
+        CosineDistance cosineDistance = new CosineDistance();
         return new Analyzer(
                 embeddingService,
-                new CosineDistance(),
+                cosineDistance,
+                new ChunkAverageMinDistance(cosineDistance),
                 new MedoidSelector(),
                 new DbscanClusterer(),
+                new HierarchicalClusterer(),
+                new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
                 new SummaryStatistics(),
-                new FixedClock()
+                new FixedClock(),
+                () -> config
+        );
+    }
+
+    private static AnalysisConfig config(
+            SemanticRepresentation semanticRepresentation,
+            ClusteringAlgorithm clusteringAlgorithm,
+            HierarchicalConfig hierarchicalConfig
+    ) {
+        AnalysisConfig defaults = AnalysisConfig.defaults();
+        return new AnalysisConfig(
+                defaults.embeddingProvider(),
+                defaults.embeddingBaseUrl(),
+                defaults.embeddingModel(),
+                defaults.embeddingPrefix(),
+                defaults.maxEmbeddingTokens(),
+                semanticRepresentation,
+                new ChunkConfig(4),
+                defaults.distance(),
+                clusteringAlgorithm,
+                defaults.dbscan(),
+                hierarchicalConfig,
+                defaults.bleu(),
+                defaults.rouge(),
+                defaults.percentile()
         );
     }
 

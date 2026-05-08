@@ -123,8 +123,12 @@ class MultilingualE5AnalysisIntegrationTest {
                 defaults.embeddingModel(),
                 defaults.embeddingPrefix(),
                 defaults.maxEmbeddingTokens(),
+                defaults.semanticRepresentation(),
+                defaults.chunk(),
                 defaults.distance(),
+                defaults.clusteringAlgorithm(),
                 new DbscanConfig(epsilon, defaults.dbscan().minPts()),
+                defaults.hierarchical(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

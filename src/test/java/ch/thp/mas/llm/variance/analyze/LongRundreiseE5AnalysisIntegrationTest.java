@@ -13,34 +13,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class LongRundreiseE5AnalysisIntegrationTest {
 
-    private static final Path RESULTS_DIR = Path.of("src", "main", "results");
     private static final String EMBEDDINGS_DIR = "/analyze/integration/long/";
+    private static final String ANSWER_SEPARATOR = "\n\n===== ANSWER =====\n\n";
 
-    @ParameterizedTest(name = "{0} output splits into {4} model answers")
+    @ParameterizedTest(name = "{0} fixture contains {2} model answers")
     @CsvSource({
-            "qwen3-8b, rundreise_qwen3_8b.txt, 'Hier ist eine **Rundreise', 'Hier ist eine \\*\\*Rundreise', 50",
-            "sonnet45, rundreise_sonnet45.txt, '# Rundreise', '# Rundreise', 20"
+            "qwen3-8b, qwen3-8b-answers.txt, 50",
+            "sonnet45, sonnet45-answers.txt, 20"
     })
-    void splitsLongModelOutputsIntoIndividualAnswers(
+    void longAnswerFixtureContainsIndividualAnswers(
             String name,
-            String sourceFilename,
-            String startMarker,
-            String nextMarker,
+            String answersFilename,
             int expectedCount
     ) throws Exception {
-        List<String> responses = splitResponses(sourceFilename, startMarker, nextMarker);
+        List<String> responses = loadAnswers(answersFilename);
 
         assertThat(responses).hasSize(expectedCount);
         assertThat(responses).allSatisfy(response -> assertThat(response)
@@ -48,24 +43,22 @@ class LongRundreiseE5AnalysisIntegrationTest {
                 .doesNotContain("Process finished with exit code"));
     }
 
-    @ParameterizedTest(name = "{0} captured E5 embeddings analyze with epsilon {5}")
+    @ParameterizedTest(name = "{0} captured E5 embeddings analyze with epsilon {3}")
     @CsvSource({
-            "qwen3-8b, rundreise_qwen3_8b.txt, 'Hier ist eine **Rundreise', 'Hier ist eine \\*\\*Rundreise', qwen3-8b-e5-embedding-response.json, 0.15",
-            "qwen3-8b, rundreise_qwen3_8b.txt, 'Hier ist eine **Rundreise', 'Hier ist eine \\*\\*Rundreise', qwen3-8b-e5-embedding-response.json, 0.08",
-            "qwen3-8b, rundreise_qwen3_8b.txt, 'Hier ist eine **Rundreise', 'Hier ist eine \\*\\*Rundreise', qwen3-8b-e5-embedding-response.json, 0.05",
-            "sonnet45, rundreise_sonnet45.txt, '# Rundreise', '# Rundreise', sonnet45-e5-embedding-response.json, 0.15",
-            "sonnet45, rundreise_sonnet45.txt, '# Rundreise', '# Rundreise', sonnet45-e5-embedding-response.json, 0.08",
-            "sonnet45, rundreise_sonnet45.txt, '# Rundreise', '# Rundreise', sonnet45-e5-embedding-response.json, 0.05"
+            "qwen3-8b, qwen3-8b-answers.txt, qwen3-8b-e5-embedding-response.json, 0.01",
+            "qwen3-8b, qwen3-8b-answers.txt, qwen3-8b-e5-embedding-response.json, 0.08",
+            "qwen3-8b, qwen3-8b-answers.txt, qwen3-8b-e5-embedding-response.json, 0.05",
+            "sonnet45, sonnet45-answers.txt, sonnet45-e5-embedding-response.json, 0.15",
+            "sonnet45, sonnet45-answers.txt, sonnet45-e5-embedding-response.json, 0.08",
+            "sonnet45, sonnet45-answers.txt, sonnet45-e5-embedding-response.json, 0.01"
     })
     void analyzesLongModelOutputsWithCapturedMultilingualE5Embeddings(
             String name,
-            String sourceFilename,
-            String startMarker,
-            String nextMarker,
+            String answersFilename,
             String embeddingFilename,
             double epsilon
     ) throws Exception {
-        List<String> responses = splitResponses(sourceFilename, startMarker, nextMarker);
+        List<String> responses = loadAnswers(answersFilename);
         CapturedE5Response capturedResponse = loadCapturedE5Response(embeddingFilename);
         assumeTrue(capturedResponse.hasRealEmbeddingsFor(responses.size()),
                 () -> "Embedding fixture " + EMBEDDINGS_DIR + embeddingFilename
@@ -85,26 +78,14 @@ class LongRundreiseE5AnalysisIntegrationTest {
         assertThat(result.syntactic().clusters()).hasSameSizeAs(result.semantic().clusters());
     }
 
-    private static List<String> splitResponses(String sourceFilename, String startMarker, String nextMarker)
-            throws IOException {
-        String raw = Files.readString(RESULTS_DIR.resolve(sourceFilename), StandardCharsets.UTF_8);
-        int start = raw.indexOf(startMarker);
-        if (start < 0) {
-            throw new IllegalArgumentException("Could not find start marker in " + sourceFilename + ": " + startMarker);
+    private static List<String> loadAnswers(String answersFilename) throws IOException {
+        try (InputStream inputStream = resource(EMBEDDINGS_DIR + answersFilename)) {
+            String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            return java.util.Arrays.stream(content.split(ANSWER_SEPARATOR))
+                    .map(String::trim)
+                    .filter(answer -> !answer.isBlank())
+                    .toList();
         }
-        String body = raw.substring(start).replaceFirst("\\RProcess finished with exit code 0\\s*$", "");
-        String[] parts = Pattern.compile(",\\R(?=" + nextMarker + ")").split(body);
-        List<String> responses = new ArrayList<>();
-        for (String part : parts) {
-            String value = part.trim();
-            if (value.endsWith(",")) {
-                value = value.substring(0, value.length() - 1).trim();
-            }
-            if (!value.isBlank()) {
-                responses.add(value);
-            }
-        }
-        return responses;
     }
 
     private static CapturedE5Response loadCapturedE5Response(String embeddingFilename) throws IOException {
@@ -149,8 +130,12 @@ class LongRundreiseE5AnalysisIntegrationTest {
                 defaults.embeddingModel(),
                 defaults.embeddingPrefix(),
                 defaults.maxEmbeddingTokens(),
+                defaults.semanticRepresentation(),
+                defaults.chunk(),
                 defaults.distance(),
+                defaults.clusteringAlgorithm(),
                 new DbscanConfig(epsilon, defaults.dbscan().minPts()),
+                defaults.hierarchical(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

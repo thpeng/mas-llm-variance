@@ -36,8 +36,12 @@ public record AnalysisConfig(
         String embeddingModel,
         String embeddingPrefix,
         int maxEmbeddingTokens,
+        SemanticRepresentation semanticRepresentation,
+        ChunkConfig chunk,
         DistanceMetric distance,
+        ClusteringAlgorithm clusteringAlgorithm,
         DbscanConfig dbscan,
+        HierarchicalConfig hierarchical,
         BleuConfig bleu,
         RougeConfig rouge,
         PercentileMethod percentile
@@ -57,8 +61,12 @@ public record AnalysisConfig(
         if (maxEmbeddingTokens < 1) {
             throw new IllegalArgumentException("maxEmbeddingTokens must be at least 1");
         }
+        Objects.requireNonNull(semanticRepresentation, "semanticRepresentation must not be null");
+        Objects.requireNonNull(chunk, "chunk must not be null");
         Objects.requireNonNull(distance, "distance must not be null");
+        Objects.requireNonNull(clusteringAlgorithm, "clusteringAlgorithm must not be null");
         Objects.requireNonNull(dbscan, "dbscan must not be null");
+        Objects.requireNonNull(hierarchical, "hierarchical must not be null");
         Objects.requireNonNull(bleu, "bleu must not be null");
         Objects.requireNonNull(rouge, "rouge must not be null");
         Objects.requireNonNull(percentile, "percentile must not be null");
@@ -77,14 +85,24 @@ public record AnalysisConfig(
     public static AnalysisConfig defaults() {
         String provider = getenv("LLM_VARIANCE_EMBEDDING_PROVIDER", "e5-http");
         String baseUrl = getenv("LLM_VARIANCE_EMBEDDING_BASE_URL", "http://localhost:8000");
+        SemanticRepresentation semanticRepresentation = semanticRepresentation(
+                getenv("LLM_VARIANCE_SEMANTIC_REPRESENTATION", "full-text"));
+        ClusteringAlgorithm clusteringAlgorithm = clusteringAlgorithm(
+                getenv("LLM_VARIANCE_CLUSTERING_ALGORITHM", "dbscan"));
+        HierarchicalLinkage linkage = hierarchicalLinkage(
+                getenv("LLM_VARIANCE_HIERARCHICAL_LINKAGE", "complete"));
         return new AnalysisConfig(
                 provider,
                 baseUrl,
                 "intfloat/multilingual-e5-large",
                 "passage:",
                 514,
+                semanticRepresentation,
+                new ChunkConfig(integerEnv("LLM_VARIANCE_CHUNK_TARGET_TOKENS", 120)),
                 DistanceMetric.COSINE,
+                clusteringAlgorithm,
                 new DbscanConfig(0.15, 2),
+                new HierarchicalConfig(doubleEnv("LLM_VARIANCE_HIERARCHICAL_THRESHOLD", 0.08), linkage),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK
@@ -94,5 +112,39 @@ public record AnalysisConfig(
     private static String getenv(String name, String fallback) {
         String value = System.getenv(name);
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private static int integerEnv(String name, int fallback) {
+        String value = System.getenv(name);
+        return value == null || value.isBlank() ? fallback : Integer.parseInt(value);
+    }
+
+    private static double doubleEnv(String name, double fallback) {
+        String value = System.getenv(name);
+        return value == null || value.isBlank() ? fallback : Double.parseDouble(value);
+    }
+
+    private static SemanticRepresentation semanticRepresentation(String value) {
+        return switch (value.toLowerCase(java.util.Locale.ROOT)) {
+            case "full-text" -> SemanticRepresentation.FULL_TEXT;
+            case "chunk-average-min" -> SemanticRepresentation.CHUNK_AVERAGE_MIN;
+            default -> throw new AnalysisException("Unknown semantic representation: " + value);
+        };
+    }
+
+    private static ClusteringAlgorithm clusteringAlgorithm(String value) {
+        return switch (value.toLowerCase(java.util.Locale.ROOT)) {
+            case "dbscan" -> ClusteringAlgorithm.DBSCAN;
+            case "hierarchical" -> ClusteringAlgorithm.HIERARCHICAL;
+            default -> throw new AnalysisException("Unknown clustering algorithm: " + value);
+        };
+    }
+
+    private static HierarchicalLinkage hierarchicalLinkage(String value) {
+        return switch (value.toLowerCase(java.util.Locale.ROOT)) {
+            case "complete" -> HierarchicalLinkage.COMPLETE;
+            case "average" -> HierarchicalLinkage.AVERAGE;
+            default -> throw new AnalysisException("Unknown hierarchical linkage: " + value);
+        };
     }
 }

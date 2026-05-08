@@ -7,10 +7,19 @@
     "embeddingModel": "intfloat/multilingual-e5-large",
     "embeddingPrefix": "passage:",
     "maxEmbeddingTokens": 514,
+    "semanticRepresentation": "FULL_TEXT",
+    "chunk": {
+      "targetTokens": 120
+    },
     "distance": "COSINE",
+    "clusteringAlgorithm": "DBSCAN",
     "dbscan": {
       "epsilon": 0.15,
       "minPts": 2
+    },
+    "hierarchical": {
+      "threshold": 0.08,
+      "linkage": "COMPLETE"
     },
     "bleu": {
       "maxN": 4,

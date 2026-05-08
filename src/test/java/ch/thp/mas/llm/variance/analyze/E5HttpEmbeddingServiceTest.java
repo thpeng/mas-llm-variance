@@ -152,8 +152,12 @@ class E5HttpEmbeddingServiceTest {
                 "intfloat/multilingual-e5-large",
                 "",
                 514,
+                SemanticRepresentation.FULL_TEXT,
+                new ChunkConfig(120),
                 DistanceMetric.COSINE,
+                ClusteringAlgorithm.DBSCAN,
                 new DbscanConfig(0.15, 2),
+                new HierarchicalConfig(0.08, HierarchicalLinkage.COMPLETE),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

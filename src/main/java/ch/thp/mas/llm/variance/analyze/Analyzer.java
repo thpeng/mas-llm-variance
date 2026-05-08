@@ -17,8 +17,11 @@ public class Analyzer {
 
     private final EmbeddingService embeddingService;
     private final CosineDistance cosineDistance;
+    private final ChunkAverageMinDistance chunkAverageMinDistance;
     private final MedoidSelector medoidSelector;
     private final DbscanClusterer dbscanClusterer;
+    private final HierarchicalClusterer hierarchicalClusterer;
+    private final AnswerChunker answerChunker;
     private final RougeLMetric rougeLMetric;
     private final BleuMetric bleuMetric;
     private final SummaryStatistics summaryStatistics;
@@ -27,6 +30,35 @@ public class Analyzer {
 
     @Autowired
     public Analyzer(
+            EmbeddingService embeddingService,
+            CosineDistance cosineDistance,
+            ChunkAverageMinDistance chunkAverageMinDistance,
+            MedoidSelector medoidSelector,
+            DbscanClusterer dbscanClusterer,
+            HierarchicalClusterer hierarchicalClusterer,
+            AnswerChunker answerChunker,
+            RougeLMetric rougeLMetric,
+            BleuMetric bleuMetric,
+            SummaryStatistics summaryStatistics,
+            SystemRunClock runClock
+    ) {
+        this(
+                embeddingService,
+                cosineDistance,
+                chunkAverageMinDistance,
+                medoidSelector,
+                dbscanClusterer,
+                hierarchicalClusterer,
+                answerChunker,
+                rougeLMetric,
+                bleuMetric,
+                summaryStatistics,
+                runClock,
+                AnalysisConfig::defaults
+        );
+    }
+
+    Analyzer(
             EmbeddingService embeddingService,
             CosineDistance cosineDistance,
             MedoidSelector medoidSelector,
@@ -60,10 +92,43 @@ public class Analyzer {
             SystemRunClock runClock,
             Supplier<AnalysisConfig> configSupplier
     ) {
+        this(
+                embeddingService,
+                cosineDistance,
+                new ChunkAverageMinDistance(cosineDistance),
+                medoidSelector,
+                dbscanClusterer,
+                new HierarchicalClusterer(),
+                new AnswerChunker(new TextTokenizer()),
+                rougeLMetric,
+                bleuMetric,
+                summaryStatistics,
+                runClock,
+                configSupplier
+        );
+    }
+
+    Analyzer(
+            EmbeddingService embeddingService,
+            CosineDistance cosineDistance,
+            ChunkAverageMinDistance chunkAverageMinDistance,
+            MedoidSelector medoidSelector,
+            DbscanClusterer dbscanClusterer,
+            HierarchicalClusterer hierarchicalClusterer,
+            AnswerChunker answerChunker,
+            RougeLMetric rougeLMetric,
+            BleuMetric bleuMetric,
+            SummaryStatistics summaryStatistics,
+            SystemRunClock runClock,
+            Supplier<AnalysisConfig> configSupplier
+    ) {
         this.embeddingService = embeddingService;
         this.cosineDistance = cosineDistance;
+        this.chunkAverageMinDistance = chunkAverageMinDistance;
         this.medoidSelector = medoidSelector;
         this.dbscanClusterer = dbscanClusterer;
+        this.hierarchicalClusterer = hierarchicalClusterer;
+        this.answerChunker = answerChunker;
         this.rougeLMetric = rougeLMetric;
         this.bleuMetric = bleuMetric;
         this.summaryStatistics = summaryStatistics;
@@ -81,10 +146,10 @@ public class Analyzer {
             throw new AnalysisException("Run log has no responses: " + namedRunLog.filename());
         }
 
-        List<EmbeddingResult> embeddings = embeddingService.embed(responses, config);
-        double[][] distances = cosineDistance.pairwise(embeddings);
+        SemanticEmbeddings semanticEmbeddings = semanticEmbeddings(responses, config);
+        double[][] distances = semanticEmbeddings.distances();
         Medoid medoid = medoidSelector.select(distances);
-        int[] labels = dbscanClusterer.cluster(distances, config.dbscan());
+        int[] labels = cluster(distances, config);
         List<SemanticCluster> semanticClusters = semanticClusters(labels, distances);
 
         return new AnalysisResult(
@@ -94,7 +159,7 @@ public class Analyzer {
                 runInfo(runLog),
                 new SemanticAnalysis(
                         responses.size(),
-                        (int) embeddings.stream().filter(EmbeddingResult::truncated).count(),
+                        semanticEmbeddings.truncatedResponses(),
                         new MedoidAnalysis(
                                 medoid.index() + 1,
                                 medoid.totalDistance(),
@@ -106,6 +171,56 @@ public class Analyzer {
                 ),
                 new SyntacticAnalysis(syntacticClusters(semanticClusters, responses, config))
         );
+    }
+
+    private SemanticEmbeddings semanticEmbeddings(List<String> responses, AnalysisConfig config) {
+        if (config.semanticRepresentation() == SemanticRepresentation.FULL_TEXT) {
+            List<EmbeddingResult> embeddings = embeddingService.embed(responses, config);
+            return new SemanticEmbeddings(
+                    cosineDistance.pairwise(embeddings),
+                    (int) embeddings.stream().filter(EmbeddingResult::truncated).count()
+            );
+        }
+        return chunkAverageMinEmbeddings(responses, config);
+    }
+
+    private SemanticEmbeddings chunkAverageMinEmbeddings(List<String> responses, AnalysisConfig config) {
+        List<List<String>> chunksByResponse = responses.stream()
+                .map(response -> answerChunker.chunk(response, config.chunk(), config.maxEmbeddingTokens()))
+                .toList();
+        List<String> flattenedChunks = chunksByResponse.stream()
+                .flatMap(List::stream)
+                .toList();
+        List<EmbeddingResult> flattenedEmbeddings = embeddingService.embed(flattenedChunks, config);
+
+        List<List<EmbeddingResult>> embeddingsByResponse = new ArrayList<>();
+        int offset = 0;
+        int truncatedResponses = 0;
+        for (List<String> chunks : chunksByResponse) {
+            List<EmbeddingResult> responseEmbeddings = flattenedEmbeddings.subList(offset, offset + chunks.size());
+            embeddingsByResponse.add(responseEmbeddings);
+            if (responseEmbeddings.stream().anyMatch(EmbeddingResult::truncated)) {
+                truncatedResponses++;
+            }
+            offset += chunks.size();
+        }
+
+        double[][] distances = new double[responses.size()][responses.size()];
+        for (int i = 0; i < responses.size(); i++) {
+            for (int j = i + 1; j < responses.size(); j++) {
+                double distance = chunkAverageMinDistance.distance(embeddingsByResponse.get(i), embeddingsByResponse.get(j));
+                distances[i][j] = distance;
+                distances[j][i] = distance;
+            }
+        }
+        return new SemanticEmbeddings(distances, truncatedResponses);
+    }
+
+    private int[] cluster(double[][] distances, AnalysisConfig config) {
+        return switch (config.clusteringAlgorithm()) {
+            case DBSCAN -> dbscanClusterer.cluster(distances, config.dbscan());
+            case HIERARCHICAL -> hierarchicalClusterer.cluster(distances, config.hierarchical());
+        };
     }
 
     private AnalysisRunInfo runInfo(RunLog runLog) {
@@ -214,5 +329,8 @@ public class Analyzer {
             }
         }
         return values;
+    }
+
+    private record SemanticEmbeddings(double[][] distances, int truncatedResponses) {
     }
 }

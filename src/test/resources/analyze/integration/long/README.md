@@ -1,12 +1,26 @@
 # Long Rundreise E5 Integration Fixture
 
-The long-response integration tests use the raw model outputs in:
+The long-response integration tests use extracted model-answer fixtures:
+
+- `qwen3-8b-answers.txt`
+- `sonnet45-answers.txt`
+
+Each answer is separated by:
+
+```text
+===== ANSWER =====
+```
+
+The raw source captures remain in:
 
 - `src/main/results/rundreise_qwen3_8b.txt`
 - `src/main/results/rundreise_sonnet45.txt`
 
-Those files contain console preambles plus multiple generated answers. The test
-harness splits them into one answer per embedding input.
+If those raw captures change, regenerate the extracted fixtures with:
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File extract-long-rundreise-fixtures.ps1
+```
 
 To activate the E5-backed tests, run `embed-rundreise-long.sh` from this
 directory inside WSL while `server.py` is listening on port `8000`.
