@@ -1,5 +1,15 @@
 package ch.thp.mas.llm.variance.analyze;
 
+
+import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
+import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
+import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
+import ch.thp.mas.llm.variance.analyze.semantic.DistanceMetric;
+import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
+import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
+import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
+import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
+import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 import java.util.Objects;
 
 /**

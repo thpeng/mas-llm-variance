@@ -3,6 +3,9 @@ package ch.thp.mas.llm.variance.analyze;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import ch.thp.mas.llm.variance.analyze.semantic.MedoidAnalysis;
+import ch.thp.mas.llm.variance.analyze.semantic.SemanticAnalysis;
+import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticAnalysis;
 import ch.thp.mas.llm.variance.client.Manufacturer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
