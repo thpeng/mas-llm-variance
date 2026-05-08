@@ -8,6 +8,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -21,7 +23,9 @@ public class Analyzer {
     private final BleuMetric bleuMetric;
     private final SummaryStatistics summaryStatistics;
     private final SystemRunClock runClock;
+    private final Supplier<AnalysisConfig> configSupplier;
 
+    @Autowired
     public Analyzer(
             EmbeddingService embeddingService,
             CosineDistance cosineDistance,
@@ -32,6 +36,30 @@ public class Analyzer {
             SummaryStatistics summaryStatistics,
             SystemRunClock runClock
     ) {
+        this(
+                embeddingService,
+                cosineDistance,
+                medoidSelector,
+                dbscanClusterer,
+                rougeLMetric,
+                bleuMetric,
+                summaryStatistics,
+                runClock,
+                AnalysisConfig::defaults
+        );
+    }
+
+    Analyzer(
+            EmbeddingService embeddingService,
+            CosineDistance cosineDistance,
+            MedoidSelector medoidSelector,
+            DbscanClusterer dbscanClusterer,
+            RougeLMetric rougeLMetric,
+            BleuMetric bleuMetric,
+            SummaryStatistics summaryStatistics,
+            SystemRunClock runClock,
+            Supplier<AnalysisConfig> configSupplier
+    ) {
         this.embeddingService = embeddingService;
         this.cosineDistance = cosineDistance;
         this.medoidSelector = medoidSelector;
@@ -40,10 +68,11 @@ public class Analyzer {
         this.bleuMetric = bleuMetric;
         this.summaryStatistics = summaryStatistics;
         this.runClock = runClock;
+        this.configSupplier = configSupplier;
     }
 
     public AnalysisResult analyze(NamedRunLog namedRunLog) {
-        AnalysisConfig config = AnalysisConfig.defaults();
+        AnalysisConfig config = configSupplier.get();
         RunLog runLog = namedRunLog.runLog();
         List<String> responses = runLog.repetitions().stream()
                 .map(RunLogEntry::response)

@@ -1,0 +1,8 @@
+Bern, Zürich
+Zürich, Bern
+Zuerich, Bern
+Langnau, Luzern
+Langnau, Luzern, Chur
+Chur
+Lugano
+Lugano, Bellinzona
