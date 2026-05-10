@@ -137,8 +137,6 @@ class LongRundreiseE5AnalysisIntegrationTest {
                 defaults.embeddingPrefix(),
                 defaults.maxEmbeddingTokens(),
                 defaults.semanticDistanceMethod(),
-                defaults.bertScoreBaseUrl(),
-                defaults.bertScoreModel(),
                 defaults.semanticRepresentation(),
                 defaults.chunk(),
                 defaults.distance(),

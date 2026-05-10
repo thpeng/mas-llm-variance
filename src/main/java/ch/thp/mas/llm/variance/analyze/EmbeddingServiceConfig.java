@@ -2,7 +2,6 @@ package ch.thp.mas.llm.variance.analyze;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.http.HttpClient;
-import ch.thp.mas.llm.variance.analyze.semantic.BertScoreService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,13 +22,4 @@ public class EmbeddingServiceConfig {
         };
     }
 
-    @Bean
-    public BertScoreService bertScoreService() {
-        AnalysisConfig config = AnalysisConfig.defaults();
-        return new BertScoreHttpService(
-                config.bertScoreBaseUrl(),
-                HttpClient.newHttpClient(),
-                new ObjectMapper()
-        );
-    }
 }

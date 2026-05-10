@@ -48,8 +48,6 @@ public record AnalysisConfig(
         String embeddingPrefix,
         int maxEmbeddingTokens,
         SemanticDistanceMethod semanticDistanceMethod,
-        String bertScoreBaseUrl,
-        String bertScoreModel,
         SemanticRepresentation semanticRepresentation,
         ChunkConfig chunk,
         DistanceMetric distance,
@@ -76,12 +74,6 @@ public record AnalysisConfig(
             throw new IllegalArgumentException("maxEmbeddingTokens must be at least 1");
         }
         Objects.requireNonNull(semanticDistanceMethod, "semanticDistanceMethod must not be null");
-        if (bertScoreBaseUrl == null || bertScoreBaseUrl.isBlank()) {
-            throw new IllegalArgumentException("bertScoreBaseUrl must not be blank");
-        }
-        if (bertScoreModel == null || bertScoreModel.isBlank()) {
-            throw new IllegalArgumentException("bertScoreModel must not be blank");
-        }
         Objects.requireNonNull(semanticRepresentation, "semanticRepresentation must not be null");
         Objects.requireNonNull(chunk, "chunk must not be null");
         Objects.requireNonNull(distance, "distance must not be null");
@@ -121,8 +113,6 @@ public record AnalysisConfig(
                 "passage:",
                 514,
                 semanticDistanceMethod,
-                getenv("LLM_VARIANCE_BERTSCORE_BASE_URL", "http://localhost:8000"),
-                getenv("LLM_VARIANCE_BERTSCORE_MODEL", "xlm-roberta-large"),
                 semanticRepresentation,
                 new ChunkConfig(integerEnv("LLM_VARIANCE_CHUNK_TARGET_TOKENS", 120)),
                 DistanceMetric.COSINE,

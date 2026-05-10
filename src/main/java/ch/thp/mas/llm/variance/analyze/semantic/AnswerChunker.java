@@ -16,7 +16,7 @@ public class AnswerChunker {
     }
 
     public List<String> chunk(String answer, ChunkConfig config, int maxTokens) {
-        List<String> blocks = paragraphBlocks(answer);
+        List<String> blocks = textBlocks(answer);
         if (blocks.isEmpty()) {
             return List.of(answer == null ? "" : answer.trim());
         }
@@ -49,11 +49,11 @@ public class AnswerChunker {
         return chunks;
     }
 
-    private List<String> paragraphBlocks(String answer) {
+    private List<String> textBlocks(String answer) {
         if (answer == null || answer.isBlank()) {
             return List.of();
         }
-        return java.util.Arrays.stream(answer.trim().split("\\R\\s*\\R"))
+        return java.util.Arrays.stream(answer.trim().split("(?<=\\.)\\s+|\\R+"))
                 .map(String::trim)
                 .filter(block -> !block.isBlank())
                 .toList();

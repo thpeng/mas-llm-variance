@@ -162,8 +162,6 @@ class E5HttpEmbeddingServiceTest {
                 "",
                 514,
                 AnalysisConfig.defaults().semanticDistanceMethod(),
-                AnalysisConfig.defaults().bertScoreBaseUrl(),
-                AnalysisConfig.defaults().bertScoreModel(),
                 SemanticRepresentation.FULL_TEXT,
                 new ChunkConfig(120),
                 DistanceMetric.COSINE,
