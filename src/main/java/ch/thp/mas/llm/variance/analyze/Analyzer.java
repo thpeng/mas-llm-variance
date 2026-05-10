@@ -2,6 +2,8 @@ package ch.thp.mas.llm.variance.analyze;
 
 
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
+import ch.thp.mas.llm.variance.analyze.semantic.BertScoreResult;
+import ch.thp.mas.llm.variance.analyze.semantic.BertScoreService;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
 import ch.thp.mas.llm.variance.analyze.semantic.CosineDistance;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanClusterer;
@@ -11,6 +13,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.MedoidAnalysis;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticAnalysis;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticCluster;
+import ch.thp.mas.llm.variance.analyze.semantic.SemanticDistanceMethod;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
@@ -32,6 +35,7 @@ import org.springframework.stereotype.Component;
 public class Analyzer {
 
     private final EmbeddingService embeddingService;
+    private final BertScoreService bertScoreService;
     private final CosineDistance cosineDistance;
     private final ChunkAverageMinDistance chunkAverageMinDistance;
     private final MedoidSelector medoidSelector;
@@ -47,6 +51,7 @@ public class Analyzer {
     @Autowired
     public Analyzer(
             EmbeddingService embeddingService,
+            BertScoreService bertScoreService,
             CosineDistance cosineDistance,
             ChunkAverageMinDistance chunkAverageMinDistance,
             MedoidSelector medoidSelector,
@@ -60,6 +65,7 @@ public class Analyzer {
     ) {
         this(
                 embeddingService,
+                bertScoreService,
                 cosineDistance,
                 chunkAverageMinDistance,
                 medoidSelector,
@@ -86,9 +92,15 @@ public class Analyzer {
     ) {
         this(
                 embeddingService,
+                (texts, config) -> {
+                    throw new AnalysisException("BERTScore service is not configured.");
+                },
                 cosineDistance,
+                new ChunkAverageMinDistance(cosineDistance),
                 medoidSelector,
                 dbscanClusterer,
+                new HierarchicalClusterer(),
+                new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
                 summaryStatistics,
@@ -110,6 +122,9 @@ public class Analyzer {
     ) {
         this(
                 embeddingService,
+                (texts, config) -> {
+                    throw new AnalysisException("BERTScore service is not configured.");
+                },
                 cosineDistance,
                 new ChunkAverageMinDistance(cosineDistance),
                 medoidSelector,
@@ -126,6 +141,7 @@ public class Analyzer {
 
     Analyzer(
             EmbeddingService embeddingService,
+            BertScoreService bertScoreService,
             CosineDistance cosineDistance,
             ChunkAverageMinDistance chunkAverageMinDistance,
             MedoidSelector medoidSelector,
@@ -139,6 +155,7 @@ public class Analyzer {
             Supplier<AnalysisConfig> configSupplier
     ) {
         this.embeddingService = embeddingService;
+        this.bertScoreService = bertScoreService;
         this.cosineDistance = cosineDistance;
         this.chunkAverageMinDistance = chunkAverageMinDistance;
         this.medoidSelector = medoidSelector;
@@ -190,6 +207,10 @@ public class Analyzer {
     }
 
     private SemanticEmbeddings semanticEmbeddings(List<String> responses, AnalysisConfig config) {
+        if (config.semanticDistanceMethod() == SemanticDistanceMethod.BERTSCORE_F1) {
+            BertScoreResult result = bertScoreService.score(responses, config);
+            return new SemanticEmbeddings(result.distances(), 0);
+        }
         if (config.semanticRepresentation() == SemanticRepresentation.FULL_TEXT) {
             List<EmbeddingResult> embeddings = embeddingService.embed(responses, config);
             return new SemanticEmbeddings(

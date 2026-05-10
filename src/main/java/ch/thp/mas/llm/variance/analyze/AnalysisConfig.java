@@ -7,6 +7,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.DistanceMetric;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
+import ch.thp.mas.llm.variance.analyze.semantic.SemanticDistanceMethod;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
@@ -46,6 +47,9 @@ public record AnalysisConfig(
         String embeddingModel,
         String embeddingPrefix,
         int maxEmbeddingTokens,
+        SemanticDistanceMethod semanticDistanceMethod,
+        String bertScoreBaseUrl,
+        String bertScoreModel,
         SemanticRepresentation semanticRepresentation,
         ChunkConfig chunk,
         DistanceMetric distance,
@@ -71,6 +75,13 @@ public record AnalysisConfig(
         if (maxEmbeddingTokens < 1) {
             throw new IllegalArgumentException("maxEmbeddingTokens must be at least 1");
         }
+        Objects.requireNonNull(semanticDistanceMethod, "semanticDistanceMethod must not be null");
+        if (bertScoreBaseUrl == null || bertScoreBaseUrl.isBlank()) {
+            throw new IllegalArgumentException("bertScoreBaseUrl must not be blank");
+        }
+        if (bertScoreModel == null || bertScoreModel.isBlank()) {
+            throw new IllegalArgumentException("bertScoreModel must not be blank");
+        }
         Objects.requireNonNull(semanticRepresentation, "semanticRepresentation must not be null");
         Objects.requireNonNull(chunk, "chunk must not be null");
         Objects.requireNonNull(distance, "distance must not be null");
@@ -95,6 +106,8 @@ public record AnalysisConfig(
     public static AnalysisConfig defaults() {
         String provider = getenv("LLM_VARIANCE_EMBEDDING_PROVIDER", "e5-http");
         String baseUrl = getenv("LLM_VARIANCE_EMBEDDING_BASE_URL", "http://localhost:8000");
+        SemanticDistanceMethod semanticDistanceMethod = semanticDistanceMethod(
+                getenv("LLM_VARIANCE_SEMANTIC_DISTANCE_METHOD", "embedding-cosine"));
         SemanticRepresentation semanticRepresentation = semanticRepresentation(
                 getenv("LLM_VARIANCE_SEMANTIC_REPRESENTATION", "full-text"));
         ClusteringAlgorithm clusteringAlgorithm = clusteringAlgorithm(
@@ -107,6 +120,9 @@ public record AnalysisConfig(
                 "intfloat/multilingual-e5-large",
                 "passage:",
                 514,
+                semanticDistanceMethod,
+                getenv("LLM_VARIANCE_BERTSCORE_BASE_URL", "http://localhost:8000"),
+                getenv("LLM_VARIANCE_BERTSCORE_MODEL", "xlm-roberta-large"),
                 semanticRepresentation,
                 new ChunkConfig(integerEnv("LLM_VARIANCE_CHUNK_TARGET_TOKENS", 120)),
                 DistanceMetric.COSINE,
@@ -139,6 +155,14 @@ public record AnalysisConfig(
             case "full-text" -> SemanticRepresentation.FULL_TEXT;
             case "chunk-average-min" -> SemanticRepresentation.CHUNK_AVERAGE_MIN;
             default -> throw new AnalysisException("Unknown semantic representation: " + value);
+        };
+    }
+
+    private static SemanticDistanceMethod semanticDistanceMethod(String value) {
+        return switch (value.toLowerCase(java.util.Locale.ROOT)) {
+            case "embedding-cosine" -> SemanticDistanceMethod.EMBEDDING_COSINE;
+            case "bertscore-f1" -> SemanticDistanceMethod.BERTSCORE_F1;
+            default -> throw new AnalysisException("Unknown semantic distance method: " + value);
         };
     }
 

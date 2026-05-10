@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
+import ch.thp.mas.llm.variance.analyze.semantic.BertScore;
+import ch.thp.mas.llm.variance.analyze.semantic.BertScoreResult;
+import ch.thp.mas.llm.variance.analyze.semantic.BertScoreService;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
@@ -13,6 +16,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalClusterer;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
+import ch.thp.mas.llm.variance.analyze.semantic.SemanticDistanceMethod;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
@@ -141,6 +145,47 @@ class AnalyzerTest {
     }
 
     @Test
+    void analyzesBertScoreDistanceMatrix() {
+        AnalysisConfig config = config(
+                SemanticDistanceMethod.BERTSCORE_F1,
+                SemanticRepresentation.FULL_TEXT,
+                ClusteringAlgorithm.HIERARCHICAL,
+                new HierarchicalConfig(0.15, HierarchicalLinkage.COMPLETE)
+        );
+        BertScoreService bertScoreService = (texts, ignored) -> {
+            double[][] distances = {
+                    {0.0, 0.05, 0.40},
+                    {0.05, 0.0, 0.42},
+                    {0.40, 0.42, 0.0}
+            };
+            return new BertScoreResult(distances, List.of(
+                    new BertScoreResult.PairScore(0, 1, new BertScore(0.95, 0.95, 0.95)),
+                    new BertScoreResult.PairScore(0, 2, new BertScore(0.60, 0.60, 0.60)),
+                    new BertScoreResult.PairScore(1, 2, new BertScore(0.58, 0.58, 0.58))
+            ));
+        };
+        Analyzer analyzer = analyzer(
+                (texts, ignored) -> {
+                    throw new AssertionError("Embedding service must not be called for BERTScore analysis.");
+                },
+                bertScoreService,
+                config
+        );
+
+        AnalysisResult result = analyzer.analyze(new NamedRunLog("bertscore.json", runLog(
+                "Zuerich Luzern Basel",
+                "Zuerich Luzern Basel",
+                "Zuerich Luzern Lausanne"
+        )));
+
+        assertThat(result.config().semanticDistanceMethod()).isEqualTo(SemanticDistanceMethod.BERTSCORE_F1);
+        assertThat(result.semantic().pairwiseCosineDistance().median()).isEqualTo(0.40);
+        assertThat(result.semantic().clusters()).hasSize(2);
+        assertThat(result.semantic().clusters().get(0).repetitionIndices()).containsExactly(1, 2);
+        assertThat(result.semantic().clusters().get(1).repetitionIndices()).containsExactly(3);
+    }
+
+    @Test
     void rejectsRunWithoutResponses() {
         Analyzer analyzer = analyzer((texts, config) -> List.of());
         OffsetDateTime now = OffsetDateTime.parse("2026-05-02T10:00:00+02:00");
@@ -216,10 +261,25 @@ class AnalyzerTest {
     }
 
     private static Analyzer analyzer(EmbeddingService embeddingService, AnalysisConfig config) {
+        return analyzer(
+                embeddingService,
+                (texts, ignored) -> {
+                    throw new AnalysisException("BERTScore service is not configured.");
+                },
+                config
+        );
+    }
+
+    private static Analyzer analyzer(
+            EmbeddingService embeddingService,
+            BertScoreService bertScoreService,
+            AnalysisConfig config
+    ) {
         TextTokenizer tokenizer = new TextTokenizer();
         CosineDistance cosineDistance = new CosineDistance();
         return new Analyzer(
                 embeddingService,
+                bertScoreService,
                 cosineDistance,
                 new ChunkAverageMinDistance(cosineDistance),
                 new MedoidSelector(),
@@ -239,6 +299,20 @@ class AnalyzerTest {
             ClusteringAlgorithm clusteringAlgorithm,
             HierarchicalConfig hierarchicalConfig
     ) {
+        return config(
+                SemanticDistanceMethod.EMBEDDING_COSINE,
+                semanticRepresentation,
+                clusteringAlgorithm,
+                hierarchicalConfig
+        );
+    }
+
+    private static AnalysisConfig config(
+            SemanticDistanceMethod semanticDistanceMethod,
+            SemanticRepresentation semanticRepresentation,
+            ClusteringAlgorithm clusteringAlgorithm,
+            HierarchicalConfig hierarchicalConfig
+    ) {
         AnalysisConfig defaults = AnalysisConfig.defaults();
         return new AnalysisConfig(
                 defaults.embeddingProvider(),
@@ -246,6 +320,9 @@ class AnalyzerTest {
                 defaults.embeddingModel(),
                 defaults.embeddingPrefix(),
                 defaults.maxEmbeddingTokens(),
+                semanticDistanceMethod,
+                defaults.bertScoreBaseUrl(),
+                defaults.bertScoreModel(),
                 semanticRepresentation,
                 new ChunkConfig(4),
                 defaults.distance(),

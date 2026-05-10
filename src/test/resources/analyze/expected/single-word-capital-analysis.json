@@ -7,6 +7,9 @@
     "embeddingModel": "intfloat/multilingual-e5-large",
     "embeddingPrefix": "passage:",
     "maxEmbeddingTokens": 514,
+    "semanticDistanceMethod": "EMBEDDING_COSINE",
+    "bertScoreBaseUrl": "http://localhost:8000",
+    "bertScoreModel": "xlm-roberta-large",
     "semanticRepresentation": "FULL_TEXT",
     "chunk": {
       "targetTokens": 120
