@@ -1,6 +1,8 @@
 package ch.thp.mas.llm.variance.analyze;
 
 
+import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
+import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
 import ch.thp.mas.llm.variance.analyze.semantic.CosineDistance;
@@ -41,6 +43,7 @@ public class Analyzer {
     private final AnswerChunker answerChunker;
     private final RougeLMetric rougeLMetric;
     private final BleuMetric bleuMetric;
+    private final LiteralAnalyzer literalAnalyzer;
     private final SummaryStatistics summaryStatistics;
     private final SystemRunClock runClock;
     private final Supplier<AnalysisConfig> configSupplier;
@@ -56,6 +59,7 @@ public class Analyzer {
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
+            LiteralAnalyzer literalAnalyzer,
             SummaryStatistics summaryStatistics,
             SystemRunClock runClock
     ) {
@@ -69,6 +73,7 @@ public class Analyzer {
                 answerChunker,
                 rougeLMetric,
                 bleuMetric,
+                literalAnalyzer,
                 summaryStatistics,
                 runClock,
                 AnalysisConfig::defaults
@@ -95,6 +100,7 @@ public class Analyzer {
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
+                new LiteralAnalyzer(),
                 summaryStatistics,
                 runClock,
                 AnalysisConfig::defaults
@@ -122,6 +128,7 @@ public class Analyzer {
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
+                new LiteralAnalyzer(),
                 summaryStatistics,
                 runClock,
                 configSupplier
@@ -138,6 +145,7 @@ public class Analyzer {
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
+            LiteralAnalyzer literalAnalyzer,
             SummaryStatistics summaryStatistics,
             SystemRunClock runClock,
             Supplier<AnalysisConfig> configSupplier
@@ -151,6 +159,7 @@ public class Analyzer {
         this.answerChunker = answerChunker;
         this.rougeLMetric = rougeLMetric;
         this.bleuMetric = bleuMetric;
+        this.literalAnalyzer = literalAnalyzer;
         this.summaryStatistics = summaryStatistics;
         this.runClock = runClock;
         this.configSupplier = configSupplier;
@@ -171,25 +180,29 @@ public class Analyzer {
         Medoid medoid = medoidSelector.select(distances);
         int[] labels = cluster(distances, config);
         List<SemanticCluster> semanticClusters = semanticClusters(labels, distances);
+        SemanticAnalysis semanticAnalysis = new SemanticAnalysis(
+                responses.size(),
+                semanticEmbeddings.truncatedResponses(),
+                new MedoidAnalysis(
+                        medoid.index() + 1,
+                        medoid.totalDistance(),
+                        responses.get(medoid.index())
+                ),
+                summaryStatistics.summarize(upperTriangle(distances)),
+                semanticClusters,
+                outliers(labels)
+        );
+        SyntacticAnalysis syntacticAnalysis = new SyntacticAnalysis(syntacticClusters(semanticClusters, responses, config));
+        LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses, semanticClusters);
 
         return new AnalysisResult(
                 namedRunLog.filename(),
                 runClock.now(),
                 config,
                 runInfo(runLog),
-                new SemanticAnalysis(
-                        responses.size(),
-                        semanticEmbeddings.truncatedResponses(),
-                        new MedoidAnalysis(
-                                medoid.index() + 1,
-                                medoid.totalDistance(),
-                                responses.get(medoid.index())
-                        ),
-                        summaryStatistics.summarize(upperTriangle(distances)),
-                        semanticClusters,
-                        outliers(labels)
-                ),
-                new SyntacticAnalysis(syntacticClusters(semanticClusters, responses, config))
+                semanticAnalysis,
+                syntacticAnalysis,
+                literalAnalysis
         );
     }
 

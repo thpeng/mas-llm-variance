@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.analyze;
 
 
+import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticAnalysis;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticAnalysis;
 import java.time.OffsetDateTime;
@@ -12,6 +13,7 @@ public record AnalysisResult(
         AnalysisConfig config,
         AnalysisRunInfo run,
         SemanticAnalysis semantic,
-        SyntacticAnalysis syntactic
+        SyntacticAnalysis syntactic,
+        LiteralAnalysis literal
 ) {
 }

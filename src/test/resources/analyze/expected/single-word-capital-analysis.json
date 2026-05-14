@@ -100,5 +100,21 @@
         }
       }
     ]
+  },
+  "literal": {
+    "allResponsesIdentical": true,
+    "responseCount": 3,
+    "distinctResponseCount": 1,
+    "exactMatchRate": 1.0,
+    "clusters": [
+      {
+        "clusterId": 0,
+        "responseCount": 3,
+        "pairCount": 3,
+        "exactMatchPairCount": 3,
+        "exactMatchRate": 1.0,
+        "distinctResponseCount": 1
+      }
+    ]
   }
 }

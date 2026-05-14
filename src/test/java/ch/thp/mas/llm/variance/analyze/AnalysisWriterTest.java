@@ -3,6 +3,7 @@ package ch.thp.mas.llm.variance.analyze;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidAnalysis;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticAnalysis;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticAnalysis;
@@ -55,7 +56,8 @@ class AnalysisWriterTest {
                         List.of(),
                         List.of()
                 ),
-                new SyntacticAnalysis(List.of())
+                new SyntacticAnalysis(List.of()),
+                new LiteralAnalysis(true, 1, 1, 1.0, List.of())
         );
     }
 

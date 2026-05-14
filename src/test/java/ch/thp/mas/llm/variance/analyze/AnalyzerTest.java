@@ -3,6 +3,7 @@ package ch.thp.mas.llm.variance.analyze;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
@@ -50,6 +51,8 @@ class AnalyzerTest {
         assertThat(result.semantic().clusters().getFirst().repetitionIndices()).containsExactly(1, 2);
         assertThat(result.semantic().outliers()).containsExactly(3);
         assertThat(result.syntactic().clusters().getFirst().pairCount()).isEqualTo(1);
+        assertThat(result.literal().responseCount()).isEqualTo(3);
+        assertThat(result.literal().clusters().getFirst().pairCount()).isEqualTo(1);
     }
 
     @Test
@@ -69,6 +72,9 @@ class AnalyzerTest {
         assertThat(result.syntactic().clusters().getFirst().pairCount()).isEqualTo(3);
         assertThat(result.syntactic().clusters().getFirst().rougeLDistance().median()).isEqualTo(0.0);
         assertThat(result.syntactic().clusters().getFirst().bleuDistance().median()).isEqualTo(0.0);
+        assertThat(result.literal().allResponsesIdentical()).isTrue();
+        assertThat(result.literal().exactMatchRate()).isEqualTo(1.0);
+        assertThat(result.literal().clusters().getFirst().exactMatchRate()).isEqualTo(1.0);
     }
 
     @Test
@@ -93,6 +99,9 @@ class AnalyzerTest {
         assertThat(result.semantic().outliers()).isEmpty();
         assertThat(result.syntactic().clusters()).extracting(SyntacticCluster::pairCount)
                 .containsExactly(1, 1);
+        assertThat(result.literal().allResponsesIdentical()).isFalse();
+        assertThat(result.literal().clusters()).extracting(cluster -> cluster.exactMatchRate())
+                .containsExactly(0.0, 0.0);
     }
 
     @Test
@@ -228,6 +237,7 @@ class AnalyzerTest {
                 new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
+                new LiteralAnalyzer(),
                 new SummaryStatistics(),
                 new FixedClock(),
                 () -> config
