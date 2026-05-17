@@ -23,7 +23,7 @@ class LmStudioInferenceSession implements InferenceSession {
 
     static LmStudioInferenceSession open(ResolvedPlan plan, LmStudioControlClient controlClient) throws Exception {
         ModelInstanceLog modelInstance = controlClient.ensureLoaded(plan);
-        String baseUrl = getenv("LMSTUDIO_BASE_URL", "http://localhost:1234");
+        String baseUrl = getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:10022");
         LlmClient client = new LmStudioChatClient(baseUrl, System.getenv("LM_API_TOKEN"));
         return new LmStudioInferenceSession(controlClient, client, modelInstance);
     }

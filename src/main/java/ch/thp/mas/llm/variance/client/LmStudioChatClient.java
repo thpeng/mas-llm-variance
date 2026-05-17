@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,15 @@ public class LmStudioChatClient implements LlmClient {
     private final ObjectMapper objectMapper;
 
     public LmStudioChatClient(String baseUrl, String apiToken) {
-        this(baseUrl, apiToken, HttpClient.newHttpClient(), new ObjectMapper());
+        this(
+                baseUrl,
+                apiToken,
+                HttpClient.newBuilder()
+                        .connectTimeout(Duration.ofSeconds(10))
+                        .version(HttpClient.Version.HTTP_1_1)
+                        .build(),
+                new ObjectMapper()
+        );
     }
 
     LmStudioChatClient(String baseUrl, String apiToken, HttpClient httpClient, ObjectMapper objectMapper) {
@@ -74,6 +83,8 @@ public class LmStudioChatClient implements LlmClient {
     private JsonNode post(String path, JsonNode body) throws Exception {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path))
                 .header("Content-Type", "application/json")
+                .timeout(Duration.ofMinutes(10))
+                .version(HttpClient.Version.HTTP_1_1)
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)));
         addAuthorization(builder);
         HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());

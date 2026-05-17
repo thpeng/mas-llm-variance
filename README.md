@@ -178,7 +178,7 @@ LMSTUDIO_BASE_URL
 LM_API_TOKEN
 ```
 
-`LMSTUDIO_BASE_URL` is optional and defaults to `http://localhost:1234`. LM Studio uses `/api/v1/models`, `/api/v1/models/load`, `/api/v1/chat`, and `/api/v1/models/unload`. `LM_API_TOKEN` is optional.
+`LMSTUDIO_BASE_URL` is optional and defaults to `http://127.0.0.1:10022`. LM Studio uses `/api/v1/models`, `/api/v1/models/load`, `/api/v1/chat`, and `/api/v1/models/unload`. `LM_API_TOKEN` is optional.
 
 Embedding environment variables:
 

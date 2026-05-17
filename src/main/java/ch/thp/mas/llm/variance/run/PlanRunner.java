@@ -7,6 +7,7 @@ import ch.thp.mas.llm.variance.plan.ResolvedPlan;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +17,7 @@ public class PlanRunner {
     private final RunClock runClock;
     private final RunLogWriter runLogWriter;
 
+    @Autowired
     public PlanRunner(InferenceSessionFactory sessionFactory, RunClock runClock, RunLogWriter runLogWriter) {
         this.sessionFactory = sessionFactory;
         this.runClock = runClock;

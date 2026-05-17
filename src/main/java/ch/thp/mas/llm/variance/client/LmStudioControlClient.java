@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,12 +21,17 @@ public class LmStudioControlClient {
     private final String apiToken;
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final Duration preflightTimeout = Duration.ofSeconds(15);
+    private final Duration lifecycleTimeout = Duration.ofMinutes(10);
 
     public LmStudioControlClient() {
         this(
-                getenv("LMSTUDIO_BASE_URL", "http://localhost:1234"),
+                getenv("LMSTUDIO_BASE_URL", "http://127.0.0.1:10022"),
                 System.getenv("LM_API_TOKEN"),
-                HttpClient.newHttpClient(),
+                HttpClient.newBuilder()
+                        .connectTimeout(Duration.ofSeconds(10))
+                        .version(HttpClient.Version.HTTP_1_1)
+                        .build(),
                 new ObjectMapper()
         );
     }
@@ -38,27 +44,33 @@ public class LmStudioControlClient {
     }
 
     public ModelInstanceLog ensureLoaded(ResolvedPlan plan) throws Exception {
+        System.out.println("Checking LM Studio models at " + baseUrl + "/api/v1/models");
         JsonNode models = get("/api/v1/models");
         JsonNode model = findModel(models, plan.model());
         String existingInstanceId = firstLoadedInstanceId(model);
         LmStudioLoadConfigLog loadConfig = loadConfigLog(plan.getLoad());
         if (existingInstanceId != null) {
+            System.out.println("Reusing loaded LM Studio model instance: " + existingInstanceId);
             return new ModelInstanceLog(existingInstanceId, false, loadConfig, null);
         }
 
+        System.out.println("Loading LM Studio model: " + plan.model());
         JsonNode loadResponse = post("/api/v1/models/load", loadRequest(plan));
         String instanceId = firstText(loadResponse, "instance_id", "id", "model_instance_id");
         if (instanceId == null) {
+            System.out.println("Resolving loaded LM Studio model instance after load.");
             JsonNode reloadedModels = get("/api/v1/models");
             instanceId = firstLoadedInstanceId(findModel(reloadedModels, plan.model()));
         }
         if (instanceId == null) {
             throw new IllegalStateException("LM Studio did not report a loaded instance for model: " + plan.model());
         }
+        System.out.println("Loaded LM Studio model instance: " + instanceId);
         return new ModelInstanceLog(instanceId, true, loadConfig, loadResponse);
     }
 
     public void unload(String instanceId) throws Exception {
+        System.out.println("Unloading LM Studio model instance: " + instanceId);
         ObjectNode request = objectMapper.createObjectNode();
         request.put("instance_id", instanceId);
         post("/api/v1/models/unload", request);
@@ -80,7 +92,10 @@ public class LmStudioControlClient {
     }
 
     private JsonNode get(String path) throws Exception {
-        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path)).GET();
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path))
+                .timeout(preflightTimeout)
+                .version(HttpClient.Version.HTTP_1_1)
+                .GET();
         addAuthorization(builder);
         HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
@@ -92,6 +107,8 @@ public class LmStudioControlClient {
     private JsonNode post(String path, JsonNode body) throws Exception {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path))
                 .header("Content-Type", "application/json")
+                .timeout(lifecycleTimeout)
+                .version(HttpClient.Version.HTTP_1_1)
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)));
         addAuthorization(builder);
         HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());

@@ -97,15 +97,15 @@ class LmStudioChatClientTest {
     void failsWhenResponseHasNoMessageOutput() throws Exception {
         startServer(200, """
                 {
-                  "output": [{"type": "reasoning", "content": "hidden"}],
-                  "stats": {}
+                  "output": [{"type": "reasoning", "content": "nur reasoning"}],
+                  "stats": {"input_tokens": 1, "total_output_tokens": 2}
                 }
                 """);
         LmStudioChatClient client = new LmStudioChatClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
 
-        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, "off")))
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, "on")))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("did not contain a message");
+                .hasMessageContaining("did not contain a message output");
     }
 
     private void startServer(int status, String responseBody) throws IOException {

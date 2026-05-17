@@ -39,7 +39,7 @@ public enum InferenceProvider {
         public LlmClient createClient() {
             String baseUrl = System.getenv("LMSTUDIO_BASE_URL");
             if (baseUrl == null || baseUrl.isBlank()) {
-                baseUrl = "http://localhost:1234";
+                baseUrl = "http://127.0.0.1:10022";
             }
             return new LmStudioChatClient(baseUrl, System.getenv("LM_API_TOKEN"));
         }

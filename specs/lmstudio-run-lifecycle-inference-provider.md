@@ -69,7 +69,7 @@ LM Studio model lifecycle and invocation both use the native LM Studio developer
 
 Suggested environment variables:
 
-- `LMSTUDIO_BASE_URL`: LM Studio native API endpoint. Default `http://localhost:1234`.
+- `LMSTUDIO_BASE_URL`: LM Studio native API endpoint. Default `http://127.0.0.1:10022`.
 - `LM_API_TOKEN`: optional bearer token. If present, send `Authorization: Bearer <token>` on LM Studio requests.
 
 The old Anthropic-compatible LM Studio generation endpoint is removed from the plan/run path. LM Studio calls should use `/api/v1/models`, `/api/v1/models/load`, `/api/v1/chat`, and `/api/v1/models/unload` on the same configured native base URL.
