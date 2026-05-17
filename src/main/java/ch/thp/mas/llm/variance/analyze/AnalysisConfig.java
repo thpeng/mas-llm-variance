@@ -17,7 +17,7 @@ import java.util.Objects;
  * Top-level configuration for the variance analysis pipeline.
  *
  * <p>Bundles the embedding model parameters, the distance metric, and the
- * configurations of all downstream analysis components (DBSCAN clustering,
+ * configurations of all downstream analysis components (semantic clustering,
  * BLEU and ROUGE surface metrics, and percentile aggregation).
  *
  * <p>Field semantics:
@@ -32,7 +32,7 @@ import java.util.Objects;
  *       window (e.g. 512 + 2 special tokens for BERT-family models).</li>
  *   <li>{@code distance}: distance metric used for the semantic analysis
  *       pipeline (cosine distance over embeddings).</li>
- *   <li>{@code dbscan}, {@code bleu}, {@code rouge}: see the corresponding
+ *   <li>{@code dbscan}, {@code hierarchical}, {@code bleu}, {@code rouge}: see the corresponding
  *       config records.</li>
  *   <li>{@code percentile}: method used to compute percentile aggregates of
  *       pairwise distances (median, p90, etc.) within clusters.</li>
@@ -103,7 +103,7 @@ public record AnalysisConfig(
         SemanticRepresentation semanticRepresentation = semanticRepresentation(
                 getenv("LLM_VARIANCE_SEMANTIC_REPRESENTATION", "full-text"));
         ClusteringAlgorithm clusteringAlgorithm = clusteringAlgorithm(
-                getenv("LLM_VARIANCE_CLUSTERING_ALGORITHM", "dbscan"));
+                getenv("LLM_VARIANCE_CLUSTERING_ALGORITHM", "hierarchical"));
         HierarchicalLinkage linkage = hierarchicalLinkage(
                 getenv("LLM_VARIANCE_HIERARCHICAL_LINKAGE", "complete"));
         return new AnalysisConfig(

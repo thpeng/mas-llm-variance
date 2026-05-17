@@ -13,7 +13,7 @@
       "targetTokens": 120
     },
     "distance": "COSINE",
-    "clusteringAlgorithm": "DBSCAN",
+    "clusteringAlgorithm": "HIERARCHICAL",
     "dbscan": {
       "epsilon": 0.15,
       "minPts": 2
@@ -34,14 +34,15 @@
   },
   "run": {
     "planName": "0001-test",
-    "manufacturer": "OPENAI",
+    "inferenceProvider": "OPENAI",
     "model": "gpt-test",
     "modelVersion": null,
     "iterations": 3,
     "temperature": 0.0,
     "topP": null,
     "topK": null,
-    "seed": null
+    "seed": null,
+    "reasoning": "off"
   },
   "semantic": {
     "responseCount": 3,

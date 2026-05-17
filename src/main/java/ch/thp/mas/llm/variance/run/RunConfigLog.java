@@ -4,6 +4,7 @@ public record RunConfigLog(
         Double temperature,
         Double topP,
         Integer topK,
-        Long seed
+        Long seed,
+        String reasoning
 ) {
 }

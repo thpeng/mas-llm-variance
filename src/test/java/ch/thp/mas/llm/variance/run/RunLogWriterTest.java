@@ -3,9 +3,11 @@ package ch.thp.mas.llm.variance.run;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.client.TokenUsage;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.OffsetDateTime;
@@ -44,17 +46,44 @@ class RunLogWriterTest {
                 .hasMessageContaining("Could not write run log");
     }
 
+    @Test
+    void writesLmStudioModelLoadResponse() throws Exception {
+        RunLogWriter writer = new RunLogWriter(tempDir.resolve("runs"), new RunFileNameFactory(), objectMapper());
+        RunLog runLog = runLog(new ModelInstanceLog(
+                "instance-a",
+                true,
+                new LmStudioLoadConfigLog(8192, 512, true, null, true),
+                JsonNodeFactory.instance.objectNode()
+                        .put("status", "loaded")
+                        .set("load_config", JsonNodeFactory.instance.objectNode().put("context_length", 8192))
+        ));
+
+        Path written = writer.write(runLog);
+
+        JsonNode json = objectMapper().readTree(Files.readString(written));
+        assertThat(json.path("modelInstance").path("id").asText()).isEqualTo("instance-a");
+        assertThat(json.path("modelInstance").path("loadedByRun").asBoolean()).isTrue();
+        assertThat(json.path("modelInstance").path("loadResponse").path("status").asText()).isEqualTo("loaded");
+        assertThat(json.path("modelInstance").path("loadResponse").path("load_config").path("context_length").asInt())
+                .isEqualTo(8192);
+    }
+
     private static RunLog runLog() {
+        return runLog(null);
+    }
+
+    private static RunLog runLog(ModelInstanceLog modelInstance) {
         OffsetDateTime startedAt = OffsetDateTime.parse("2026-05-02T10:45:30.123+02:00");
         return new RunLog(
                 "0001-test",
                 startedAt,
                 OffsetDateTime.parse("2026-05-02T10:45:31.123+02:00"),
-                Manufacturer.OPENAI,
+                InferenceProvider.OPENAI,
                 "gpt-test",
                 null,
+                modelInstance,
                 1,
-                new RunConfigLog(0.1, 0.9, 4, 123L),
+                new RunConfigLog(0.1, 0.9, 4, 123L, "off"),
                 "Prompt",
                 List.of(new RunLogEntry(
                         1,

@@ -12,7 +12,7 @@ The application supports three main workflows:
 
 1. Define experiment plans as YAML files.
 2. Execute one or more plans and write run logs.
-3. Analyze completed run logs for semantic and syntactic variance.
+3. Analyze completed run logs for semantic, syntactic, and literal variance.
 
 Plans live in:
 
@@ -53,7 +53,7 @@ Implemented providers:
 
 - OpenAI
 - Anthropic
-- LM Studio through an Anthropic-compatible local endpoint
+- LM Studio through the native developer REST API
 
 The `LlmClient` abstraction returns an `LlmResponse`, including:
 
@@ -81,7 +81,7 @@ The prefix gives plans a natural execution order. The CLI supports:
 
 A plan defines values such as:
 
-- Manufacturer
+- Inference provider
 - Model
 - Prompt
 - Iterations
@@ -96,11 +96,13 @@ Execution and run logging.
 
 For each resolved plan, the runner:
 
-1. Creates the provider client.
-2. Executes the prompt for the configured number of iterations.
-3. Captures start/end timestamps for every repetition.
-4. Captures the full answer and token usage.
-5. Writes one JSON run log if and only if the full plan succeeds.
+1. Opens an inference session.
+2. Loads the LM Studio model when the selected provider requires an explicit lifecycle.
+3. Executes the prompt for the configured number of iterations.
+4. Captures start/end timestamps for every repetition.
+5. Captures the full answer and token usage.
+6. Unloads LM Studio models loaded by the run.
+7. Writes one JSON run log if and only if the full plan succeeds.
 
 Run log files are timestamped:
 
@@ -127,7 +129,7 @@ Run mode and analyze mode are mutually exclusive.
 
 ## Main Analysis Algorithm
 
-The analysis has two layers: semantic analysis and syntactic analysis.
+The analysis has three layers: semantic analysis, syntactic analysis, and literal analysis.
 
 ### 1. Semantic Analysis
 
@@ -137,12 +139,12 @@ The semantic analysis follows this pipeline:
 2. Transform each response into an embedding.
 3. Compute pairwise cosine distances between embeddings.
 4. Select the medoid: the response with the lowest total distance to all other responses.
-5. Cluster responses with DBSCAN.
+5. Cluster responses with hierarchical clustering by default, or DBSCAN when explicitly configured.
 6. Report cluster structure, outliers, medoid, and distance summaries.
 
 The medoid is the typical answer in the run. It is not a correctness reference.
 
-DBSCAN is used because the number of answer clusters is not known in advance. This is important for LLM evaluation: a stable plan should produce few semantic clusters, while a highly variable plan may produce many clusters or outliers.
+Hierarchical clustering is the default because it avoids DBSCAN-style chaining effects in longer generated texts. It is configured with complete linkage by default, so two clusters are merged only when the most distant response pair still stays below the configured threshold. DBSCAN remains available for epsilon scans and explicit outlier detection when that behavior is desired.
 
 Current note: the executable implementation integrates with a WSL-hosted FastAPI service for `intfloat/multilingual-e5-large` on `http://localhost:8000`. A deterministic local hashing embedding service remains available for development and tests via `LLM_VARIANCE_EMBEDDING_PROVIDER=local-hashing`, but it is not a real semantic model.
 
@@ -173,9 +175,10 @@ Provider environment variables:
 OPENAI_API_KEY
 ANTHROPIC_API_KEY
 LMSTUDIO_BASE_URL
+LM_API_TOKEN
 ```
 
-`LMSTUDIO_BASE_URL` is optional and defaults to a local endpoint if not set.
+`LMSTUDIO_BASE_URL` is optional and defaults to `http://localhost:1234`. LM Studio uses `/api/v1/models`, `/api/v1/models/load`, `/api/v1/chat`, and `/api/v1/models/unload`. `LM_API_TOKEN` is optional.
 
 Embedding environment variables:
 

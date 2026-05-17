@@ -4,12 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import ch.thp.mas.llm.variance.analyze.semantic.CosineDistance;
+import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanClusterer;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -140,7 +141,7 @@ class LongRundreiseE5AnalysisIntegrationTest {
                 defaults.semanticRepresentation(),
                 defaults.chunk(),
                 defaults.distance(),
-                defaults.clusteringAlgorithm(),
+                ClusteringAlgorithm.DBSCAN,
                 new DbscanConfig(epsilon, defaults.dbscan().minPts()),
                 defaults.hierarchical(),
                 defaults.bleu(),
@@ -159,11 +160,12 @@ class LongRundreiseE5AnalysisIntegrationTest {
                 "0001-rundreise-schweiz-" + name,
                 now,
                 now,
-                name.startsWith("sonnet") ? Manufacturer.ANTHROPIC : Manufacturer.LMSTUDIO,
+                name.startsWith("sonnet") ? InferenceProvider.ANTHROPIC : InferenceProvider.LMSTUDIO,
                 name,
                 null,
+                null,
                 responses.size(),
-                new RunConfigLog(0.0, null, null, null),
+                new RunConfigLog(0.0, null, null, null, "off"),
                 "Long fixture run for semantic route variance.",
                 entries
         );

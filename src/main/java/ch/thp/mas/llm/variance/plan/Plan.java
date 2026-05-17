@@ -1,10 +1,10 @@
 package ch.thp.mas.llm.variance.plan;
 
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 
 public interface Plan {
 
-    Manufacturer getManufacturer();
+    InferenceProvider getInferenceProvider();
 
     String getModel();
 
@@ -17,6 +17,10 @@ public interface Plan {
     Integer getTopK();
 
     Long getSeed();
+
+    String getReasoning();
+
+    LmStudioLoadConfig getLoad();
 
     int getIterations();
 }

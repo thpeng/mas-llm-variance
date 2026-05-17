@@ -18,7 +18,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticCluster;
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -47,9 +47,11 @@ class AnalyzerTest {
 
         assertThat(result.sourceRun()).isEqualTo("run.json");
         assertThat(result.semantic().responseCount()).isEqualTo(3);
-        assertThat(result.semantic().clusters()).hasSize(1);
+        assertThat(result.config().clusteringAlgorithm()).isEqualTo(ClusteringAlgorithm.HIERARCHICAL);
+        assertThat(result.semantic().clusters()).hasSize(2);
         assertThat(result.semantic().clusters().getFirst().repetitionIndices()).containsExactly(1, 2);
-        assertThat(result.semantic().outliers()).containsExactly(3);
+        assertThat(result.semantic().clusters().get(1).repetitionIndices()).containsExactly(3);
+        assertThat(result.semantic().outliers()).isEmpty();
         assertThat(result.syntactic().clusters().getFirst().pairCount()).isEqualTo(1);
         assertThat(result.literal().responseCount()).isEqualTo(3);
         assertThat(result.literal().clusters().getFirst().pairCount()).isEqualTo(1);
@@ -157,11 +159,12 @@ class AnalyzerTest {
                 "0001-empty",
                 now,
                 now,
-                Manufacturer.OPENAI,
+                InferenceProvider.OPENAI,
                 "gpt-test",
                 null,
+                null,
                 0,
-                new RunConfigLog(0.0, null, null, null),
+                new RunConfigLog(0.0, null, null, null, "off"),
                 "prompt",
                 List.of()
         );
@@ -208,11 +211,12 @@ class AnalyzerTest {
                 "0001-test",
                 now,
                 now,
-                Manufacturer.OPENAI,
+                InferenceProvider.OPENAI,
                 "gpt-test",
                 null,
+                null,
                 responses.length,
-                new RunConfigLog(0.0, null, null, null),
+                new RunConfigLog(0.0, null, null, null, "off"),
                 "prompt",
                 java.util.stream.IntStream.range(0, responses.length)
                         .mapToObj(index -> new RunLogEntry(index + 1, now, now, responses[index], null))

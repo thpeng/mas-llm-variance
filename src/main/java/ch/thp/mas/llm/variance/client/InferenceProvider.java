@@ -1,6 +1,6 @@
 package ch.thp.mas.llm.variance.client;
 
-public enum Manufacturer {
+public enum InferenceProvider {
 
     OPENAI {
         @Override
@@ -39,9 +39,9 @@ public enum Manufacturer {
         public LlmClient createClient() {
             String baseUrl = System.getenv("LMSTUDIO_BASE_URL");
             if (baseUrl == null || baseUrl.isBlank()) {
-                baseUrl = "http://localhost:10022";
+                baseUrl = "http://localhost:1234";
             }
-            return new LmStudioClient(baseUrl);
+            return new LmStudioChatClient(baseUrl, System.getenv("LM_API_TOKEN"));
         }
 
         @Override

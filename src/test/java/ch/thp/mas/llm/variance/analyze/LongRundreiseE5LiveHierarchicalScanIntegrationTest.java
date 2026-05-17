@@ -20,7 +20,7 @@ import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -150,11 +150,12 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
                 "0001-rundreise-schweiz-" + name,
                 now,
                 now,
-                name.startsWith("sonnet") ? Manufacturer.ANTHROPIC : Manufacturer.LMSTUDIO,
+                name.startsWith("sonnet") ? InferenceProvider.ANTHROPIC : InferenceProvider.LMSTUDIO,
                 name,
                 "intfloat/multilingual-e5-large-live",
+                null,
                 responses.size(),
-                new RunConfigLog(0.0, null, null, null),
+                new RunConfigLog(0.0, null, null, null, "off"),
                 "Long fixture run for live E5 hierarchical scan.",
                 entries
         );

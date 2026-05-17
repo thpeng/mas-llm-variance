@@ -3,7 +3,7 @@ package ch.thp.mas.llm.variance.analyze;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -61,11 +61,12 @@ class RunLogReaderTest {
                 "0001-test",
                 now,
                 now,
-                Manufacturer.OPENAI,
+                InferenceProvider.OPENAI,
                 "gpt-test",
                 null,
+                null,
                 1,
-                new RunConfigLog(0.0, null, null, null),
+                new RunConfigLog(0.0, null, null, null, "off"),
                 "prompt",
                 List.of(new RunLogEntry(1, now, now, "Bern", null))
         );

@@ -1,6 +1,6 @@
 package ch.thp.mas.llm.variance.plan;
 
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.boot.ApplicationArguments;
@@ -11,15 +11,15 @@ public class PlanResolver {
 
     public ResolvedPlan resolve(LoadedPlan loadedPlan, ApplicationArguments appArgs) {
         Plan plan = loadedPlan.plan();
-        Manufacturer manufacturer = optionValue(appArgs, "manufacturer") != null
-                ? parseManufacturer(optionValue(appArgs, "manufacturer"))
-                : plan.getManufacturer();
+        InferenceProvider inferenceProvider = optionValue(appArgs, "inferenceProvider") != null
+                ? parseInferenceProvider(optionValue(appArgs, "inferenceProvider"))
+                : plan.getInferenceProvider();
 
         String model = optionValue(appArgs, "model") != null
                 ? optionValue(appArgs, "model")
                 : plan.getModel();
         if (model == null || model.isBlank()) {
-            model = manufacturer.defaultModel();
+            model = inferenceProvider.defaultModel();
         }
 
         String prompt = optionValue(appArgs, "prompt") != null
@@ -48,11 +48,15 @@ public class PlanResolver {
         Long seed = optionValue(appArgs, "seed") != null
                 ? parseLong(optionValue(appArgs, "seed"), "seed")
                 : plan.getSeed();
+        String reasoning = optionValue(appArgs, "reasoning") != null
+                ? optionValue(appArgs, "reasoning")
+                : plan.getReasoning();
+        reasoning = normalizeReasoning(reasoning);
         String modelVersion = optionValue(appArgs, "modelVersion");
 
         return new ResolvedPlan(
                 loadedPlan.name(),
-                manufacturer,
+                inferenceProvider,
                 model,
                 prompt,
                 iterations,
@@ -60,16 +64,29 @@ public class PlanResolver {
                 topP,
                 topK,
                 seed,
+                reasoning,
+                plan.getLoad(),
                 modelVersion
         );
     }
 
-    private static Manufacturer parseManufacturer(String value) {
+    private static InferenceProvider parseInferenceProvider(String value) {
         try {
-            return Manufacturer.valueOf(value.toUpperCase(Locale.ROOT));
+            return InferenceProvider.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
-            throw new PlanException("Unknown manufacturer: " + value, e);
+            throw new PlanException("Unknown inferenceProvider: " + value, e);
         }
+    }
+
+    private static String normalizeReasoning(String value) {
+        if (value == null || value.isBlank()) {
+            return "off";
+        }
+        String normalized = value.toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case "off", "low", "medium", "high", "on" -> normalized;
+            default -> throw new PlanException("Unknown reasoning: " + value);
+        };
     }
 
     private static Double parseDouble(String value, String name) {

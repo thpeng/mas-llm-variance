@@ -1,6 +1,5 @@
 package ch.thp.mas.llm.variance.run;
 
-import ch.thp.mas.llm.variance.client.LlmClient;
 import ch.thp.mas.llm.variance.client.LlmClientFactory;
 import ch.thp.mas.llm.variance.client.LlmRequestConfig;
 import ch.thp.mas.llm.variance.client.LlmResponse;
@@ -13,51 +12,74 @@ import org.springframework.stereotype.Component;
 @Component
 public class PlanRunner {
 
-    private final LlmClientFactory clientFactory;
+    private final InferenceSessionFactory sessionFactory;
     private final RunClock runClock;
     private final RunLogWriter runLogWriter;
 
-    public PlanRunner(LlmClientFactory clientFactory, RunClock runClock, RunLogWriter runLogWriter) {
-        this.clientFactory = clientFactory;
+    public PlanRunner(InferenceSessionFactory sessionFactory, RunClock runClock, RunLogWriter runLogWriter) {
+        this.sessionFactory = sessionFactory;
         this.runClock = runClock;
         this.runLogWriter = runLogWriter;
+    }
+
+    PlanRunner(LlmClientFactory clientFactory, RunClock runClock, RunLogWriter runLogWriter) {
+        this((InferenceSessionFactory) plan -> new NoopInferenceSession(clientFactory.create(plan.inferenceProvider())),
+                runClock,
+                runLogWriter);
     }
 
     public RunLog run(ResolvedPlan plan) throws Exception {
         System.out.println("=== Running plan: " + plan.name() + " ===");
 
         OffsetDateTime runStartedAt = runClock.now();
-        LlmClient client = clientFactory.create(plan.manufacturer());
         LlmRequestConfig config = new LlmRequestConfig(
                 plan.model(),
                 plan.temperature(),
                 plan.topP(),
                 plan.topK(),
-                plan.seed()
+                plan.seed(),
+                plan.reasoning()
         );
 
         List<RunLogEntry> repetitions = new ArrayList<>();
-        for (int i = 0; i < plan.iterations(); i++) {
-            OffsetDateTime startedAt = runClock.now();
-            LlmResponse response = client.call(plan.prompt(), config);
-            OffsetDateTime endedAt = runClock.now();
-            repetitions.add(new RunLogEntry(i + 1, startedAt, endedAt, response.text(), response.tokenUsage()));
-            System.out.println(response.text() + ", ");
+        InferenceSession session = sessionFactory.open(plan);
+        ModelInstanceLog modelInstance = session.modelInstance();
+        try {
+            for (int i = 0; i < plan.iterations(); i++) {
+                OffsetDateTime startedAt = runClock.now();
+                LlmResponse response = session.client().call(plan.prompt(), config);
+                OffsetDateTime endedAt = runClock.now();
+                repetitions.add(new RunLogEntry(i + 1, startedAt, endedAt, response.text(), response.tokenUsage()));
+                System.out.println(response.text() + ", ");
+            }
+        } catch (Exception e) {
+            closeAfterFailure(session, e);
+            throw e;
         }
+        session.close();
 
         RunLog runLog = new RunLog(
                 plan.name(),
                 runStartedAt,
                 runClock.now(),
-                plan.manufacturer(),
+                plan.inferenceProvider(),
                 plan.model(),
                 plan.modelVersion(),
+                modelInstance,
                 plan.iterations(),
-                new RunConfigLog(plan.temperature(), plan.topP(), plan.topK(), plan.seed()),
+                new RunConfigLog(plan.temperature(), plan.topP(), plan.topK(), plan.seed(), plan.reasoning()),
                 plan.prompt(),
                 List.copyOf(repetitions)
         );
         runLogWriter.write(runLog);
         return runLog;
+    }
+
+    private static void closeAfterFailure(InferenceSession session, Exception failure) {
+        try {
+            session.close();
+        } catch (Exception closeFailure) {
+            failure.addSuppressed(closeFailure);
+        }
     }
 }

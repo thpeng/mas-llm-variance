@@ -1,10 +1,10 @@
 package ch.thp.mas.llm.variance.plan;
 
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 
 public record ResolvedPlan(
         String name,
-        Manufacturer manufacturer,
+        InferenceProvider inferenceProvider,
         String model,
         String prompt,
         int iterations,
@@ -12,12 +12,14 @@ public record ResolvedPlan(
         Double topP,
         Integer topK,
         Long seed,
+        String reasoning,
+        LmStudioLoadConfig load,
         String modelVersion
 ) implements Plan {
 
     @Override
-    public Manufacturer getManufacturer() {
-        return manufacturer;
+    public InferenceProvider getInferenceProvider() {
+        return inferenceProvider;
     }
 
     @Override
@@ -48,6 +50,16 @@ public record ResolvedPlan(
     @Override
     public Long getSeed() {
         return seed;
+    }
+
+    @Override
+    public String getReasoning() {
+        return reasoning;
+    }
+
+    @Override
+    public LmStudioLoadConfig getLoad() {
+        return load;
     }
 
     @Override

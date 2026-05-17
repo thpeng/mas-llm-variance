@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 public class DefaultLlmClientFactory implements LlmClientFactory {
 
     @Override
-    public LlmClient create(Manufacturer manufacturer) {
-        return manufacturer.createClient();
+    public LlmClient create(InferenceProvider inferenceProvider) {
+        return inferenceProvider.createClient();
     }
 }

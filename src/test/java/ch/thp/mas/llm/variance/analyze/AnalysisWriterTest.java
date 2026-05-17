@@ -7,7 +7,7 @@ import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidAnalysis;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticAnalysis;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticAnalysis;
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import java.nio.file.Files;
@@ -47,7 +47,7 @@ class AnalysisWriterTest {
                 "run.json",
                 OffsetDateTime.parse("2026-05-02T11:00:00+02:00"),
                 AnalysisConfig.defaults(),
-                new AnalysisRunInfo("0001-test", Manufacturer.OPENAI, "gpt-test", null, 1, 0.0, null, null, null),
+                new AnalysisRunInfo("0001-test", InferenceProvider.OPENAI, "gpt-test", null, 1, 0.0, null, null, null, "off"),
                 new SemanticAnalysis(
                         1,
                         0,

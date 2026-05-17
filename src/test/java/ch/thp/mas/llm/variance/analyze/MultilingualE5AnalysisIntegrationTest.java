@@ -4,12 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import ch.thp.mas.llm.variance.analyze.semantic.CosineDistance;
+import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanClusterer;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -75,6 +76,7 @@ class MultilingualE5AnalysisIntegrationTest {
         AnalysisResult result = analyzer(new CapturedEmbeddingService(capturedResponse), configWithEpsilon(epsilon))
                 .analyze(new NamedRunLog("rundreise-captured-e5.json", runLog(responses)));
 
+        assertThat(result.config().clusteringAlgorithm()).isEqualTo(ClusteringAlgorithm.DBSCAN);
         assertThat(result.config().dbscan().epsilon()).isEqualTo(epsilon);
         assertThat(result.semantic().clusters()).hasSize(expectedClusterCount);
         assertThat(result.semantic().outliers()).containsExactlyElementsOf(outliers(expectedOutlierCsv));
@@ -133,7 +135,7 @@ class MultilingualE5AnalysisIntegrationTest {
                 defaults.semanticRepresentation(),
                 defaults.chunk(),
                 defaults.distance(),
-                defaults.clusteringAlgorithm(),
+                ClusteringAlgorithm.DBSCAN,
                 new DbscanConfig(epsilon, defaults.dbscan().minPts()),
                 defaults.hierarchical(),
                 defaults.bleu(),
@@ -163,11 +165,12 @@ class MultilingualE5AnalysisIntegrationTest {
                 "0001-rundreise-schweiz",
                 now,
                 now,
-                Manufacturer.OPENAI,
+                InferenceProvider.OPENAI,
                 "captured-fixture",
                 null,
+                null,
                 responses.size(),
-                new RunConfigLog(0.0, null, null, null),
+                new RunConfigLog(0.0, null, null, null, "off"),
                 "Fixture run for semantic route variance.",
                 entries
         );

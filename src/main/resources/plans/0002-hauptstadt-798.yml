@@ -1,4 +1,4 @@
-manufacturer: OPENAI
+inferenceProvider: OPENAI
 prompt: "Frage: Was war die Hauptstadt der Schweiz im Jahre 798?\nAntworte nur mit dem Städtenamen."
 iterations: 5
 temperature: 0.0

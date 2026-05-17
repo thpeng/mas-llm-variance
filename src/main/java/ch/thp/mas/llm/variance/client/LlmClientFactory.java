@@ -2,5 +2,5 @@ package ch.thp.mas.llm.variance.client;
 
 public interface LlmClientFactory {
 
-    LlmClient create(Manufacturer manufacturer);
+    LlmClient create(InferenceProvider inferenceProvider);
 }

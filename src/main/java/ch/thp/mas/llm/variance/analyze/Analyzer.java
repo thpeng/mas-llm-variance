@@ -263,14 +263,15 @@ public class Analyzer {
     private AnalysisRunInfo runInfo(RunLog runLog) {
         return new AnalysisRunInfo(
                 runLog.planName(),
-                runLog.manufacturer(),
+                runLog.inferenceProvider(),
                 runLog.model(),
                 runLog.modelVersion(),
                 runLog.iterations(),
                 runLog.config().temperature(),
                 runLog.config().topP(),
                 runLog.config().topK(),
-                runLog.config().seed()
+                runLog.config().seed(),
+                runLog.config().reasoning()
         );
     }
 

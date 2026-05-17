@@ -1,25 +1,27 @@
 package ch.thp.mas.llm.variance.plan;
 
-import ch.thp.mas.llm.variance.client.Manufacturer;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 
 public class YamlPlan implements Plan {
 
-    private Manufacturer manufacturer = Manufacturer.OPENAI;
+    private InferenceProvider inferenceProvider = InferenceProvider.OPENAI;
     private String model;
     private String prompt;
     private Double temperature;
     private Double topP;
     private Integer topK;
     private Long seed;
+    private String reasoning;
+    private LmStudioLoadConfig load;
     private int iterations = 30;
 
     @Override
-    public Manufacturer getManufacturer() {
-        return manufacturer;
+    public InferenceProvider getInferenceProvider() {
+        return inferenceProvider;
     }
 
-    public void setManufacturer(Manufacturer manufacturer) {
-        this.manufacturer = manufacturer;
+    public void setInferenceProvider(InferenceProvider inferenceProvider) {
+        this.inferenceProvider = inferenceProvider;
     }
 
     @Override
@@ -74,6 +76,24 @@ public class YamlPlan implements Plan {
 
     public void setSeed(Long seed) {
         this.seed = seed;
+    }
+
+    @Override
+    public String getReasoning() {
+        return reasoning;
+    }
+
+    public void setReasoning(String reasoning) {
+        this.reasoning = reasoning;
+    }
+
+    @Override
+    public LmStudioLoadConfig getLoad() {
+        return load;
+    }
+
+    public void setLoad(LmStudioLoadConfig load) {
+        this.load = load;
     }
 
     @Override
