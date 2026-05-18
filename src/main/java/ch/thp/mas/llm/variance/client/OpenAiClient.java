@@ -2,6 +2,7 @@ package ch.thp.mas.llm.variance.client;
 
 import com.openai.client.OpenAIClient;
 import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.models.ReasoningEffort;
 import com.openai.models.responses.Response;
 import com.openai.models.responses.ResponseCreateParams;
 import com.openai.models.responses.ResponseOutputItem;
@@ -29,6 +30,11 @@ public class OpenAiClient implements LlmClient {
         }
         if (config.topP() != null) {
             builder.topP(config.topP());
+        }
+        if (config.reasoning() != null) {
+            builder.reasoning(com.openai.models.Reasoning.builder()
+                    .effort(ReasoningEffort.of(config.reasoning().openAiReasoningEffort()))
+                    .build());
         }
 
         Response response = client.responses().create(builder.build());

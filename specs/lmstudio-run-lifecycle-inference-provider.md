@@ -49,7 +49,9 @@ reasoning: off
 
 Only LM Studio uses the `load` object. OpenAI and Anthropic ignore it, or validation may reject it for non-LM Studio providers if a stricter configuration style is preferred.
 
-`reasoning` controls LM Studio's native chat reasoning mode. It is optional and defaults to `off`.
+`reasoning` controls LM Studio's native chat reasoning mode. The plan accepts the central app enum values
+`off`, `low`, `medium`, `high`, and `xhigh`; LM Studio supports only `off`, `low`, `medium`, and `high`.
+`xhigh` must fail before a LM Studio request is sent, because it is only mapped for OpenAI and Anthropic.
 
 Allowed values:
 
@@ -58,7 +60,6 @@ off
 low
 medium
 high
-on
 ```
 
 If the selected model does not support the requested reasoning setting, LM Studio will fail the chat request. The application should surface that failure clearly and still unload the model if this run loaded it.
@@ -468,8 +469,9 @@ Use a lightweight HTTP test server.
 Cover:
 
 - `POST /api/v1/chat` sends `model`, `input`, generation parameters, `reasoning`, and `store: false`.
-- Missing `reasoning` in the plan defaults to `off`.
-- `reasoning: low|medium|high|on` is passed through unchanged.
+- Missing `reasoning` in older specs defaulted to `off`; current YAML requires `run.reasoning`.
+- `reasoning: off|low|medium|high` is passed through unchanged.
+- `reasoning: xhigh` is rejected for LM Studio.
 - `topP` maps to `top_p`.
 - `topK` maps to `top_k`.
 - Null optional parameters are omitted.

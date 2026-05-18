@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.client.TokenUsage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,7 +84,7 @@ class RunLogWriterTest {
                 null,
                 modelInstance,
                 1,
-                new RunConfigLog(0.1, 0.9, 4, 123L, "off"),
+                new RunConfigLog(0.1, 0.9, 4, 123L, Reasoning.OFF),
                 "Prompt",
                 List.of(new RunLogEntry(
                         1,

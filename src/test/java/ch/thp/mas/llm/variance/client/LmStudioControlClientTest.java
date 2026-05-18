@@ -139,7 +139,7 @@ class LmStudioControlClientTest {
                 null,
                 null,
                 null,
-                "off",
+                Reasoning.OFF,
                 loadConfig,
                 null
         );

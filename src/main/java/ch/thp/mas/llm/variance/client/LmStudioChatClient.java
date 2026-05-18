@@ -43,9 +43,7 @@ public class LmStudioChatClient implements LlmClient {
         request.put("model", config.model());
         request.put("input", prompt);
         request.put("store", false);
-        request.put("reasoning", config.reasoning() == null || config.reasoning().isBlank()
-                ? "off"
-                : config.reasoning());
+        request.put("reasoning", config.reasoning().lmStudioValue());
         if (config.temperature() != null) {
             request.put("temperature", config.temperature());
         }

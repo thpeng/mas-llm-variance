@@ -19,6 +19,7 @@ import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticCluster;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -164,7 +165,7 @@ class AnalyzerTest {
                 null,
                 null,
                 0,
-                new RunConfigLog(0.0, null, null, null, "off"),
+                new RunConfigLog(0.0, null, null, null, Reasoning.OFF),
                 "prompt",
                 List.of()
         );
@@ -216,7 +217,7 @@ class AnalyzerTest {
                 null,
                 null,
                 responses.length,
-                new RunConfigLog(0.0, null, null, null, "off"),
+                new RunConfigLog(0.0, null, null, null, Reasoning.OFF),
                 "prompt",
                 java.util.stream.IntStream.range(0, responses.length)
                         .mapToObj(index -> new RunLogEntry(index + 1, now, now, responses[index], null))

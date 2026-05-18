@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.analyze;
 
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 
 public record AnalysisRunInfo(
         String planName,
@@ -12,6 +13,6 @@ public record AnalysisRunInfo(
         Double topP,
         Integer topK,
         Long seed,
-        String reasoning
+        Reasoning reasoning
 ) {
 }

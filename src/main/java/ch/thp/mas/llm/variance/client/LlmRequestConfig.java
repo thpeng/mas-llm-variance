@@ -6,6 +6,6 @@ public record LlmRequestConfig(
         Double topP,
         Integer topK,
         Long seed,
-        String reasoning
+        Reasoning reasoning
 ) {
 }

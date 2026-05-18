@@ -21,6 +21,7 @@ import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -155,7 +156,7 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
                 "intfloat/multilingual-e5-large-live",
                 null,
                 responses.size(),
-                new RunConfigLog(0.0, null, null, null, "off"),
+                new RunConfigLog(0.0, null, null, null, Reasoning.OFF),
                 "Long fixture run for live E5 hierarchical scan.",
                 entries
         );

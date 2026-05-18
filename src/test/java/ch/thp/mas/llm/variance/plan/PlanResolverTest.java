@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.DefaultApplicationArguments;
 
@@ -45,15 +46,22 @@ class PlanResolverTest {
         assertThat(resolved.topP()).isEqualTo(0.8);
         assertThat(resolved.topK()).isEqualTo(5);
         assertThat(resolved.seed()).isEqualTo(123L);
-        assertThat(resolved.reasoning()).isEqualTo("high");
+        assertThat(resolved.reasoning()).isEqualTo(Reasoning.HIGH);
         assertThat(resolved.modelVersion()).isEqualTo("2026-05");
     }
 
     @Test
-    void defaultsReasoningToOff() {
+    void resolvesReasoningToEnum() {
         ResolvedPlan resolved = resolver.resolve(loadedPlan(), args());
 
-        assertThat(resolved.reasoning()).isEqualTo("off");
+        assertThat(resolved.reasoning()).isEqualTo(Reasoning.OFF);
+    }
+
+    @Test
+    void acceptsXhighReasoning() {
+        ResolvedPlan resolved = resolver.resolve(loadedPlan(), args("--reasoning=xhigh"));
+
+        assertThat(resolved.reasoning()).isEqualTo(Reasoning.XHIGH);
     }
 
     @Test
@@ -66,6 +74,13 @@ class PlanResolverTest {
     @Test
     void rejectsUnknownReasoning() {
         assertThatThrownBy(() -> resolver.resolve(loadedPlan(), args("--reasoning=wild")))
+                .isInstanceOf(PlanException.class)
+                .hasMessageContaining("Unknown reasoning");
+    }
+
+    @Test
+    void rejectsLmStudioOnReasoningAlias() {
+        assertThatThrownBy(() -> resolver.resolve(loadedPlan(), args("--reasoning=on")))
                 .isInstanceOf(PlanException.class)
                 .hasMessageContaining("Unknown reasoning");
     }

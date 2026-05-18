@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.plan;
 
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.boot.ApplicationArguments;
@@ -52,10 +53,10 @@ public class PlanResolver {
         Long seed = optionValue(appArgs, "seed") != null
                 ? parseSeed(optionValue(appArgs, "seed"))
                 : seed(loadedPlan);
-        String reasoning = optionValue(appArgs, "reasoning") != null
+        String reasoningValue = optionValue(appArgs, "reasoning") != null
                 ? optionValue(appArgs, "reasoning")
                 : plan.getReasoning();
-        reasoning = normalizeReasoning(reasoning);
+        Reasoning reasoning = parseReasoning(reasoningValue);
         String modelVersion = optionValue(appArgs, "modelVersion");
 
         return new ResolvedPlan(
@@ -121,15 +122,12 @@ public class PlanResolver {
         }
     }
 
-    private static String normalizeReasoning(String value) {
-        if (value == null || value.isBlank()) {
-            return "off";
+    private static Reasoning parseReasoning(String value) {
+        try {
+            return Reasoning.parse(value);
+        } catch (IllegalArgumentException e) {
+            throw new PlanException(e.getMessage(), e);
         }
-        String normalized = value.toLowerCase(Locale.ROOT);
-        return switch (normalized) {
-            case "off", "low", "medium", "high", "on" -> normalized;
-            default -> throw new PlanException("Unknown reasoning: " + value);
-        };
     }
 
     private static Double parseDouble(String value, String name) {

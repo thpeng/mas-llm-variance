@@ -55,7 +55,7 @@ analysis:
   percentile: NEAREST_RANK
 ```
 
-All run sampling values must be supplied under `run`: `prompt`, `iterations`, `temperature`, `topP`, `topK`, `seed`, and `reasoning`. The seed can be a numeric value or `RANDOM`; `RANDOM` means the application does not send a seed and lets the model/provider choose.
+All run sampling values must be supplied under `run`: `prompt`, `iterations`, `temperature`, `topP`, `topK`, `seed`, and `reasoning`. The seed can be a numeric value or `RANDOM`; `RANDOM` means the application does not send a seed and lets the model/provider choose. `reasoning` uses the central enum values `off`, `low`, `medium`, `high`, and `xhigh`; provider-specific mappings and unsupported combinations are handled by the client layer.
 
 API connection details such as host URLs and authentication stay outside the plan YAML. LM Studio model load parameters may remain under `run.load` because they describe the model instance for the experiment, not the API transport.
 

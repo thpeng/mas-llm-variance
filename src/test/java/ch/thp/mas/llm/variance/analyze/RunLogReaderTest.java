@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -66,7 +67,7 @@ class RunLogReaderTest {
                 null,
                 null,
                 1,
-                new RunConfigLog(0.0, null, null, null, "off"),
+                new RunConfigLog(0.0, null, null, null, Reasoning.OFF),
                 "prompt",
                 List.of(new RunLogEntry(1, now, now, "Bern", null))
         );

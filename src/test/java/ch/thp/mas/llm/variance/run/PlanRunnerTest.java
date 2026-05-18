@@ -7,6 +7,7 @@ import ch.thp.mas.llm.variance.client.LlmClient;
 import ch.thp.mas.llm.variance.client.LlmRequestConfig;
 import ch.thp.mas.llm.variance.client.LlmResponse;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.client.TokenUsage;
 import ch.thp.mas.llm.variance.plan.ResolvedPlan;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -36,7 +37,7 @@ class PlanRunnerTest {
                 0.9,
                 4,
                 123L,
-                "off",
+                Reasoning.OFF,
                 null,
                 null
         );
@@ -47,7 +48,7 @@ class PlanRunnerTest {
         assertThat(runLog.planName()).isEqualTo("0001-test");
         assertThat(runLog.modelVersion()).isNull();
         assertThat(runLog.config().seed()).isEqualTo(123L);
-        assertThat(runLog.config().reasoning()).isEqualTo("off");
+        assertThat(runLog.config().reasoning()).isEqualTo(Reasoning.OFF);
         assertThat(runLog.repetitions()).hasSize(3);
         assertThat(runLog.repetitions()).extracting(RunLogEntry::response)
                 .containsExactly("answer-1", "answer-2", "answer-3");
@@ -60,7 +61,7 @@ class PlanRunnerTest {
             assertThat(config.topP()).isEqualTo(0.9);
             assertThat(config.topK()).isEqualTo(4);
             assertThat(config.seed()).isEqualTo(123L);
-            assertThat(config.reasoning()).isEqualTo("off");
+            assertThat(config.reasoning()).isEqualTo(Reasoning.OFF);
         });
     }
 
@@ -81,7 +82,7 @@ class PlanRunnerTest {
                 null,
                 null,
                 null,
-                "off",
+                Reasoning.OFF,
                 null,
                 null
         );
@@ -166,7 +167,7 @@ class PlanRunnerTest {
                 null,
                 null,
                 null,
-                "off",
+                Reasoning.OFF,
                 null,
                 null
         );

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.plan.AnalysisConfigMapper;
 import ch.thp.mas.llm.variance.plan.LoadedPlan;
 import ch.thp.mas.llm.variance.plan.PlanLoader;
@@ -104,7 +105,7 @@ class AnalyzeCommandTest {
                 null,
                 null,
                 1,
-                new RunConfigLog(0.0, null, null, null, "off"),
+                new RunConfigLog(0.0, null, null, null, Reasoning.OFF),
                 "prompt",
                 List.of(new RunLogEntry(1, now, now, "response", null))
         );

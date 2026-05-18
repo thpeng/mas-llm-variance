@@ -11,6 +11,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
@@ -165,7 +166,7 @@ class LongRundreiseE5AnalysisIntegrationTest {
                 null,
                 null,
                 responses.size(),
-                new RunConfigLog(0.0, null, null, null, "off"),
+                new RunConfigLog(0.0, null, null, null, Reasoning.OFF),
                 "Long fixture run for semantic route variance.",
                 entries
         );

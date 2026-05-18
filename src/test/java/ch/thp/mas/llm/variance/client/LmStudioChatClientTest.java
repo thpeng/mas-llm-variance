@@ -55,7 +55,7 @@ class LmStudioChatClientTest {
                 1.0,
                 1,
                 null,
-                "high"
+                Reasoning.HIGH
         ));
 
         assertThat(response.text()).isEqualTo("Antwort eins\nAntwort zwei");
@@ -74,7 +74,7 @@ class LmStudioChatClientTest {
     }
 
     @Test
-    void defaultsReasoningToOffAndOmitsNullGenerationParameters() throws Exception {
+    void sendsOffReasoningAndOmitsNullGenerationParameters() throws Exception {
         startServer(200, """
                 {
                   "output": [{"type": "message", "content": "Antwort"}],
@@ -83,7 +83,7 @@ class LmStudioChatClientTest {
                 """);
         LmStudioChatClient client = new LmStudioChatClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
 
-        client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, null));
+        client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.OFF));
 
         JsonNode request = requests.getFirst();
         assertThat(request.path("reasoning").asText()).isEqualTo("off");
@@ -91,6 +91,15 @@ class LmStudioChatClientTest {
         assertThat(request.has("top_p")).isFalse();
         assertThat(request.has("top_k")).isFalse();
         assertThat(authorizationHeaders).containsExactly("<none>");
+    }
+
+    @Test
+    void rejectsXhighReasoningForLmStudio() {
+        LmStudioChatClient client = new LmStudioChatClient("http://localhost:1", null, HttpClient.newHttpClient(), objectMapper);
+
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.XHIGH)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not supported for LM Studio");
     }
 
     @Test
@@ -103,7 +112,7 @@ class LmStudioChatClientTest {
                 """);
         LmStudioChatClient client = new LmStudioChatClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
 
-        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, "on")))
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.LOW)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("did not contain a message output");
     }
