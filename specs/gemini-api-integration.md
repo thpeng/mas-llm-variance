@@ -2,28 +2,13 @@
 
 ## Goal
 
-Add Google Gemini as a first-class inference provider behind the existing `LlmClient` abstraction. Plans should be able to set `inferenceProvider: GEMINI`, use the existing `run` configuration block, and execute Gemini requests through the Google GenAI Java SDK.
+Add Google Gemini as a first-class inference provider behind the existing `LlmClient` abstraction. Plans should be able to set `inferenceProvider: GEMINI`, use the existing `run` configuration block, and execute Gemini requests through the Gemini Generate Content API.
 
 The integration must not put transport credentials or API host configuration into plan YAML. Authentication stays environment-driven.
 
 ## Sources
 
 - Google Gemini Generate Content API: <https://ai.google.dev/api/generate-content>
-- Java SDK artifact requested for this project:
-
-```xml
-<dependency>
-  <groupId>com.google.genai</groupId>
-  <artifactId>google-genai</artifactId>
-  <version>1.0.0</version>
-</dependency>
-```
-
-Gradle equivalent:
-
-```gradle
-implementation("com.google.genai:google-genai:1.0.0")
-```
 
 ## Current Architecture Fit
 
@@ -65,39 +50,26 @@ return "gemini-3-flash";
 
 The exact default may be changed later after local verification. Plans should normally set `model` explicitly for thesis runs.
 
-## Java SDK Usage
+## API Usage
 
-Basic client creation:
+The implementation uses the Generate Content REST endpoint directly:
 
-```java
-Client client = Client.builder()
-        .apiKey(apiKey)
-        .build();
+```text
+POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GOOGLE_API_KEY}
 ```
 
-Basic content call:
+No Google SDK dependency is required for the current implementation. The Java SDK version originally considered exposed `thinkingBudget` rather than the requested `thinkingLevel` builder field, so REST is used to preserve the required `Reasoning -> thinkingLevel` mapping exactly.
 
-```java
-GenerateContentResponse response =
-        client.models.generateContent(model, prompt, config);
-```
-
-Response text should be taken from:
-
-```java
-response.text()
-```
-
-If `response.text()` is null or blank, fail with a clear exception. Do not silently accept an empty Gemini response as a valid repetition.
+Response text should be collected from all textual candidate parts under `candidates[].content.parts[].text`, preserving response order and joining multiple parts with newlines. If no non-blank text is present, fail with a clear exception. Do not silently accept an empty Gemini response as a valid repetition.
 
 ## Generation Config Mapping
 
 Map existing `LlmRequestConfig` fields into Gemini `GenerationConfig`:
 
-| `LlmRequestConfig` | Gemini `GenerationConfig` | Notes |
+| `LlmRequestConfig` | Gemini REST `generationConfig` | Notes |
 | --- | --- | --- |
 | `temperature` | `temperature` | Optional, but currently required in plan `run`. |
-| `topP` | `topP` | Optional at SDK level. Required in plan `run`. |
+| `topP` | `topP` | Optional at API level. Required in plan `run`. |
 | `topK` | `topK` | Only set if non-null. Some Gemini models may reject `topK`; propagate the API error with context. |
 | `seed` | `seed` | If plan has `seed: RANDOM`, resolver gives `null`; do not set seed. |
 | `reasoning` | `thinkingConfig.thinkingLevel` | See mapping below. |
@@ -153,13 +125,13 @@ Validation:
 
 ## Token Usage
 
-Gemini responses expose usage metadata through the SDK types. Map what is available into `TokenUsage`:
+Gemini responses expose usage metadata in `usageMetadata`. Map what is available into `TokenUsage`:
 
 - input tokens -> prompt/input token count
 - output tokens -> candidate/output token count
 - total tokens -> total token count
 
-If the Java SDK does not expose one of these values in version `1.0.0`, set that field to `null` rather than inventing a value.
+If the response does not expose one of these values, set that field to `null` rather than inventing a value.
 
 The run log must still store:
 
@@ -216,25 +188,19 @@ run:
 
 ## Implementation Steps
 
-1. Add Gradle dependency:
+1. Add `GeminiClient` using REST Generate Content.
 
-```gradle
-implementation("com.google.genai:google-genai:1.0.0")
-```
+2. Add `GEMINI` enum value to `InferenceProvider`.
 
-2. Add `GeminiClient`.
+3. Use the central `Reasoning` enum and its `geminiThinkingLevel()` mapping.
 
-3. Add `GEMINI` enum value to `InferenceProvider`.
+4. Map Gemini thinking levels inside `GeminiClient`.
 
-4. Use the central `Reasoning` enum and its `geminiThinkingLevel()` mapping.
+5. Map generation parameters from `LlmRequestConfig` into REST `generationConfig`.
 
-5. Map Gemini thinking levels inside `GeminiClient`.
+6. Map response text and token usage into `LlmResponse`.
 
-6. Map generation parameters from `LlmRequestConfig`.
-
-7. Map response text and token usage into `LlmResponse`.
-
-8. Add tests.
+7. Add tests.
 
 ## Tests
 
@@ -258,11 +224,11 @@ implementation("com.google.genai:google-genai:1.0.0")
 - maps `reasoning=off` to Gemini `minimal`.
 - rejects `reasoning=xhigh` before the request.
 - propagates provider errors with model/reasoning context when Gemini rejects a thinking level.
-- extracts `response.text()` into `LlmResponse.text`.
+- extracts `candidates[].content.parts[].text` into `LlmResponse.text`.
 - maps usage metadata when available.
 - fails on blank response text.
 
-Prefer a fake/wrapped Gemini SDK facade for tests if the SDK classes are difficult to instantiate directly. Do not call the real Google API in unit tests.
+Use a local fake HTTP server for unit tests. Do not call the real Google API in unit tests.
 
 ### Optional Manual Smoke Test
 
@@ -277,9 +243,9 @@ Expected:
 - run log is written under `src/main/resources/runs`
 - `inferenceProvider` is `GEMINI`
 - response text is present
-- token usage is present if exposed by SDK
+- token usage is present if exposed by the API response
 
 ## Open Implementation Notes
 
-- Confirm the exact Java SDK builder methods for `GenerateContentConfig`, `GenerationConfig`, and `ThinkingConfig` in `com.google.genai:google-genai:1.0.0` during implementation. The public API docs confirm the REST field names; SDK method names may differ slightly.
+- The Java SDK `com.google.genai:google-genai:1.0.0` exposes `ThinkingConfig.thinkingBudget`, not `thinkingLevel`. Keep REST and no Google SDK dependency until the project chooses a newer SDK version or a different Gemini reasoning abstraction.
 - If `topK` is rejected by a specific Gemini model, keep surfacing the provider error. Do not silently drop `topK`, because thesis runs need the requested parameterization to be explicit.

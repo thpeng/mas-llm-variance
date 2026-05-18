@@ -34,6 +34,22 @@ public enum InferenceProvider {
         }
     },
 
+    GEMINI {
+        @Override
+        public LlmClient createClient() {
+            String apiKey = System.getenv("GOOGLE_API_KEY");
+            if (apiKey == null || apiKey.isBlank()) {
+                throw new IllegalStateException("GOOGLE_API_KEY environment variable is not set.");
+            }
+            return new GeminiClient(apiKey);
+        }
+
+        @Override
+        public String defaultModel() {
+            return "gemini-3-flash";
+        }
+    },
+
     LMSTUDIO {
         @Override
         public LlmClient createClient() {
