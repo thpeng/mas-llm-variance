@@ -57,6 +57,13 @@ class PlanResolverTest {
     }
 
     @Test
+    void acceptsRandomSeed() {
+        ResolvedPlan resolved = resolver.resolve(loadedPlan(), args("--seed=random"));
+
+        assertThat(resolved.seed()).isNull();
+    }
+
+    @Test
     void rejectsUnknownReasoning() {
         assertThatThrownBy(() -> resolver.resolve(loadedPlan(), args("--reasoning=wild")))
                 .isInstanceOf(PlanException.class)
@@ -67,20 +74,41 @@ class PlanResolverTest {
     void fallsBackToInferenceProviderDefaultModel() {
         YamlPlan plan = new YamlPlan();
         plan.setInferenceProvider(InferenceProvider.LMSTUDIO);
-        plan.setPrompt("test prompt");
+        plan.setRun(run("test prompt", 3, 0.2, 1.0, 1, "RANDOM", "off"));
 
         ResolvedPlan resolved = resolver.resolve(new LoadedPlan("0003-no-model", "0003-no-model.yml", plan), args());
 
         assertThat(resolved.model()).isEqualTo(InferenceProvider.LMSTUDIO.defaultModel());
+        assertThat(resolved.seed()).isNull();
     }
 
     @Test
     void rejectsMissingPrompt() {
         YamlPlan plan = new YamlPlan();
+        plan.setRun(run(null, 3, 0.2, 1.0, 1, "RANDOM", "off"));
 
         assertThatThrownBy(() -> resolver.resolve(new LoadedPlan("0003-bad", "0003-bad.yml", plan), args()))
                 .isInstanceOf(PlanException.class)
-                .hasMessageContaining("Missing prompt");
+                .hasMessageContaining("Missing run.prompt");
+    }
+
+    @Test
+    void rejectsMissingRunBlock() {
+        YamlPlan plan = new YamlPlan();
+
+        assertThatThrownBy(() -> resolver.resolve(new LoadedPlan("0003-bad", "0003-bad.yml", plan), args()))
+                .isInstanceOf(PlanException.class)
+                .hasMessageContaining("Missing run block");
+    }
+
+    @Test
+    void rejectsMissingRequiredRunParameter() {
+        YamlPlan plan = new YamlPlan();
+        plan.setRun(run("test prompt", 3, 0.2, null, 1, "RANDOM", "off"));
+
+        assertThatThrownBy(() -> resolver.resolve(new LoadedPlan("0003-bad", "0003-bad.yml", plan), args()))
+                .isInstanceOf(PlanException.class)
+                .hasMessageContaining("Missing run.topP");
     }
 
     @Test
@@ -94,10 +122,28 @@ class PlanResolverTest {
         YamlPlan plan = new YamlPlan();
         plan.setInferenceProvider(InferenceProvider.ANTHROPIC);
         plan.setModel("claude-test");
-        plan.setPrompt("test prompt");
-        plan.setIterations(3);
-        plan.setTemperature(0.2);
+        plan.setRun(run("test prompt", 3, 0.2, 0.9, 4, "123", "off"));
         return new LoadedPlan("0001-test", "0001-test.yml", plan);
+    }
+
+    private static YamlRunConfig run(
+            String prompt,
+            Integer iterations,
+            Double temperature,
+            Double topP,
+            Integer topK,
+            String seed,
+            String reasoning
+    ) {
+        YamlRunConfig run = new YamlRunConfig();
+        run.setPrompt(prompt);
+        run.setIterations(iterations);
+        run.setTemperature(temperature);
+        run.setTopP(topP);
+        run.setTopK(topK);
+        run.setSeed(seed);
+        run.setReasoning(reasoning);
+        return run;
     }
 
     private static DefaultApplicationArguments args(String... args) {

@@ -20,6 +20,16 @@ class PlanLoaderTest {
 
         assertThat(loadedPlan.name()).isEqualTo("0001-rundreise-schweiz");
         assertThat(loadedPlan.plan().getPrompt()).contains("Rundreise");
+        assertThat(((YamlPlan) loadedPlan.plan()).getRun().getSeed()).isEqualTo("RANDOM");
+        assertThat(loadedPlan.plan().getSeed()).isNull();
+        assertThat(((YamlPlan) loadedPlan.plan()).getDescription())
+                .contains("offene Antwort")
+                .contains("Freiheitsgraden.\nDie Reiseplanung")
+                .contains("Detailauswahl");
+        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getClusteringAlgorithm().name())
+                .isEqualTo("HIERARCHICAL");
+        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getHierarchical().getThreshold())
+                .isEqualTo(0.08);
     }
 
     @Test

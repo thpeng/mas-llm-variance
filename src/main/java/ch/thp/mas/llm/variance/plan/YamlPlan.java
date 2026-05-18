@@ -6,6 +6,9 @@ public class YamlPlan implements Plan {
 
     private InferenceProvider inferenceProvider = InferenceProvider.OPENAI;
     private String model;
+    private String description;
+    private YamlRunConfig run;
+    private YamlAnalysisConfig analysis;
     private String prompt;
     private Double temperature;
     private Double topP;
@@ -33,9 +36,33 @@ public class YamlPlan implements Plan {
         this.model = model;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public YamlRunConfig getRun() {
+        return run;
+    }
+
+    public void setRun(YamlRunConfig run) {
+        this.run = run;
+    }
+
+    public YamlAnalysisConfig getAnalysis() {
+        return analysis;
+    }
+
+    public void setAnalysis(YamlAnalysisConfig analysis) {
+        this.analysis = analysis;
+    }
+
     @Override
     public String getPrompt() {
-        return prompt;
+        return run == null ? prompt : run.getPrompt();
     }
 
     public void setPrompt(String prompt) {
@@ -44,7 +71,7 @@ public class YamlPlan implements Plan {
 
     @Override
     public Double getTemperature() {
-        return temperature;
+        return run == null ? temperature : run.getTemperature();
     }
 
     public void setTemperature(Double temperature) {
@@ -53,7 +80,7 @@ public class YamlPlan implements Plan {
 
     @Override
     public Double getTopP() {
-        return topP;
+        return run == null ? topP : run.getTopP();
     }
 
     public void setTopP(Double topP) {
@@ -62,7 +89,7 @@ public class YamlPlan implements Plan {
 
     @Override
     public Integer getTopK() {
-        return topK;
+        return run == null ? topK : run.getTopK();
     }
 
     public void setTopK(Integer topK) {
@@ -71,7 +98,10 @@ public class YamlPlan implements Plan {
 
     @Override
     public Long getSeed() {
-        return seed;
+        if (run == null) {
+            return seed;
+        }
+        return seedFromRun(run.getSeed());
     }
 
     public void setSeed(Long seed) {
@@ -80,7 +110,7 @@ public class YamlPlan implements Plan {
 
     @Override
     public String getReasoning() {
-        return reasoning;
+        return run == null ? reasoning : run.getReasoning();
     }
 
     public void setReasoning(String reasoning) {
@@ -89,7 +119,7 @@ public class YamlPlan implements Plan {
 
     @Override
     public LmStudioLoadConfig getLoad() {
-        return load;
+        return run == null ? load : run.getLoad();
     }
 
     public void setLoad(LmStudioLoadConfig load) {
@@ -98,10 +128,17 @@ public class YamlPlan implements Plan {
 
     @Override
     public int getIterations() {
-        return iterations;
+        return run == null || run.getIterations() == null ? iterations : run.getIterations();
     }
 
     public void setIterations(int iterations) {
         this.iterations = iterations;
+    }
+
+    private static Long seedFromRun(String value) {
+        if (value == null || value.isBlank() || "random".equalsIgnoreCase(value.trim())) {
+            return null;
+        }
+        return Long.parseLong(value);
     }
 }

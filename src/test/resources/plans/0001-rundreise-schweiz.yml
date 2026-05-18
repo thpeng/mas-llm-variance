@@ -1,0 +1,39 @@
+inferenceProvider: ANTHROPIC
+model: claude-sonnet-4-5-20250929
+description: |
+  Szenario fuer eine laengere, offene Antwort mit mehreren inhaltlichen Freiheitsgraden.
+  Die Reiseplanung testet, ob Modelle bei identischem Prompt stabile Stationen, Reihenfolgen
+  und Detailauswahl liefern.
+analysis:
+  embeddingProvider: e5-http
+  embeddingBaseUrl: http://localhost:8000
+  embeddingModel: intfloat/multilingual-e5-large
+  embeddingPrefix: "passage:"
+  maxEmbeddingTokens: 514
+  semanticDistanceMethod: EMBEDDING_COSINE
+  semanticRepresentation: CHUNK_AVERAGE_MIN
+  chunk:
+    targetTokens: 120
+  distance: COSINE
+  clusteringAlgorithm: HIERARCHICAL
+  dbscan:
+    epsilon: 0.15
+    minPts: 2
+  hierarchical:
+    threshold: 0.08
+    linkage: COMPLETE
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+  percentile: NEAREST_RANK
+run:
+  prompt: "gib mir eine Rundreise durch die Schweiz mit 5 Zielen an"
+  iterations: 20
+  temperature: 0.0
+  topP: 1.0
+  topK: 1
+  seed: RANDOM
+  reasoning: off

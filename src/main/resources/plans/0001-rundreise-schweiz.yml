@@ -1,6 +1,0 @@
-inferenceProvider: ANTHROPIC
-model: claude-sonnet-4-5-20250929
-prompt: "gib mir eine Rundreise durch die Schweiz mit 5 Zielen an"
-iterations: 20
-temperature: 0.0
-seed:

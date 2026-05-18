@@ -38,9 +38,6 @@ public class LlmVarianceApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (appArgs.containsOption("analyze")) {
-            if (appArgs.containsOption("plan") || appArgs.containsOption("plans")) {
-                throw new AnalysisException("Analyze mode cannot be combined with --plan or --plans.");
-            }
             analyzeCommand.run(appArgs);
             return;
         }

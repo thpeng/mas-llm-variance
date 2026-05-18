@@ -9,8 +9,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PlanResolver {
 
+    private static final String RANDOM_SEED = "random";
+
     public ResolvedPlan resolve(LoadedPlan loadedPlan, ApplicationArguments appArgs) {
         Plan plan = loadedPlan.plan();
+        requireRunBlock(loadedPlan);
+        requireRunConfiguration(loadedPlan);
         InferenceProvider inferenceProvider = optionValue(appArgs, "inferenceProvider") != null
                 ? parseInferenceProvider(optionValue(appArgs, "inferenceProvider"))
                 : plan.getInferenceProvider();
@@ -46,8 +50,8 @@ public class PlanResolver {
                 ? parseInteger(optionValue(appArgs, "topK"), "topK")
                 : plan.getTopK();
         Long seed = optionValue(appArgs, "seed") != null
-                ? parseLong(optionValue(appArgs, "seed"), "seed")
-                : plan.getSeed();
+                ? parseSeed(optionValue(appArgs, "seed"))
+                : seed(loadedPlan);
         String reasoning = optionValue(appArgs, "reasoning") != null
                 ? optionValue(appArgs, "reasoning")
                 : plan.getReasoning();
@@ -68,6 +72,45 @@ public class PlanResolver {
                 plan.getLoad(),
                 modelVersion
         );
+    }
+
+    private static void requireRunBlock(LoadedPlan loadedPlan) {
+        if (((YamlPlan) loadedPlan.plan()).getRun() == null) {
+            throw new PlanException("Missing run block in plan: " + loadedPlan.filename());
+        }
+    }
+
+    private static void requireRunConfiguration(LoadedPlan loadedPlan) {
+        YamlRunConfig run = ((YamlPlan) loadedPlan.plan()).getRun();
+        requirePresent(run.getPrompt(), "run.prompt", loadedPlan);
+        requirePresent(run.getIterations(), "run.iterations", loadedPlan);
+        requirePresent(run.getTemperature(), "run.temperature", loadedPlan);
+        requirePresent(run.getTopP(), "run.topP", loadedPlan);
+        requirePresent(run.getTopK(), "run.topK", loadedPlan);
+        requirePresent(run.getSeed(), "run.seed", loadedPlan);
+        requirePresent(run.getReasoning(), "run.reasoning", loadedPlan);
+    }
+
+    private static Long seed(LoadedPlan loadedPlan) {
+        String seed = ((YamlPlan) loadedPlan.plan()).getRun().getSeed();
+        requirePresent(seed, "run.seed", loadedPlan);
+        return parseSeed(seed);
+    }
+
+    private static Long parseSeed(String value) {
+        if (RANDOM_SEED.equalsIgnoreCase(value.trim())) {
+            return null;
+        }
+        return parseLong(value, "seed");
+    }
+
+    private static void requirePresent(Object value, String name, LoadedPlan loadedPlan) {
+        if (value == null) {
+            throw new PlanException("Missing " + name + " in plan: " + loadedPlan.filename());
+        }
+        if (value instanceof String string && string.isBlank()) {
+            throw new PlanException("Missing " + name + " in plan: " + loadedPlan.filename());
+        }
     }
 
     private static InferenceProvider parseInferenceProvider(String value) {

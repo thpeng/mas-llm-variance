@@ -167,6 +167,10 @@ public class Analyzer {
 
     public AnalysisResult analyze(NamedRunLog namedRunLog) {
         AnalysisConfig config = configSupplier.get();
+        return analyze(namedRunLog, config);
+    }
+
+    public AnalysisResult analyze(NamedRunLog namedRunLog, AnalysisConfig config) {
         RunLog runLog = namedRunLog.runLog();
         List<String> responses = runLog.repetitions().stream()
                 .map(RunLogEntry::response)

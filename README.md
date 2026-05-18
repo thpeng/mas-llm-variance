@@ -64,31 +64,28 @@ The `LlmClient` abstraction returns an `LlmResponse`, including:
 
 Plan loading and resolution.
 
-Plans are YAML files named with a four-digit prefix:
+Operative plans are YAML files under `src/main/resources/plans` named with a four-digit prefix:
 
 ```text
-0001-rundreise-schweiz.yml
-0002-hauptstadt-798.yml
+0001-<scenario-name>.yml
+0002-<scenario-name>.yml
 ```
 
 The prefix gives plans a natural execution order. The CLI supports:
 
 ```bash
-./gradlew bootRun --args="--plan=0001-rundreise-schweiz"
-./gradlew bootRun --args="--plans=0001-rundreise-schweiz,0002-hauptstadt-798"
+./gradlew bootRun --args="--plan=0001-<scenario-name>"
+./gradlew bootRun --args="--plans=0001-<scenario-name>,0002-<scenario-name>"
 ./gradlew bootRun --args="--plans=ALL"
 ```
 
-A plan defines values such as:
+A plan defines top-level scenario metadata plus explicit `run` and `analysis` blocks. The `run` block contains the prompt, iteration count, temperature, top-p, top-k, seed, and reasoning setting. `seed` may be numeric or `RANDOM`, where `RANDOM` lets the provider/model choose the seed.
 
 - Inference provider
 - Model
-- Prompt
-- Iterations
-- Temperature
-- Top-p
-- Top-k
-- Seed
+- Description
+- Run configuration
+- Analysis configuration
 
 ### `run`
 
@@ -116,7 +113,7 @@ The run logger is intentionally all-or-nothing. If one repetition fails, no part
 
 Analysis of completed run logs.
 
-The analyzer reads JSON run logs and produces JSON analysis files. It is deliberately separated from execution so experiments can be run first and analyzed later.
+The analyzer reads JSON run logs, derives the matching plan YAML from each run log's `planName`, and produces JSON analysis files. It is deliberately separated from execution so experiments can be run first and analyzed later. The plan YAML is required because it contains the `analysis` configuration used for semantic clustering and metric parameters.
 
 CLI:
 
@@ -125,7 +122,7 @@ CLI:
 ./gradlew bootRun --args="--analyze=ALL"
 ```
 
-Run mode and analyze mode are mutually exclusive.
+Run mode and analyze mode are mutually exclusive in behavior: run mode executes plans; analyze mode evaluates existing run logs against the plan YAML named in the run log.
 
 ## Main Analysis Algorithm
 
