@@ -40,11 +40,16 @@ analysis:
     targetTokens: 120
   distance: COSINE
   clusteringAlgorithm: HIERARCHICAL
+  scanIncrement: 0.01
   dbscan:
-    epsilon: 0.15
+    epsilon:
+      from: 0.05
+      to: 0.15
     minPts: 2
   hierarchical:
-    threshold: 0.08
+    threshold:
+      from: 0.03
+      to: 0.12
     linkage: COMPLETE
   bleu:
     maxN: 4
@@ -61,6 +66,8 @@ API connection details such as host URLs and authentication stay outside the pla
 
 All analysis configuration values can be supplied in the YAML. The `analysis` block itself and `analysis.clusteringAlgorithm` are required for analysis. Other omitted values may fall back to the established `AnalysisConfig.defaults()` so existing local tuning remains usable, but the sample plans should declare the full block to make intended thesis runs explicit.
 
+Clustering parameters are scan ranges, not scalar values. `dbscan.epsilon.from/to` or `hierarchical.threshold.from/to` are scanned inclusively using `analysis.scanIncrement` (default `0.01`). The selected `clusteringAlgorithm` controls which range is scanned; the other range is kept in the config for completeness.
+
 ## CLI Behavior
 
 Run mode stays unchanged:
@@ -76,7 +83,7 @@ The repository may keep non-operative example plans under `src/test/resources/pl
 Analyze mode derives the plan from the run log:
 
 ```bash
---analyze=20260517-142141-263-0001-rundreise-schweiz.json
+--analyze=20260517-142141-263-run-0001-rundreise-schweiz.json
 --analyze=ALL
 ```
 

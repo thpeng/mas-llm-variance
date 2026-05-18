@@ -16,7 +16,7 @@ class HierarchicalClustererTest {
 
         int[] labels = new HierarchicalClusterer().cluster(
                 distances,
-                new HierarchicalConfig(0.05, HierarchicalLinkage.COMPLETE)
+                new HierarchicalConfig(ScanRange.ofHundredths(5, 5), HierarchicalLinkage.COMPLETE)
         );
 
         assertThat(labels).containsExactly(0, 0, 1);
@@ -32,7 +32,7 @@ class HierarchicalClustererTest {
 
         int[] labels = new HierarchicalClusterer().cluster(
                 distances,
-                new HierarchicalConfig(0.06, HierarchicalLinkage.AVERAGE)
+                new HierarchicalConfig(ScanRange.ofHundredths(6, 6), HierarchicalLinkage.AVERAGE)
         );
 
         assertThat(labels).containsExactly(0, 0, 0);

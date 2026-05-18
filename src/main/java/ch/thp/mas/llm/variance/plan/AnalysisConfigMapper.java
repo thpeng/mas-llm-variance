@@ -5,8 +5,10 @@ import ch.thp.mas.llm.variance.analyze.AnalysisException;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
+import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,6 +24,7 @@ public class AnalysisConfigMapper {
         }
 
         AnalysisConfig defaults = AnalysisConfig.defaults();
+        double scanIncrement = valueOrDefault(yaml.getScanIncrement(), defaults.scanIncrement());
         return new AnalysisConfig(
                 valueOrDefault(yaml.getEmbeddingProvider(), defaults.embeddingProvider()),
                 valueOrDefault(yaml.getEmbeddingBaseUrl(), defaults.embeddingBaseUrl()),
@@ -33,8 +36,9 @@ public class AnalysisConfigMapper {
                 chunk(yaml, defaults),
                 valueOrDefault(yaml.getDistance(), defaults.distance()),
                 yaml.getClusteringAlgorithm(),
-                dbscan(yaml, defaults),
-                hierarchical(yaml, defaults),
+                scanIncrement,
+                dbscan(yaml, defaults, scanIncrement),
+                hierarchical(yaml, defaults, scanIncrement),
                 bleu(yaml, defaults),
                 rouge(yaml, defaults),
                 valueOrDefault(yaml.getPercentile(), defaults.percentile())
@@ -49,24 +53,25 @@ public class AnalysisConfigMapper {
         return new ChunkConfig(valueOrDefault(chunk.getTargetTokens(), defaults.chunk().targetTokens()));
     }
 
-    private static DbscanConfig dbscan(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
+    private static DbscanConfig dbscan(YamlAnalysisConfig yaml, AnalysisConfig defaults, double scanIncrement) {
         YamlAnalysisConfig.Dbscan dbscan = yaml.getDbscan();
         if (dbscan == null) {
             return defaults.dbscan();
         }
         return new DbscanConfig(
-                valueOrDefault(dbscan.getEpsilon(), defaults.dbscan().epsilon()),
+                rangeOrDefault(dbscan.getEpsilon(), defaults.dbscan().epsilon(), scanIncrement, "analysis.dbscan.epsilon"),
                 valueOrDefault(dbscan.getMinPts(), defaults.dbscan().minPts())
         );
     }
 
-    private static HierarchicalConfig hierarchical(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
+    private static HierarchicalConfig hierarchical(YamlAnalysisConfig yaml, AnalysisConfig defaults, double scanIncrement) {
         YamlAnalysisConfig.Hierarchical hierarchical = yaml.getHierarchical();
         if (hierarchical == null) {
             return defaults.hierarchical();
         }
         return new HierarchicalConfig(
-                valueOrDefault(hierarchical.getThreshold(), defaults.hierarchical().threshold()),
+                rangeOrDefault(hierarchical.getThreshold(), defaults.hierarchical().threshold(), scanIncrement,
+                        "analysis.hierarchical.threshold"),
                 valueOrDefault(hierarchical.getLinkage(), defaults.hierarchical().linkage())
         );
     }
@@ -95,5 +100,42 @@ public class AnalysisConfigMapper {
 
     private static <T> T valueOrDefault(T value, T fallback) {
         return value == null ? fallback : value;
+    }
+
+    private static ScanRange rangeOrDefault(Object raw, ScanRange fallback, double scanIncrement, String name) {
+        if (raw == null) {
+            return fallback;
+        }
+        if (raw instanceof Number) {
+            throw new AnalysisException(name + " must be a range with from/to, not a scalar value.");
+        }
+        Double from;
+        Double to;
+        if (raw instanceof YamlAnalysisConfig.Range range) {
+            from = range.getFrom();
+            to = range.getTo();
+        } else if (raw instanceof Map<?, ?> map) {
+            from = numberValue(map.get("from"), name + ".from");
+            to = numberValue(map.get("to"), name + ".to");
+        } else {
+            throw new AnalysisException(name + " must be a range with from/to.");
+        }
+        if (from == null) {
+            throw new AnalysisException("Missing " + name + ".from");
+        }
+        if (to == null) {
+            throw new AnalysisException("Missing " + name + ".to");
+        }
+        return ScanRange.of(from, to, scanIncrement, name);
+    }
+
+    private static Double numberValue(Object raw, String name) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw instanceof Number number) {
+            return number.doubleValue();
+        }
+        throw new AnalysisException(name + " must be numeric.");
     }
 }

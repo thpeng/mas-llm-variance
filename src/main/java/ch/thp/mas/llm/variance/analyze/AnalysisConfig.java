@@ -1,12 +1,12 @@
 package ch.thp.mas.llm.variance.analyze;
 
-
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.DistanceMetric;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
+import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticDistanceMethod;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
@@ -52,6 +52,7 @@ public record AnalysisConfig(
         ChunkConfig chunk,
         DistanceMetric distance,
         ClusteringAlgorithm clusteringAlgorithm,
+        double scanIncrement,
         DbscanConfig dbscan,
         HierarchicalConfig hierarchical,
         BleuConfig bleu,
@@ -78,6 +79,7 @@ public record AnalysisConfig(
         Objects.requireNonNull(chunk, "chunk must not be null");
         Objects.requireNonNull(distance, "distance must not be null");
         Objects.requireNonNull(clusteringAlgorithm, "clusteringAlgorithm must not be null");
+        ScanRange.incrementHundredths(scanIncrement);
         Objects.requireNonNull(dbscan, "dbscan must not be null");
         Objects.requireNonNull(hierarchical, "hierarchical must not be null");
         Objects.requireNonNull(bleu, "bleu must not be null");
@@ -106,6 +108,8 @@ public record AnalysisConfig(
                 getenv("LLM_VARIANCE_CLUSTERING_ALGORITHM", "hierarchical"));
         HierarchicalLinkage linkage = hierarchicalLinkage(
                 getenv("LLM_VARIANCE_HIERARCHICAL_LINKAGE", "complete"));
+        double scanIncrement = doubleEnv("LLM_VARIANCE_SCAN_INCREMENT", 0.01);
+        double hierarchicalThreshold = doubleEnv("LLM_VARIANCE_HIERARCHICAL_THRESHOLD", 0.08);
         return new AnalysisConfig(
                 provider,
                 baseUrl,
@@ -117,8 +121,12 @@ public record AnalysisConfig(
                 new ChunkConfig(integerEnv("LLM_VARIANCE_CHUNK_TARGET_TOKENS", 120)),
                 DistanceMetric.COSINE,
                 clusteringAlgorithm,
-                new DbscanConfig(0.15, 2),
-                new HierarchicalConfig(doubleEnv("LLM_VARIANCE_HIERARCHICAL_THRESHOLD", 0.08), linkage),
+                scanIncrement,
+                new DbscanConfig(ScanRange.ofHundredths(15, 15), 2),
+                new HierarchicalConfig(
+                        ScanRange.of(hierarchicalThreshold, hierarchicalThreshold, scanIncrement,
+                                "analysis.hierarchical.threshold"),
+                        linkage),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

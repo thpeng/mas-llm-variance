@@ -13,6 +13,6 @@ public class AnalysisFileNameFactory {
         String base = runLogFilename.endsWith(".json")
                 ? runLogFilename.substring(0, runLogFilename.length() - ".json".length())
                 : runLogFilename;
-        return base + "-analysis-" + FORMATTER.format(analyzedAt) + ".json";
+        return base + "-analyze-" + FORMATTER.format(analyzedAt) + ".json";
     }
 }

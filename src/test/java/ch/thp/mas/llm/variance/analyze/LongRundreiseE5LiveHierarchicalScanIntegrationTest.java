@@ -15,6 +15,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalClusterer;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
+import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
@@ -69,21 +70,22 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
 
         AnalysisResult result = analyzer(name, configWithThreshold(threshold))
                 .analyze(new NamedRunLog(name + "-long-rundreise-e5-live-hierarchical.json", runLog(name, responses)));
+        AnalysisScan scan = result.scans().getFirst();
 
         System.out.println(name
                 + " threshold=" + threshold
-                + " clusters=" + result.semantic().clusters().size()
-                + " outliers=" + result.semantic().outliers().size()
-                + " medianDistance=" + result.semantic().pairwiseCosineDistance().median()
-                + " maxDistance=" + result.semantic().pairwiseCosineDistance().max());
+                + " clusters=" + scan.semantic().clusters().size()
+                + " outliers=" + scan.semantic().outliers().size()
+                + " medianDistance=" + scan.semantic().pairwiseCosineDistance().median()
+                + " maxDistance=" + scan.semantic().pairwiseCosineDistance().max());
 
         assertThat(result.config().semanticRepresentation()).isEqualTo(SemanticRepresentation.CHUNK_AVERAGE_MIN);
         assertThat(result.config().clusteringAlgorithm()).isEqualTo(ClusteringAlgorithm.HIERARCHICAL);
-        assertThat(result.semantic().responseCount()).isEqualTo(responses.size());
-        assertThat(result.semantic().clusters()).isNotEmpty();
-        assertThat(result.semantic().clusters().stream().mapToInt(cluster -> cluster.size()).sum()
-                + result.semantic().outliers().size()).isEqualTo(responses.size());
-        assertThat(result.syntactic().clusters()).hasSameSizeAs(result.semantic().clusters());
+        assertThat(scan.semantic().responseCount()).isEqualTo(responses.size());
+        assertThat(scan.semantic().clusters()).isNotEmpty();
+        assertThat(scan.semantic().clusters().stream().mapToInt(cluster -> cluster.size()).sum()
+                + scan.semantic().outliers().size()).isEqualTo(responses.size());
+        assertThat(scan.syntactic().clusters()).hasSameSizeAs(scan.semantic().clusters());
     }
 
     private static List<String> loadAnswers(String answersFilename) throws IOException {
@@ -133,8 +135,10 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
                 new ChunkConfig(1),
                 DistanceMetric.COSINE,
                 ClusteringAlgorithm.HIERARCHICAL,
-                new DbscanConfig(0.15, 2),
-                new HierarchicalConfig(threshold, HierarchicalLinkage.COMPLETE),
+                0.01,
+                new DbscanConfig(ScanRange.ofHundredths(15, 15), 2),
+                new HierarchicalConfig(ScanRange.of(threshold, threshold, 0.01, "analysis.hierarchical.threshold"),
+                        HierarchicalLinkage.COMPLETE),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

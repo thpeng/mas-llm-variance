@@ -14,12 +14,19 @@
     },
     "distance": "COSINE",
     "clusteringAlgorithm": "HIERARCHICAL",
+    "scanIncrement": 0.01,
     "dbscan": {
-      "epsilon": 0.15,
+      "epsilon": {
+        "from": 0.15,
+        "to": 0.15
+      },
       "minPts": 2
     },
     "hierarchical": {
-      "threshold": 0.08,
+      "threshold": {
+        "from": 0.08,
+        "to": 0.08
+      },
       "linkage": "COMPLETE"
     },
     "bleu": {
@@ -44,28 +51,20 @@
     "seed": null,
     "reasoning": "off"
   },
-  "semantic": {
-    "responseCount": 3,
-    "truncatedResponses": 0,
-    "medoid": {
-      "repetitionIndex": 1,
-      "totalDistance": 0.0,
-      "response": "Bern"
-    },
-    "pairwiseCosineDistance": {
-      "count": 3,
-      "min": 0.0,
-      "median": 0.0,
-      "p90": 0.0,
-      "max": 0.0,
-      "mean": 0.0
-    },
-    "clusters": [
-      {
-        "clusterId": 0,
-        "size": 3,
-        "repetitionIndices": [1, 2, 3],
-        "medoidRepetitionIndex": 1,
+  "scans": [
+    {
+      "algorithm": "HIERARCHICAL",
+      "parameter": "threshold",
+      "value": 0.08,
+      "clusterCount": 1,
+      "semantic": {
+        "responseCount": 3,
+        "truncatedResponses": 0,
+        "medoid": {
+          "repetitionIndex": 1,
+          "totalDistance": 0.0,
+          "response": "Bern"
+        },
         "pairwiseCosineDistance": {
           "count": 3,
           "min": 0.0,
@@ -73,49 +72,56 @@
           "p90": 0.0,
           "max": 0.0,
           "mean": 0.0
-        }
-      }
-    ],
-    "outliers": []
-  },
-  "syntactic": {
-    "clusters": [
-      {
-        "clusterId": 0,
-        "pairCount": 3,
-        "rougeLDistance": {
-          "count": 3,
-          "min": 0.0,
-          "median": 0.0,
-          "p90": 0.0,
-          "max": 0.0,
-          "mean": 0.0
         },
-        "bleuDistance": {
-          "count": 3,
-          "min": 0.0,
-          "median": 0.0,
-          "p90": 0.0,
-          "max": 0.0,
-          "mean": 0.0
-        }
+        "clusters": [
+          {
+            "clusterId": 0,
+            "size": 3,
+            "repetitionIndices": [1, 2, 3],
+            "medoidRepetitionIndex": 1,
+            "pairwiseCosineDistance": {
+              "count": 3,
+              "min": 0.0,
+              "median": 0.0,
+              "p90": 0.0,
+              "max": 0.0,
+              "mean": 0.0
+            }
+          }
+        ],
+        "outliers": []
+      },
+      "syntactic": {
+        "clusters": [
+          {
+            "clusterId": 0,
+            "pairCount": 3,
+            "rougeLDistance": {
+              "count": 3,
+              "min": 0.0,
+              "median": 0.0,
+              "p90": 0.0,
+              "max": 0.0,
+              "mean": 0.0
+            },
+            "bleuDistance": {
+              "count": 3,
+              "min": 0.0,
+              "median": 0.0,
+              "p90": 0.0,
+              "max": 0.0,
+              "mean": 0.0
+            }
+          }
+        ]
       }
-    ]
-  },
+    }
+  ],
   "literal": {
     "allResponsesIdentical": true,
     "responseCount": 3,
     "distinctResponseCount": 1,
     "exactMatchRate": 1.0,
-    "clusters": [
-      {
-        "clusterId": 0,
-        "responseCount": 3,
-        "pairCount": 3,
-        "exactMatchPairCount": 3,
-        "exactMatchRate": 1.0,
-        "distinctResponseCount": 1
-      }
-    ]
+    "clusters": []
   }
 }

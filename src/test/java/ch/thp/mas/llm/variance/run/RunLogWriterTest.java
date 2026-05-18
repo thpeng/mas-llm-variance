@@ -29,7 +29,7 @@ class RunLogWriterTest {
         Path written = writer.write(runLog);
 
         assertThat(written).exists();
-        assertThat(written.getFileName().toString()).isEqualTo("20260502-104530-123-0001-test.json");
+        assertThat(written.getFileName().toString()).isEqualTo("20260502-104530-123-run-0001-test.json");
         String json = Files.readString(written);
         assertThat(json).contains("\"planName\":\"0001-test\"");
         assertThat(json).contains("\"response\":\"Vollständige Antwort\"");

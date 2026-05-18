@@ -16,7 +16,7 @@ class RunFileNameFactoryTest {
                 "0001-rundreise-schweiz"
         );
 
-        assertThat(filename).isEqualTo("20260502-104530-123-0001-rundreise-schweiz.json");
+        assertThat(filename).isEqualTo("20260502-104530-123-run-0001-rundreise-schweiz.json");
     }
 
     @Test
@@ -28,6 +28,6 @@ class RunFileNameFactoryTest {
                 "0001-weird/name"
         );
 
-        assertThat(filename).isEqualTo("20260502-104530-123-0001-weird_name.json");
+        assertThat(filename).isEqualTo("20260502-104530-123-run-0001-weird_name.json");
     }
 }

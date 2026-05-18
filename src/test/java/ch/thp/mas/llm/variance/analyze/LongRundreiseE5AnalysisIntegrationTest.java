@@ -8,6 +8,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanClusterer;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
+import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
@@ -77,13 +78,14 @@ class LongRundreiseE5AnalysisIntegrationTest {
 
         AnalysisResult result = analyzer(new CapturedEmbeddingService(capturedResponse), configWithEpsilon(epsilon))
                 .analyze(new NamedRunLog(name + "-long-rundreise-e5.json", runLog(name, responses)));
+        AnalysisScan scan = result.scans().getFirst();
 
-        assertThat(result.semantic().responseCount()).isEqualTo(responses.size());
-        assertThat(result.semantic().pairwiseCosineDistance().count())
+        assertThat(scan.semantic().responseCount()).isEqualTo(responses.size());
+        assertThat(scan.semantic().pairwiseCosineDistance().count())
                 .isEqualTo(responses.size() * (responses.size() - 1) / 2);
-        assertThat(result.semantic().clusters()).isNotEmpty();
-        assertThat(result.semantic().medoid().response()).isIn(responses);
-        assertThat(result.syntactic().clusters()).hasSameSizeAs(result.semantic().clusters());
+        assertThat(scan.semantic().clusters()).isNotEmpty();
+        assertThat(scan.semantic().medoid().response()).isIn(responses);
+        assertThat(scan.syntactic().clusters()).hasSameSizeAs(scan.semantic().clusters());
     }
 
     private static List<String> loadAnswers(String answersFilename) throws IOException {
@@ -143,7 +145,9 @@ class LongRundreiseE5AnalysisIntegrationTest {
                 defaults.chunk(),
                 defaults.distance(),
                 ClusteringAlgorithm.DBSCAN,
-                new DbscanConfig(epsilon, defaults.dbscan().minPts()),
+                defaults.scanIncrement(),
+                new DbscanConfig(ScanRange.of(epsilon, epsilon, defaults.scanIncrement(), "analysis.dbscan.epsilon"),
+                        defaults.dbscan().minPts()),
                 defaults.hierarchical(),
                 defaults.bleu(),
                 defaults.rouge(),

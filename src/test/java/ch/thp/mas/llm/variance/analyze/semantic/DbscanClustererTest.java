@@ -14,7 +14,7 @@ class DbscanClustererTest {
                 {0.9, 0.9, 0.0}
         };
 
-        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(0.2, 2));
+        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(ScanRange.ofHundredths(20, 20), 2));
 
         assertThat(labels).containsExactly(0, 0, -1);
     }
@@ -28,7 +28,7 @@ class DbscanClustererTest {
                 {0.9, 0.8, 0.1, 0.0}
         };
 
-        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(0.2, 2));
+        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(ScanRange.ofHundredths(20, 20), 2));
 
         assertThat(labels).containsExactly(0, 0, 1, 1);
     }
@@ -41,7 +41,7 @@ class DbscanClustererTest {
                 {0.9, 0.9, 0.0}
         };
 
-        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(0.2, 2));
+        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(ScanRange.ofHundredths(20, 20), 2));
 
         assertThat(labels).containsExactly(-1, -1, -1);
     }
@@ -54,7 +54,7 @@ class DbscanClustererTest {
                 {0.5, 0.5, 0.0}
         };
 
-        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(0.0, 2));
+        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(ScanRange.ofHundredths(0, 0), 2));
 
         assertThat(labels).containsExactly(0, 0, -1);
     }
@@ -67,7 +67,7 @@ class DbscanClustererTest {
                 {0.9, 0.9, 0.0}
         };
 
-        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(0.2, 1));
+        int[] labels = new DbscanClusterer().cluster(distances, new DbscanConfig(ScanRange.ofHundredths(20, 20), 1));
 
         assertThat(labels).containsExactly(0, 1, 2);
     }

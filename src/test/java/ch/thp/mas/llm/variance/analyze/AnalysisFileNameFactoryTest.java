@@ -15,6 +15,6 @@ class AnalysisFileNameFactoryTest {
         );
 
         assertThat(filename)
-                .isEqualTo("20260502-104530-123-0001-rundreise-schweiz-analysis-20260502-111500-000.json");
+                .isEqualTo("20260502-104530-123-0001-rundreise-schweiz-analyze-20260502-111500-000.json");
     }
 }

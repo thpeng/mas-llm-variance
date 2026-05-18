@@ -162,11 +162,16 @@ analysis:
     targetTokens: 120
   distance: COSINE
   clusteringAlgorithm: HIERARCHICAL
+  scanIncrement: 0.01
   dbscan:
-    epsilon: 0.15
+    epsilon:
+      from: 0.05
+      to: 0.15
     minPts: 2
   hierarchical:
-    threshold: 0.08
+    threshold:
+      from: 0.03
+      to: 0.12
     linkage: COMPLETE
   bleu:
     maxN: 4

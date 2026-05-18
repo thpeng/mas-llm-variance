@@ -9,6 +9,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.DistanceMetric;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
+import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
@@ -166,8 +167,9 @@ class E5HttpEmbeddingServiceTest {
                 new ChunkConfig(120),
                 DistanceMetric.COSINE,
                 ClusteringAlgorithm.DBSCAN,
-                new DbscanConfig(0.15, 2),
-                new HierarchicalConfig(0.08, HierarchicalLinkage.COMPLETE),
+                0.01,
+                new DbscanConfig(ScanRange.ofHundredths(15, 15), 2),
+                new HierarchicalConfig(ScanRange.ofHundredths(8, 8), HierarchicalLinkage.COMPLETE),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

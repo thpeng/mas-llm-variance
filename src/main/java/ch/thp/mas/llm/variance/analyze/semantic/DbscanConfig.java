@@ -3,7 +3,7 @@ package ch.thp.mas.llm.variance.analyze.semantic;
 /**
  * Configuration parameters for {@link DbscanClusterer}.
  *
- * @param epsilon maximum distance (inclusive) at which two points are
+ * @param epsilon scan range for the maximum distance (inclusive) at which two points are
  *                considered neighbors. A candidate {@code j} is in the
  *                epsilon-neighborhood of {@code i} iff
  *                {@code distances[i][j] <= epsilon}. The unit and scale of
@@ -18,12 +18,10 @@ package ch.thp.mas.llm.variance.analyze.semantic;
  *                data the heuristic {@code minPts = 2 * dim} is often cited
  *                (Ester et al., 1996; Sander et al., 1998).
  */
-public record DbscanConfig(double epsilon, int minPts) {
+public record DbscanConfig(ScanRange epsilon, int minPts) {
 
     public DbscanConfig {
-        if (epsilon < 0) {
-            throw new IllegalArgumentException("epsilon must be non-negative");
-        }
+        java.util.Objects.requireNonNull(epsilon, "epsilon must not be null");
         if (minPts < 1) {
             throw new IllegalArgumentException("minPts must be at least 1");
         }

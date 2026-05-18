@@ -8,14 +8,18 @@ import org.springframework.stereotype.Component;
 public class HierarchicalClusterer {
 
     public int[] cluster(double[][] distances, HierarchicalConfig config) {
+        return cluster(distances, config.threshold().from(), config.linkage());
+    }
+
+    public int[] cluster(double[][] distances, double threshold, HierarchicalLinkage linkage) {
         List<List<Integer>> clusters = new ArrayList<>();
         for (int i = 0; i < distances.length; i++) {
             clusters.add(new ArrayList<>(List.of(i)));
         }
 
         while (clusters.size() > 1) {
-            MergeCandidate candidate = closest(clusters, distances, config.linkage());
-            if (candidate.distance() > config.threshold()) {
+            MergeCandidate candidate = closest(clusters, distances, linkage);
+            if (candidate.distance() > threshold) {
                 break;
             }
             clusters.get(candidate.left()).addAll(clusters.get(candidate.right()));

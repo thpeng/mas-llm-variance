@@ -14,6 +14,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalClusterer;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
+import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
@@ -45,17 +46,19 @@ class AnalyzerTest {
         );
 
         AnalysisResult result = analyzer.analyze(new NamedRunLog("run.json", runLog()));
+        AnalysisScan scan = firstScan(result);
 
         assertThat(result.sourceRun()).isEqualTo("run.json");
-        assertThat(result.semantic().responseCount()).isEqualTo(3);
+        assertThat(result.scans()).hasSize(1);
+        assertThat(scan.semantic().responseCount()).isEqualTo(3);
         assertThat(result.config().clusteringAlgorithm()).isEqualTo(ClusteringAlgorithm.HIERARCHICAL);
-        assertThat(result.semantic().clusters()).hasSize(2);
-        assertThat(result.semantic().clusters().getFirst().repetitionIndices()).containsExactly(1, 2);
-        assertThat(result.semantic().clusters().get(1).repetitionIndices()).containsExactly(3);
-        assertThat(result.semantic().outliers()).isEmpty();
-        assertThat(result.syntactic().clusters().getFirst().pairCount()).isEqualTo(1);
+        assertThat(scan.semantic().clusters()).hasSize(2);
+        assertThat(scan.clusterCount()).isEqualTo(2);
+        assertThat(scan.semantic().clusters().getFirst().repetitionIndices()).containsExactly(1, 2);
+        assertThat(scan.semantic().clusters().get(1).repetitionIndices()).containsExactly(3);
+        assertThat(scan.semantic().outliers()).isEmpty();
+        assertThat(scan.syntactic().clusters().getFirst().pairCount()).isEqualTo(1);
         assertThat(result.literal().responseCount()).isEqualTo(3);
-        assertThat(result.literal().clusters().getFirst().pairCount()).isEqualTo(1);
     }
 
     @Test
@@ -67,17 +70,18 @@ class AnalyzerTest {
         ));
 
         AnalysisResult result = analyzer.analyze(new NamedRunLog("single-word-capital.json", stableRunLog()));
+        AnalysisScan scan = firstScan(result);
 
-        assertThat(result.semantic().clusters()).hasSize(1);
-        assertThat(result.semantic().outliers()).isEmpty();
-        assertThat(result.semantic().medoid().repetitionIndex()).isEqualTo(1);
-        assertThat(result.semantic().pairwiseCosineDistance().max()).isEqualTo(0.0);
-        assertThat(result.syntactic().clusters().getFirst().pairCount()).isEqualTo(3);
-        assertThat(result.syntactic().clusters().getFirst().rougeLDistance().median()).isEqualTo(0.0);
-        assertThat(result.syntactic().clusters().getFirst().bleuDistance().median()).isEqualTo(0.0);
+        assertThat(scan.semantic().clusters()).hasSize(1);
+        assertThat(scan.clusterCount()).isEqualTo(1);
+        assertThat(scan.semantic().outliers()).isEmpty();
+        assertThat(scan.semantic().medoid().repetitionIndex()).isEqualTo(1);
+        assertThat(scan.semantic().pairwiseCosineDistance().max()).isEqualTo(0.0);
+        assertThat(scan.syntactic().clusters().getFirst().pairCount()).isEqualTo(3);
+        assertThat(scan.syntactic().clusters().getFirst().rougeLDistance().median()).isEqualTo(0.0);
+        assertThat(scan.syntactic().clusters().getFirst().bleuDistance().median()).isEqualTo(0.0);
         assertThat(result.literal().allResponsesIdentical()).isTrue();
         assertThat(result.literal().exactMatchRate()).isEqualTo(1.0);
-        assertThat(result.literal().clusters().getFirst().exactMatchRate()).isEqualTo(1.0);
     }
 
     @Test
@@ -95,16 +99,16 @@ class AnalyzerTest {
                 "Die Reise startet in Genf.",
                 "Eine Rundreise startet in Genf."
         )));
+        AnalysisScan scan = firstScan(result);
 
-        assertThat(result.semantic().clusters()).hasSize(2);
-        assertThat(result.semantic().clusters().get(0).repetitionIndices()).containsExactly(1, 2);
-        assertThat(result.semantic().clusters().get(1).repetitionIndices()).containsExactly(3, 4);
-        assertThat(result.semantic().outliers()).isEmpty();
-        assertThat(result.syntactic().clusters()).extracting(SyntacticCluster::pairCount)
+        assertThat(scan.semantic().clusters()).hasSize(2);
+        assertThat(scan.clusterCount()).isEqualTo(2);
+        assertThat(scan.semantic().clusters().get(0).repetitionIndices()).containsExactly(1, 2);
+        assertThat(scan.semantic().clusters().get(1).repetitionIndices()).containsExactly(3, 4);
+        assertThat(scan.semantic().outliers()).isEmpty();
+        assertThat(scan.syntactic().clusters()).extracting(SyntacticCluster::pairCount)
                 .containsExactly(1, 1);
         assertThat(result.literal().allResponsesIdentical()).isFalse();
-        assertThat(result.literal().clusters()).extracting(cluster -> cluster.exactMatchRate())
-                .containsExactly(0.0, 0.0);
     }
 
     @Test
@@ -116,7 +120,34 @@ class AnalyzerTest {
 
         AnalysisResult result = analyzer.analyze(new NamedRunLog("truncated.json", runLog("Bern", "Bern")));
 
-        assertThat(result.semantic().truncatedResponses()).isEqualTo(1);
+        assertThat(firstScan(result).semantic().truncatedResponses()).isEqualTo(1);
+    }
+
+    @Test
+    void scansHierarchicalThresholdRangeInAscendingOrder() {
+        AnalysisConfig config = config(
+                SemanticRepresentation.FULL_TEXT,
+                ClusteringAlgorithm.HIERARCHICAL,
+                new HierarchicalConfig(ScanRange.of(0.03, 0.05, 0.01, "analysis.hierarchical.threshold"),
+                        HierarchicalLinkage.COMPLETE)
+        );
+        Analyzer analyzer = analyzer((texts, ignored) -> List.of(
+                new EmbeddingResult(new double[]{1, 0}, false),
+                new EmbeddingResult(new double[]{1, 0}, false),
+                new EmbeddingResult(new double[]{0, 1}, false)
+        ), config);
+
+        AnalysisResult result = analyzer.analyze(new NamedRunLog("scan.json", runLog()));
+
+        assertThat(result.scans()).extracting(AnalysisScan::parameter)
+                .containsExactly("threshold", "threshold", "threshold");
+        assertThat(result.scans()).extracting(AnalysisScan::value)
+                .containsExactly(0.03, 0.04, 0.05);
+        assertThat(result.scans()).extracting(AnalysisScan::clusterCount)
+                .containsExactly(2, 2, 2);
+        assertThat(result.scans()).allSatisfy(scan ->
+                assertThat(scan.syntactic().clusters()).hasSameSizeAs(scan.semantic().clusters()));
+        assertThat(result.literal().responseCount()).isEqualTo(3);
     }
 
     @Test
@@ -124,7 +155,8 @@ class AnalyzerTest {
         AnalysisConfig config = config(
                 SemanticRepresentation.CHUNK_AVERAGE_MIN,
                 ClusteringAlgorithm.HIERARCHICAL,
-                new HierarchicalConfig(0.1, HierarchicalLinkage.COMPLETE)
+                new HierarchicalConfig(ScanRange.of(0.1, 0.1, 0.01, "analysis.hierarchical.threshold"),
+                        HierarchicalLinkage.COMPLETE)
         );
         Analyzer analyzer = analyzer((texts, ignored) -> texts.stream()
                 .map(text -> {
@@ -143,13 +175,14 @@ class AnalyzerTest {
                 "Gemeinsame Einleitung.\n\nLausanne als Abschluss.",
                 "Gemeinsame Einleitung.\n\nBasel als Abschluss."
         )));
+        AnalysisScan scan = firstScan(result);
 
         assertThat(result.config().semanticRepresentation()).isEqualTo(SemanticRepresentation.CHUNK_AVERAGE_MIN);
         assertThat(result.config().clusteringAlgorithm()).isEqualTo(ClusteringAlgorithm.HIERARCHICAL);
-        assertThat(result.semantic().clusters()).hasSize(2);
-        assertThat(result.semantic().clusters().get(0).repetitionIndices()).containsExactly(1, 3);
-        assertThat(result.semantic().clusters().get(1).repetitionIndices()).containsExactly(2);
-        assertThat(result.semantic().outliers()).isEmpty();
+        assertThat(scan.semantic().clusters()).hasSize(2);
+        assertThat(scan.semantic().clusters().get(0).repetitionIndices()).containsExactly(1, 3);
+        assertThat(scan.semantic().clusters().get(1).repetitionIndices()).containsExactly(2);
+        assertThat(scan.semantic().outliers()).isEmpty();
     }
 
     @Test
@@ -266,12 +299,17 @@ class AnalyzerTest {
                 new ChunkConfig(4),
                 defaults.distance(),
                 clusteringAlgorithm,
+                defaults.scanIncrement(),
                 defaults.dbscan(),
                 hierarchicalConfig,
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()
         );
+    }
+
+    private static AnalysisScan firstScan(AnalysisResult result) {
+        return result.scans().getFirst();
     }
 
     private static ObjectMapper objectMapper() {

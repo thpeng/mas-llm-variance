@@ -59,6 +59,10 @@ public class DbscanClusterer {
      *         is either a non-negative cluster ID or {@code -1} for noise
      */
     public int[] cluster(double[][] distances, DbscanConfig config) {
+        return cluster(distances, config.epsilon().from(), config.minPts());
+    }
+
+    public int[] cluster(double[][] distances, double epsilon, int minPts) {
         int[] labels = new int[distances.length];
         Arrays.fill(labels, UNVISITED);
         int clusterId = 0;
@@ -67,12 +71,12 @@ public class DbscanClusterer {
             if (labels[point] != UNVISITED) {
                 continue;
             }
-            int[] neighbors = neighbors(distances, point, config.epsilon());
-            if (neighbors.length < config.minPts()) {
+            int[] neighbors = neighbors(distances, point, epsilon);
+            if (neighbors.length < minPts) {
                 labels[point] = NOISE;
                 continue;
             }
-            expandCluster(distances, labels, point, neighbors, clusterId, config);
+            expandCluster(distances, labels, point, neighbors, clusterId, epsilon, minPts);
             clusterId++;
         }
         return labels;
@@ -89,7 +93,8 @@ public class DbscanClusterer {
             int point,
             int[] neighbors,
             int clusterId,
-            DbscanConfig config
+            double epsilon,
+            int minPts
     ) {
         labels[point] = clusterId;
         Queue<Integer> queue = new ArrayDeque<>();
@@ -106,8 +111,8 @@ public class DbscanClusterer {
                 continue;
             }
             labels[current] = clusterId;
-            int[] currentNeighbors = neighbors(distances, current, config.epsilon());
-            if (currentNeighbors.length >= config.minPts()) {
+            int[] currentNeighbors = neighbors(distances, current, epsilon);
+            if (currentNeighbors.length >= minPts) {
                 for (int neighbor : currentNeighbors) {
                     queue.add(neighbor);
                 }

@@ -104,7 +104,7 @@ For each resolved plan, the runner:
 Run log files are timestamped:
 
 ```text
-yyyyMMdd-HHmmss-SSS-<plan-name>.json
+yyyyMMdd-HHmmss-SSS-run-<plan-name>.json
 ```
 
 The run logger is intentionally all-or-nothing. If one repetition fails, no partial log is written.
@@ -136,12 +136,33 @@ The semantic analysis follows this pipeline:
 2. Transform each response into an embedding.
 3. Compute pairwise cosine distances between embeddings.
 4. Select the medoid: the response with the lowest total distance to all other responses.
-5. Cluster responses with hierarchical clustering by default, or DBSCAN when explicitly configured.
-6. Report cluster structure, outliers, medoid, and distance summaries.
+5. Build an inclusive scan range for the selected clustering algorithm.
+6. Cluster responses once per scan value with hierarchical clustering by default, or DBSCAN when explicitly configured.
+7. Report one semantic and syntactic result per scan value, including the cluster count, plus one literal result for the whole run.
 
 The medoid is the typical answer in the run. It is not a correctness reference.
 
 Hierarchical clustering is the default because it avoids DBSCAN-style chaining effects in longer generated texts. It is configured with complete linkage by default, so two clusters are merged only when the most distant response pair still stays below the configured threshold. DBSCAN remains available for epsilon scans and explicit outlier detection when that behavior is desired.
+
+The scan does not choose the best threshold automatically. It makes cluster stability visible across nearby parameter values; interpreting plateaus or selecting an operational value is a downstream analysis step.
+
+Example analysis configuration:
+
+```yaml
+analysis:
+  clusteringAlgorithm: HIERARCHICAL
+  scanIncrement: 0.01
+  dbscan:
+    epsilon:
+      from: 0.05
+      to: 0.15
+    minPts: 2
+  hierarchical:
+    threshold:
+      from: 0.03
+      to: 0.12
+    linkage: COMPLETE
+```
 
 Current note: the executable implementation integrates with a WSL-hosted FastAPI service for `intfloat/multilingual-e5-large` on `http://localhost:8000`. A deterministic local hashing embedding service remains available for development and tests via `LLM_VARIANCE_EMBEDDING_PROVIDER=local-hashing`, but it is not a real semantic model.
 

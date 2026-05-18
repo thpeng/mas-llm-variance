@@ -20,6 +20,7 @@ public class YamlAnalysisConfig {
     private Chunk chunk;
     private DistanceMetric distance;
     private ClusteringAlgorithm clusteringAlgorithm;
+    private Double scanIncrement;
     private Dbscan dbscan;
     private Hierarchical hierarchical;
     private Bleu bleu;
@@ -106,6 +107,14 @@ public class YamlAnalysisConfig {
         this.clusteringAlgorithm = clusteringAlgorithm;
     }
 
+    public Double getScanIncrement() {
+        return scanIncrement;
+    }
+
+    public void setScanIncrement(Double scanIncrement) {
+        this.scanIncrement = scanIncrement;
+    }
+
     public Dbscan getDbscan() {
         return dbscan;
     }
@@ -159,14 +168,14 @@ public class YamlAnalysisConfig {
     }
 
     public static class Dbscan {
-        private Double epsilon;
+        private Object epsilon;
         private Integer minPts;
 
-        public Double getEpsilon() {
+        public Object getEpsilon() {
             return epsilon;
         }
 
-        public void setEpsilon(Double epsilon) {
+        public void setEpsilon(Object epsilon) {
             this.epsilon = epsilon;
         }
 
@@ -180,14 +189,14 @@ public class YamlAnalysisConfig {
     }
 
     public static class Hierarchical {
-        private Double threshold;
+        private Object threshold;
         private HierarchicalLinkage linkage;
 
-        public Double getThreshold() {
+        public Object getThreshold() {
             return threshold;
         }
 
-        public void setThreshold(Double threshold) {
+        public void setThreshold(Object threshold) {
             this.threshold = threshold;
         }
 
@@ -239,6 +248,27 @@ public class YamlAnalysisConfig {
 
         public void setAggregation(RougeConfig.Aggregation aggregation) {
             this.aggregation = aggregation;
+        }
+    }
+
+    public static class Range {
+        private Double from;
+        private Double to;
+
+        public Double getFrom() {
+            return from;
+        }
+
+        public void setFrom(Double from) {
+            this.from = from;
+        }
+
+        public Double getTo() {
+            return to;
+        }
+
+        public void setTo(Double to) {
+            this.to = to;
         }
     }
 }

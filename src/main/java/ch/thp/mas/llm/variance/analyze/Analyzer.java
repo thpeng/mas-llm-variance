@@ -5,6 +5,7 @@ import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
+import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.analyze.semantic.CosineDistance;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanClusterer;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalClusterer;
@@ -182,32 +183,86 @@ public class Analyzer {
         SemanticEmbeddings semanticEmbeddings = semanticEmbeddings(responses, config);
         double[][] distances = semanticEmbeddings.distances();
         Medoid medoid = medoidSelector.select(distances);
-        int[] labels = cluster(distances, config);
-        List<SemanticCluster> semanticClusters = semanticClusters(labels, distances);
-        SemanticAnalysis semanticAnalysis = new SemanticAnalysis(
-                responses.size(),
-                semanticEmbeddings.truncatedResponses(),
-                new MedoidAnalysis(
-                        medoid.index() + 1,
-                        medoid.totalDistance(),
-                        responses.get(medoid.index())
-                ),
-                summaryStatistics.summarize(upperTriangle(distances)),
-                semanticClusters,
-                outliers(labels)
+        MedoidAnalysis medoidAnalysis = new MedoidAnalysis(
+                medoid.index() + 1,
+                medoid.totalDistance(),
+                responses.get(medoid.index())
         );
-        SyntacticAnalysis syntacticAnalysis = new SyntacticAnalysis(syntacticClusters(semanticClusters, responses, config));
-        LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses, semanticClusters);
+        MetricSummary pairwiseSummary = summaryStatistics.summarize(upperTriangle(distances));
+        List<AnalysisScan> scans = scans(responses, config, semanticEmbeddings, distances, medoidAnalysis, pairwiseSummary);
+        LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses);
 
         return new AnalysisResult(
                 namedRunLog.filename(),
                 runClock.now(),
                 config,
                 runInfo(runLog),
-                semanticAnalysis,
-                syntacticAnalysis,
+                scans,
                 literalAnalysis
         );
+    }
+
+    private List<AnalysisScan> scans(
+            List<String> responses,
+            AnalysisConfig config,
+            SemanticEmbeddings semanticEmbeddings,
+            double[][] distances,
+            MedoidAnalysis medoidAnalysis,
+            MetricSummary pairwiseSummary
+    ) {
+        return switch (config.clusteringAlgorithm()) {
+            case DBSCAN -> config.dbscan().epsilon().values(config.scanIncrement()).stream()
+                    .map(value -> scan(
+                            ClusteringAlgorithm.DBSCAN,
+                            "epsilon",
+                            value,
+                            dbscanClusterer.cluster(distances, value, config.dbscan().minPts()),
+                            responses,
+                            config,
+                            semanticEmbeddings,
+                            distances,
+                            medoidAnalysis,
+                            pairwiseSummary))
+                    .toList();
+            case HIERARCHICAL -> config.hierarchical().threshold().values(config.scanIncrement()).stream()
+                    .map(value -> scan(
+                            ClusteringAlgorithm.HIERARCHICAL,
+                            "threshold",
+                            value,
+                            hierarchicalClusterer.cluster(distances, value, config.hierarchical().linkage()),
+                            responses,
+                            config,
+                            semanticEmbeddings,
+                            distances,
+                            medoidAnalysis,
+                            pairwiseSummary))
+                    .toList();
+        };
+    }
+
+    private AnalysisScan scan(
+            ClusteringAlgorithm algorithm,
+            String parameter,
+            double value,
+            int[] labels,
+            List<String> responses,
+            AnalysisConfig config,
+            SemanticEmbeddings semanticEmbeddings,
+            double[][] distances,
+            MedoidAnalysis medoidAnalysis,
+            MetricSummary pairwiseSummary
+    ) {
+        List<SemanticCluster> semanticClusters = semanticClusters(labels, distances);
+        SemanticAnalysis semanticAnalysis = new SemanticAnalysis(
+                responses.size(),
+                semanticEmbeddings.truncatedResponses(),
+                medoidAnalysis,
+                pairwiseSummary,
+                semanticClusters,
+                outliers(labels)
+        );
+        SyntacticAnalysis syntacticAnalysis = new SyntacticAnalysis(syntacticClusters(semanticClusters, responses, config));
+        return new AnalysisScan(algorithm, parameter, value, semanticClusters.size(), semanticAnalysis, syntacticAnalysis);
     }
 
     private SemanticEmbeddings semanticEmbeddings(List<String> responses, AnalysisConfig config) {
@@ -255,13 +310,6 @@ public class Analyzer {
             }
         }
         return new SemanticEmbeddings(distances, truncatedResponses);
-    }
-
-    private int[] cluster(double[][] distances, AnalysisConfig config) {
-        return switch (config.clusteringAlgorithm()) {
-            case DBSCAN -> dbscanClusterer.cluster(distances, config.dbscan());
-            case HIERARCHICAL -> hierarchicalClusterer.cluster(distances, config.hierarchical());
-        };
     }
 
     private AnalysisRunInfo runInfo(RunLog runLog) {

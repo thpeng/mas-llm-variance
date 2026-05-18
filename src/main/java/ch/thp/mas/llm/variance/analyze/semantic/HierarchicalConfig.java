@@ -2,12 +2,10 @@ package ch.thp.mas.llm.variance.analyze.semantic;
 
 import java.util.Objects;
 
-public record HierarchicalConfig(double threshold, HierarchicalLinkage linkage) {
+public record HierarchicalConfig(ScanRange threshold, HierarchicalLinkage linkage) {
 
     public HierarchicalConfig {
-        if (threshold < 0) {
-            throw new IllegalArgumentException("threshold must be non-negative");
-        }
+        Objects.requireNonNull(threshold, "threshold must not be null");
         Objects.requireNonNull(linkage, "linkage must not be null");
     }
 }

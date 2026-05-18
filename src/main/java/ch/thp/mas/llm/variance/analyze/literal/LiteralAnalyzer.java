@@ -23,6 +23,17 @@ public class LiteralAnalyzer {
         );
     }
 
+    public LiteralAnalysis analyze(List<String> responses) {
+        PairStats runStats = pairStats(responses);
+        return new LiteralAnalysis(
+                distinctResponseCount(responses) <= 1,
+                responses.size(),
+                distinctResponseCount(responses),
+                runStats.exactMatchRate(),
+                List.of()
+        );
+    }
+
     private LiteralClusterAnalysis clusterAnalysis(SemanticCluster cluster, List<String> responses) {
         List<String> clusterResponses = cluster.repetitionIndices().stream()
                 .map(index -> responses.get(index - 1))

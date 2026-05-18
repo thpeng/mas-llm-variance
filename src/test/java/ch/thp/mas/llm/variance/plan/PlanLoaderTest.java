@@ -29,7 +29,9 @@ class PlanLoaderTest {
         assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getClusteringAlgorithm().name())
                 .isEqualTo("HIERARCHICAL");
         assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getHierarchical().getThreshold())
-                .isEqualTo(0.08);
+                .isInstanceOfSatisfying(java.util.Map.class, threshold -> assertThat(threshold)
+                        .containsEntry("from", 0.08)
+                        .containsEntry("to", 0.08));
     }
 
     @Test
