@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.analyze;
 
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalysis;
+import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalysis;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalysis;
 import ch.thp.mas.llm.variance.analyze.route.RouteAnalysis;
@@ -16,6 +17,7 @@ public record AnalysisResult(
         RouteAnalysis route,
         FactualTravelInfoAnalysis factualTravelInfo,
         LiteralFormatTravelerGuidanceAnalysis literalFormatTravelerGuidance,
+        CreativeMarketingTextAnalysis creativeMarketingText,
         LiteralAnalysis literal
 ) {
 }

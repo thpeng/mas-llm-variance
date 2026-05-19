@@ -2,6 +2,7 @@ package ch.thp.mas.llm.variance.plan;
 
 import ch.thp.mas.llm.variance.analyze.AnalysisConfig;
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
+import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextConfig;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
@@ -45,6 +46,7 @@ public class AnalysisConfigMapper {
                 route(yaml, defaults),
                 factualTravelInfo(yaml, defaults),
                 literalFormatTravelerGuidance(yaml, defaults),
+                creativeMarketingText(yaml, defaults),
                 bleu(yaml, defaults),
                 rouge(yaml, defaults),
                 valueOrDefault(yaml.getPercentile(), defaults.percentile())
@@ -112,6 +114,18 @@ public class AnalysisConfigMapper {
         }
         return new LiteralFormatTravelerGuidanceConfig(
                 valueOrDefault(config.getReference(), defaults.literalFormatTravelerGuidance().reference())
+        );
+    }
+
+    private static CreativeMarketingTextConfig creativeMarketingText(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
+        YamlAnalysisConfig.CreativeMarketingText config = yaml.getCreativeMarketingText();
+        if (config == null) {
+            return defaults.creativeMarketingText();
+        }
+        return new CreativeMarketingTextConfig(
+                valueOrDefault(config.getExpectedSentenceCount(),
+                        defaults.creativeMarketingText().expectedSentenceCount()),
+                valueOrDefault(config.getRequiredTerm(), defaults.creativeMarketingText().requiredTerm())
         );
     }
 

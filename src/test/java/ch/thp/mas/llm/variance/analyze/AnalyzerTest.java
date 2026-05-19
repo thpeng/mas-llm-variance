@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
+import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
@@ -279,6 +280,7 @@ class AnalyzerTest {
                 new RouteAnalyzer(new RouteStationExtractor()),
                 new FactualTravelInfoAnalyzer(),
                 new LiteralFormatTravelerGuidanceAnalyzer(),
+                new CreativeMarketingTextAnalyzer(),
                 new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
@@ -312,6 +314,7 @@ class AnalyzerTest {
                 defaults.route(),
                 defaults.factualTravelInfo(),
                 defaults.literalFormatTravelerGuidance(),
+                defaults.creativeMarketingText(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

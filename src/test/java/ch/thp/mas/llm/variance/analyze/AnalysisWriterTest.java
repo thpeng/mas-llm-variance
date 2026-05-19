@@ -68,6 +68,7 @@ class AnalysisWriterTest {
                 null,
                 null,
                 null,
+                null,
                 new LiteralAnalysis(true, 1, 1, 1.0, List.of())
         );
     }

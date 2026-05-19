@@ -2,10 +2,10 @@ package ch.thp.mas.llm.variance.analyze;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
 import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoStatus;
+import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextConfig;
+import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextStatus;
+import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
 import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
@@ -29,50 +29,49 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class FactualTravelInfoAnalysisIntegrationTest {
+class CreativeMarketingTextAnalysisIntegrationTest {
 
     @Test
-    void analyzesCriticalTravelFactsWithoutEmbeddingService() {
+    void analyzesCreativeMarketingTextWithoutEmbeddingService() {
         AnalysisResult result = analyzer().analyze(
-                new NamedRunLog("0004-critical-travel-info-run.json", runLog(List.of(
-                        "Die Verbindung faehrt um 08:02 ab Bern, kommt um 09:15 in Zuerich HB an und hat keine Umstiege.",
-                        "Abfahrt ab Bern: 08:02, Ankunft Zuerich HB: 09:15, Umstiege: keine.",
-                        "Abfahrt 08.02, Ankunft 9.15, 0 Umstiege.",
-                        "Die Verbindung faehrt um 06:45 ab Lausanne und kommt um 09:15 in Zuerich HB an.",
-                        "Abfahrt 08:34, Ankunft 09:15, keine Umstiege."
+                new NamedRunLog("0006-creative-marketing-text-run.json", runLog(List.of(
+                        "Luzern begeistert mit seiner Lage am Vierwaldstättersee. "
+                                + "Die Altstadt und die Kapellbrücke schaffen eine besondere Atmosphäre. "
+                                + "Für Reisende aus Deutschland ist Luzern ein ideales Ziel für Kultur, Natur und Erholung.",
+                        "Luzern lädt mit See, Bergen und Altstadt zu einer besonderen Auszeit ein. "
+                                + "Die Stadt verbindet Kultur und Natur auf engem Raum. "
+                                + "Für deutsche Gäste ist Luzern schnell erreichbar und angenehm vielseitig.",
+                        "Luzern begeistert mit seiner Lage am Vierwaldstättersee. "
+                                + "Die Altstadt und die Kapellbrücke machen die Stadt zu einem idealen Reiseziel.",
+                        "Die Stadt begeistert mit ihrer Lage am Vierwaldstättersee. "
+                                + "Die Altstadt und die Kapellbrücke schaffen eine besondere Atmosphäre. "
+                                + "Für Reisende aus Deutschland ist sie ein ideales Ziel für Kultur, Natur und Erholung."
                 ))),
-                factualConfig()
+                creativeConfig()
         );
 
         assertThat(result.scans()).isEmpty();
         assertThat(result.route()).isNull();
-        assertThat(result.factualTravelInfo()).isNotNull();
-        assertThat(result.factualTravelInfo().responseCount()).isEqualTo(5);
-        assertThat(result.factualTravelInfo().successCount()).isEqualTo(3);
-        assertThat(result.factualTravelInfo().outlierCount()).isEqualTo(2);
-        assertThat(result.factualTravelInfo().successShare()).isEqualTo(0.6);
-        assertThat(result.factualTravelInfo().outliers()).containsExactly(4, 5);
-        assertThat(result.factualTravelInfo().departureFoundCount()).isEqualTo(3);
-        assertThat(result.factualTravelInfo().arrivalFoundCount()).isEqualTo(5);
-        assertThat(result.factualTravelInfo().changesFoundCount()).isEqualTo(4);
-        assertThat(result.factualTravelInfo().extraTimeCounts())
-                .containsEntry("06:45", 1)
-                .containsEntry("08:34", 1);
-        assertThat(result.factualTravelInfo().extractions())
+        assertThat(result.factualTravelInfo()).isNull();
+        assertThat(result.literalFormatTravelerGuidance()).isNull();
+        assertThat(result.creativeMarketingText()).isNotNull();
+        assertThat(result.creativeMarketingText().responseCount()).isEqualTo(4);
+        assertThat(result.creativeMarketingText().successCount()).isEqualTo(2);
+        assertThat(result.creativeMarketingText().outlierCount()).isEqualTo(2);
+        assertThat(result.creativeMarketingText().successShare()).isEqualTo(0.5);
+        assertThat(result.creativeMarketingText().outliers()).containsExactly(3, 4);
+        assertThat(result.creativeMarketingText().sentenceCountMismatchCount()).isEqualTo(1);
+        assertThat(result.creativeMarketingText().requiredTermMissingCount()).isEqualTo(1);
+        assertThat(result.creativeMarketingText().extractions())
                 .extracting("status")
                 .containsExactly(
-                        FactualTravelInfoStatus.SUCCESS,
-                        FactualTravelInfoStatus.SUCCESS,
-                        FactualTravelInfoStatus.SUCCESS,
-                        FactualTravelInfoStatus.OUTLIER,
-                        FactualTravelInfoStatus.OUTLIER
+                        CreativeMarketingTextStatus.SUCCESS,
+                        CreativeMarketingTextStatus.SUCCESS,
+                        CreativeMarketingTextStatus.OUTLIER,
+                        CreativeMarketingTextStatus.OUTLIER
                 );
-        assertThat(result.factualTravelInfo().extractions().get(3).failureReasons())
-                .containsExactly("departure_missing", "changes_missing");
-        assertThat(result.factualTravelInfo().extractions().get(4).failureReasons())
-                .containsExactly("departure_missing");
-        assertThat(result.factualTravelInfo().syntactic().clusters()).hasSize(1);
-        assertThat(result.literal().responseCount()).isEqualTo(5);
+        assertThat(result.creativeMarketingText().syntactic().clusters()).hasSize(1);
+        assertThat(result.literal().responseCount()).isEqualTo(4);
     }
 
     private static Analyzer analyzer() {
@@ -80,7 +79,7 @@ class FactualTravelInfoAnalysisIntegrationTest {
         CosineDistance cosineDistance = new CosineDistance();
         return new Analyzer(
                 (texts, config) -> {
-                    throw new AssertionError("Factual travel info analysis must not call the embedding service.");
+                    throw new AssertionError("Creative marketing text analysis must not call the embedding service.");
                 },
                 cosineDistance,
                 new ChunkAverageMinDistance(cosineDistance),
@@ -101,7 +100,7 @@ class FactualTravelInfoAnalysisIntegrationTest {
         );
     }
 
-    private static AnalysisConfig factualConfig() {
+    private static AnalysisConfig creativeConfig() {
         AnalysisConfig defaults = AnalysisConfig.defaults();
         return new AnalysisConfig(
                 defaults.embeddingProvider(),
@@ -113,14 +112,14 @@ class FactualTravelInfoAnalysisIntegrationTest {
                 defaults.semanticRepresentation(),
                 defaults.chunk(),
                 defaults.distance(),
-                ClusteringAlgorithm.FACTUAL_TRAVEL_INFO,
+                ClusteringAlgorithm.CREATIVE_MARKETING_TEXT,
                 defaults.scanIncrement(),
                 defaults.dbscan(),
                 defaults.hierarchical(),
                 defaults.route(),
-                new FactualTravelInfoConfig("08:02", "09:15", 0),
+                defaults.factualTravelInfo(),
                 defaults.literalFormatTravelerGuidance(),
-                defaults.creativeMarketingText(),
+                new CreativeMarketingTextConfig(3, "Luzern"),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()
@@ -128,12 +127,12 @@ class FactualTravelInfoAnalysisIntegrationTest {
     }
 
     private static RunLog runLog(List<String> responses) {
-        OffsetDateTime now = OffsetDateTime.parse("2026-05-19T10:00:00+02:00");
+        OffsetDateTime now = OffsetDateTime.parse("2026-05-19T12:00:00+02:00");
         List<RunLogEntry> entries = java.util.stream.IntStream.range(0, responses.size())
                 .mapToObj(index -> new RunLogEntry(index + 1, now, now, responses.get(index), null))
                 .toList();
         return new RunLog(
-                "0004-critical-travel-info",
+                "0006-creative-marketing-text",
                 now,
                 now,
                 InferenceProvider.OPENAI,
@@ -142,7 +141,7 @@ class FactualTravelInfoAnalysisIntegrationTest {
                 null,
                 responses.size(),
                 new RunConfigLog(0.0, 1.0, 1, 1L, Reasoning.OFF),
-                "Extrahiere Reiseinformationen.",
+                "Erstelle einen kurzen Werbetext.",
                 entries
         );
     }
@@ -151,7 +150,7 @@ class FactualTravelInfoAnalysisIntegrationTest {
 
         @Override
         public OffsetDateTime now() {
-            return OffsetDateTime.parse("2026-05-19T10:30:00+02:00");
+            return OffsetDateTime.parse("2026-05-19T12:30:00+02:00");
         }
     }
 }

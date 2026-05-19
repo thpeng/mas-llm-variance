@@ -26,6 +26,7 @@ public class YamlAnalysisConfig {
     private Route route;
     private FactualTravelInfo factualTravelInfo;
     private LiteralFormatTravelerGuidance literalFormatTravelerGuidance;
+    private CreativeMarketingText creativeMarketingText;
     private Bleu bleu;
     private Rouge rouge;
     private PercentileMethod percentile;
@@ -158,6 +159,14 @@ public class YamlAnalysisConfig {
         this.literalFormatTravelerGuidance = literalFormatTravelerGuidance;
     }
 
+    public CreativeMarketingText getCreativeMarketingText() {
+        return creativeMarketingText;
+    }
+
+    public void setCreativeMarketingText(CreativeMarketingText creativeMarketingText) {
+        this.creativeMarketingText = creativeMarketingText;
+    }
+
     public Bleu getBleu() {
         return bleu;
     }
@@ -287,6 +296,27 @@ public class YamlAnalysisConfig {
 
         public void setReference(String reference) {
             this.reference = reference;
+        }
+    }
+
+    public static class CreativeMarketingText {
+        private Integer expectedSentenceCount;
+        private String requiredTerm;
+
+        public Integer getExpectedSentenceCount() {
+            return expectedSentenceCount;
+        }
+
+        public void setExpectedSentenceCount(Integer expectedSentenceCount) {
+            this.expectedSentenceCount = expectedSentenceCount;
+        }
+
+        public String getRequiredTerm() {
+            return requiredTerm;
+        }
+
+        public void setRequiredTerm(String requiredTerm) {
+            this.requiredTerm = requiredTerm;
         }
     }
 

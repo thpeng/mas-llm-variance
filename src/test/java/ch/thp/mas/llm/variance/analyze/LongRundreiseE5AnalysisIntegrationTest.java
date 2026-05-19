@@ -152,6 +152,7 @@ class LongRundreiseE5AnalysisIntegrationTest {
                 defaults.route(),
                 defaults.factualTravelInfo(),
                 defaults.literalFormatTravelerGuidance(),
+                defaults.creativeMarketingText(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

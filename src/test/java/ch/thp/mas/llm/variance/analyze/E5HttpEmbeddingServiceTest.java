@@ -173,6 +173,7 @@ class E5HttpEmbeddingServiceTest {
                 AnalysisConfig.defaults().route(),
                 AnalysisConfig.defaults().factualTravelInfo(),
                 AnalysisConfig.defaults().literalFormatTravelerGuidance(),
+                AnalysisConfig.defaults().creativeMarketingText(),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

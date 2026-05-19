@@ -3,6 +3,7 @@ package ch.thp.mas.llm.variance.analyze;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
+import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceClassification;
@@ -91,6 +92,7 @@ class LiteralFormatTravelerGuidanceAnalysisIntegrationTest {
                 new RouteAnalyzer(new RouteStationExtractor()),
                 new FactualTravelInfoAnalyzer(),
                 new LiteralFormatTravelerGuidanceAnalyzer(),
+                new CreativeMarketingTextAnalyzer(),
                 new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
@@ -120,6 +122,7 @@ class LiteralFormatTravelerGuidanceAnalysisIntegrationTest {
                 defaults.route(),
                 defaults.factualTravelInfo(),
                 new LiteralFormatTravelerGuidanceConfig(REFERENCE),
+                defaults.creativeMarketingText(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

@@ -2,6 +2,8 @@ package ch.thp.mas.llm.variance.analyze;
 
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalysis;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
+import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalysis;
+import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalysis;
@@ -50,6 +52,7 @@ public class Analyzer {
     private final RouteAnalyzer routeAnalyzer;
     private final FactualTravelInfoAnalyzer factualTravelInfoAnalyzer;
     private final LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer;
+    private final CreativeMarketingTextAnalyzer creativeMarketingTextAnalyzer;
     private final AnswerChunker answerChunker;
     private final RougeLMetric rougeLMetric;
     private final BleuMetric bleuMetric;
@@ -69,6 +72,7 @@ public class Analyzer {
             RouteAnalyzer routeAnalyzer,
             FactualTravelInfoAnalyzer factualTravelInfoAnalyzer,
             LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer,
+            CreativeMarketingTextAnalyzer creativeMarketingTextAnalyzer,
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
@@ -86,6 +90,7 @@ public class Analyzer {
                 routeAnalyzer,
                 factualTravelInfoAnalyzer,
                 literalFormatTravelerGuidanceAnalyzer,
+                creativeMarketingTextAnalyzer,
                 answerChunker,
                 rougeLMetric,
                 bleuMetric,
@@ -116,6 +121,7 @@ public class Analyzer {
                 new RouteAnalyzer(new ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor()),
                 new FactualTravelInfoAnalyzer(),
                 new LiteralFormatTravelerGuidanceAnalyzer(),
+                new CreativeMarketingTextAnalyzer(),
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
@@ -147,6 +153,7 @@ public class Analyzer {
                 new RouteAnalyzer(new ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor()),
                 new FactualTravelInfoAnalyzer(),
                 new LiteralFormatTravelerGuidanceAnalyzer(),
+                new CreativeMarketingTextAnalyzer(),
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
@@ -167,6 +174,7 @@ public class Analyzer {
             RouteAnalyzer routeAnalyzer,
             FactualTravelInfoAnalyzer factualTravelInfoAnalyzer,
             LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer,
+            CreativeMarketingTextAnalyzer creativeMarketingTextAnalyzer,
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
@@ -184,6 +192,7 @@ public class Analyzer {
         this.routeAnalyzer = routeAnalyzer;
         this.factualTravelInfoAnalyzer = factualTravelInfoAnalyzer;
         this.literalFormatTravelerGuidanceAnalyzer = literalFormatTravelerGuidanceAnalyzer;
+        this.creativeMarketingTextAnalyzer = creativeMarketingTextAnalyzer;
         this.answerChunker = answerChunker;
         this.rougeLMetric = rougeLMetric;
         this.bleuMetric = bleuMetric;
@@ -223,6 +232,7 @@ public class Analyzer {
                     routeAnalysis,
                     null,
                     null,
+                    null,
                     literalAnalysis
             );
         }
@@ -241,6 +251,7 @@ public class Analyzer {
                     List.of(),
                     null,
                     factualTravelInfoAnalysis,
+                    null,
                     null,
                     literalAnalysis
             );
@@ -261,6 +272,27 @@ public class Analyzer {
                     null,
                     null,
                     literalFormatTravelerGuidanceAnalysis,
+                    null,
+                    literalAnalysis
+            );
+        }
+
+        if (config.clusteringAlgorithm() == ClusteringAlgorithm.CREATIVE_MARKETING_TEXT) {
+            CreativeMarketingTextAnalysis creativeMarketingTextAnalysis = creativeMarketingTextAnalyzer.analyze(
+                    responses,
+                    config.creativeMarketingText(),
+                    successIndices -> new SyntacticAnalysis(creativeSyntacticClusters(successIndices, responses, config))
+            );
+            return new AnalysisResult(
+                    namedRunLog.filename(),
+                    runClock.now(),
+                    config,
+                    runInfo(runLog),
+                    List.of(),
+                    null,
+                    null,
+                    null,
+                    creativeMarketingTextAnalysis,
                     literalAnalysis
             );
         }
@@ -282,6 +314,7 @@ public class Analyzer {
                 config,
                 runInfo(runLog),
                 scans,
+                null,
                 null,
                 null,
                 null,
@@ -329,6 +362,8 @@ public class Analyzer {
                     "FACTUAL_TRAVEL_INFO clustering does not use semantic scan entries.");
             case LITERAL_FORMAT_TRAVELER_GUIDANCE -> throw new AnalysisException(
                     "LITERAL_FORMAT_TRAVELER_GUIDANCE clustering does not use semantic scan entries.");
+            case CREATIVE_MARKETING_TEXT -> throw new AnalysisException(
+                    "CREATIVE_MARKETING_TEXT clustering does not use semantic scan entries.");
         };
     }
 
@@ -478,6 +513,17 @@ public class Analyzer {
     }
 
     private List<SyntacticCluster> factualSyntacticClusters(
+            List<Integer> successIndices,
+            List<String> responses,
+            AnalysisConfig config
+    ) {
+        if (successIndices.isEmpty()) {
+            return List.of();
+        }
+        return List.of(syntacticCluster(0, successIndices, responses, config));
+    }
+
+    private List<SyntacticCluster> creativeSyntacticClusters(
             List<Integer> successIndices,
             List<String> responses,
             AnalysisConfig config

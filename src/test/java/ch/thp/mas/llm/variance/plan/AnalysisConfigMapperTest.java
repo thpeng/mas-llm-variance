@@ -36,6 +36,10 @@ class AnalysisConfigMapperTest {
         YamlAnalysisConfig.LiteralFormatTravelerGuidance literalFormat = new YamlAnalysisConfig.LiteralFormatTravelerGuidance();
         literalFormat.setReference("Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.");
         analysis.setLiteralFormatTravelerGuidance(literalFormat);
+        YamlAnalysisConfig.CreativeMarketingText creativeMarketingText = new YamlAnalysisConfig.CreativeMarketingText();
+        creativeMarketingText.setExpectedSentenceCount(3);
+        creativeMarketingText.setRequiredTerm("Luzern");
+        analysis.setCreativeMarketingText(creativeMarketingText);
         plan.setAnalysis(analysis);
 
         var config = mapper.map(new LoadedPlan("0001-test", "0001-test.yml", plan));
@@ -52,6 +56,8 @@ class AnalysisConfigMapperTest {
         assertThat(config.factualTravelInfo().changes()).isZero();
         assertThat(config.literalFormatTravelerGuidance().reference())
                 .isEqualTo("Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.");
+        assertThat(config.creativeMarketingText().expectedSentenceCount()).isEqualTo(3);
+        assertThat(config.creativeMarketingText().requiredTerm()).isEqualTo("Luzern");
     }
 
     @Test
