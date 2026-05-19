@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.analyze;
 
-
+import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalysis;
+import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
@@ -45,6 +46,7 @@ public class Analyzer {
     private final DbscanClusterer dbscanClusterer;
     private final HierarchicalClusterer hierarchicalClusterer;
     private final RouteAnalyzer routeAnalyzer;
+    private final FactualTravelInfoAnalyzer factualTravelInfoAnalyzer;
     private final AnswerChunker answerChunker;
     private final RougeLMetric rougeLMetric;
     private final BleuMetric bleuMetric;
@@ -62,6 +64,7 @@ public class Analyzer {
             DbscanClusterer dbscanClusterer,
             HierarchicalClusterer hierarchicalClusterer,
             RouteAnalyzer routeAnalyzer,
+            FactualTravelInfoAnalyzer factualTravelInfoAnalyzer,
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
@@ -77,6 +80,7 @@ public class Analyzer {
                 dbscanClusterer,
                 hierarchicalClusterer,
                 routeAnalyzer,
+                factualTravelInfoAnalyzer,
                 answerChunker,
                 rougeLMetric,
                 bleuMetric,
@@ -105,6 +109,7 @@ public class Analyzer {
                 dbscanClusterer,
                 new HierarchicalClusterer(),
                 new RouteAnalyzer(new ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor()),
+                new FactualTravelInfoAnalyzer(),
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
@@ -134,6 +139,7 @@ public class Analyzer {
                 dbscanClusterer,
                 new HierarchicalClusterer(),
                 new RouteAnalyzer(new ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor()),
+                new FactualTravelInfoAnalyzer(),
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
@@ -152,6 +158,7 @@ public class Analyzer {
             DbscanClusterer dbscanClusterer,
             HierarchicalClusterer hierarchicalClusterer,
             RouteAnalyzer routeAnalyzer,
+            FactualTravelInfoAnalyzer factualTravelInfoAnalyzer,
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
@@ -167,6 +174,7 @@ public class Analyzer {
         this.dbscanClusterer = dbscanClusterer;
         this.hierarchicalClusterer = hierarchicalClusterer;
         this.routeAnalyzer = routeAnalyzer;
+        this.factualTravelInfoAnalyzer = factualTravelInfoAnalyzer;
         this.answerChunker = answerChunker;
         this.rougeLMetric = rougeLMetric;
         this.bleuMetric = bleuMetric;
@@ -204,6 +212,25 @@ public class Analyzer {
                     runInfo(runLog),
                     List.of(),
                     routeAnalysis,
+                    null,
+                    literalAnalysis
+            );
+        }
+
+        if (config.clusteringAlgorithm() == ClusteringAlgorithm.FACTUAL_TRAVEL_INFO) {
+            FactualTravelInfoAnalysis factualTravelInfoAnalysis = factualTravelInfoAnalyzer.analyze(
+                    responses,
+                    config.factualTravelInfo(),
+                    successIndices -> new SyntacticAnalysis(factualSyntacticClusters(successIndices, responses, config))
+            );
+            return new AnalysisResult(
+                    namedRunLog.filename(),
+                    runClock.now(),
+                    config,
+                    runInfo(runLog),
+                    List.of(),
+                    null,
+                    factualTravelInfoAnalysis,
                     literalAnalysis
             );
         }
@@ -225,6 +252,7 @@ public class Analyzer {
                 config,
                 runInfo(runLog),
                 scans,
+                null,
                 null,
                 literalAnalysis
         );
@@ -266,6 +294,8 @@ public class Analyzer {
                             pairwiseSummary))
                     .toList();
             case ROUTE -> throw new AnalysisException("ROUTE clustering does not use semantic scan entries.");
+            case FACTUAL_TRAVEL_INFO -> throw new AnalysisException(
+                    "FACTUAL_TRAVEL_INFO clustering does not use semantic scan entries.");
         };
     }
 
@@ -412,6 +442,17 @@ public class Analyzer {
 
     private SyntacticCluster syntacticCluster(SemanticCluster cluster, List<String> responses, AnalysisConfig config) {
         return syntacticCluster(cluster.clusterId(), cluster.repetitionIndices(), responses, config);
+    }
+
+    private List<SyntacticCluster> factualSyntacticClusters(
+            List<Integer> successIndices,
+            List<String> responses,
+            AnalysisConfig config
+    ) {
+        if (successIndices.isEmpty()) {
+            return List.of();
+        }
+        return List.of(syntacticCluster(0, successIndices, responses, config));
     }
 
     private SyntacticCluster syntacticCluster(

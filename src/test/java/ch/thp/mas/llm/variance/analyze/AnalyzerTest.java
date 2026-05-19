@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
+import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
@@ -275,6 +276,7 @@ class AnalyzerTest {
                 new DbscanClusterer(),
                 new HierarchicalClusterer(),
                 new RouteAnalyzer(new RouteStationExtractor()),
+                new FactualTravelInfoAnalyzer(),
                 new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
@@ -306,6 +308,7 @@ class AnalyzerTest {
                 defaults.dbscan(),
                 hierarchicalConfig,
                 defaults.route(),
+                defaults.factualTravelInfo(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

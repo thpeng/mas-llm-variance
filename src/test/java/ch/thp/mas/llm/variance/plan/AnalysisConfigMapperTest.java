@@ -28,6 +28,11 @@ class AnalysisConfigMapperTest {
         hierarchical.setThreshold(threshold);
         hierarchical.setLinkage(HierarchicalLinkage.COMPLETE);
         analysis.setHierarchical(hierarchical);
+        YamlAnalysisConfig.FactualTravelInfo factualTravelInfo = new YamlAnalysisConfig.FactualTravelInfo();
+        factualTravelInfo.setDepartureFromBern("08:02");
+        factualTravelInfo.setArrivalAtZurich("09:15");
+        factualTravelInfo.setChanges(0);
+        analysis.setFactualTravelInfo(factualTravelInfo);
         plan.setAnalysis(analysis);
 
         var config = mapper.map(new LoadedPlan("0001-test", "0001-test.yml", plan));
@@ -39,6 +44,9 @@ class AnalysisConfigMapperTest {
         assertThat(config.hierarchical().threshold().from()).isEqualTo(0.05);
         assertThat(config.hierarchical().threshold().to()).isEqualTo(0.07);
         assertThat(config.hierarchical().linkage()).isEqualTo(HierarchicalLinkage.COMPLETE);
+        assertThat(config.factualTravelInfo().departureFromBern()).isEqualTo("08:02");
+        assertThat(config.factualTravelInfo().arrivalAtZurich()).isEqualTo("09:15");
+        assertThat(config.factualTravelInfo().changes()).isZero();
     }
 
     @Test

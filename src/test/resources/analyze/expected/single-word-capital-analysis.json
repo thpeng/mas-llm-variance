@@ -32,6 +32,11 @@
     "route": {
       "expectedStationCount": 5
     },
+    "factualTravelInfo": {
+      "departureFromBern": "08:02",
+      "arrivalAtZurich": "09:15",
+      "changes": 0
+    },
     "bleu": {
       "maxN": 4,
       "smoothingEpsilon": 0.1
@@ -121,6 +126,7 @@
     }
   ],
   "route": null,
+  "factualTravelInfo": null,
   "literal": {
     "allResponsesIdentical": true,
     "responseCount": 3,

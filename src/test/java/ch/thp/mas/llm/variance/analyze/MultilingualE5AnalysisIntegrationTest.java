@@ -145,6 +145,7 @@ class MultilingualE5AnalysisIntegrationTest {
                         defaults.dbscan().minPts()),
                 defaults.hierarchical(),
                 defaults.route(),
+                defaults.factualTravelInfo(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

@@ -66,6 +66,7 @@ class AnalysisWriterTest {
                         new SyntacticAnalysis(List.of())
                 )),
                 null,
+                null,
                 new LiteralAnalysis(true, 1, 1, 1.0, List.of())
         );
     }

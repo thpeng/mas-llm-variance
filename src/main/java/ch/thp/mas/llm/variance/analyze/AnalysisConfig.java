@@ -1,5 +1,6 @@
 package ch.thp.mas.llm.variance.analyze;
 
+import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
@@ -57,6 +58,7 @@ public record AnalysisConfig(
         DbscanConfig dbscan,
         HierarchicalConfig hierarchical,
         RouteConfig route,
+        FactualTravelInfoConfig factualTravelInfo,
         BleuConfig bleu,
         RougeConfig rouge,
         PercentileMethod percentile
@@ -85,6 +87,7 @@ public record AnalysisConfig(
         Objects.requireNonNull(dbscan, "dbscan must not be null");
         Objects.requireNonNull(hierarchical, "hierarchical must not be null");
         Objects.requireNonNull(route, "route must not be null");
+        Objects.requireNonNull(factualTravelInfo, "factualTravelInfo must not be null");
         Objects.requireNonNull(bleu, "bleu must not be null");
         Objects.requireNonNull(rouge, "rouge must not be null");
         Objects.requireNonNull(percentile, "percentile must not be null");
@@ -131,6 +134,7 @@ public record AnalysisConfig(
                                 "analysis.hierarchical.threshold"),
                         linkage),
                 new RouteConfig(5),
+                new FactualTravelInfoConfig("08:02", "09:15", 0),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK
@@ -173,6 +177,7 @@ public record AnalysisConfig(
             case "dbscan" -> ClusteringAlgorithm.DBSCAN;
             case "hierarchical" -> ClusteringAlgorithm.HIERARCHICAL;
             case "route" -> ClusteringAlgorithm.ROUTE;
+            case "factual-travel-info", "factual_travel_info" -> ClusteringAlgorithm.FACTUAL_TRAVEL_INFO;
             default -> throw new AnalysisException("Unknown clustering algorithm: " + value);
         };
     }

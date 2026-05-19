@@ -2,6 +2,7 @@ package ch.thp.mas.llm.variance.plan;
 
 import ch.thp.mas.llm.variance.analyze.AnalysisConfig;
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
+import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
@@ -41,6 +42,7 @@ public class AnalysisConfigMapper {
                 dbscan(yaml, defaults, scanIncrement),
                 hierarchical(yaml, defaults, scanIncrement),
                 route(yaml, defaults),
+                factualTravelInfo(yaml, defaults),
                 bleu(yaml, defaults),
                 rouge(yaml, defaults),
                 valueOrDefault(yaml.getPercentile(), defaults.percentile())
@@ -84,6 +86,18 @@ public class AnalysisConfigMapper {
             return defaults.route();
         }
         return new RouteConfig(valueOrDefault(route.getExpectedStationCount(), defaults.route().expectedStationCount()));
+    }
+
+    private static FactualTravelInfoConfig factualTravelInfo(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
+        YamlAnalysisConfig.FactualTravelInfo factualTravelInfo = yaml.getFactualTravelInfo();
+        if (factualTravelInfo == null) {
+            return defaults.factualTravelInfo();
+        }
+        return new FactualTravelInfoConfig(
+                valueOrDefault(factualTravelInfo.getDepartureFromBern(), defaults.factualTravelInfo().departureFromBern()),
+                valueOrDefault(factualTravelInfo.getArrivalAtZurich(), defaults.factualTravelInfo().arrivalAtZurich()),
+                valueOrDefault(factualTravelInfo.getChanges(), defaults.factualTravelInfo().changes())
+        );
     }
 
     private static BleuConfig bleu(YamlAnalysisConfig yaml, AnalysisConfig defaults) {

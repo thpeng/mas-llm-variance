@@ -24,6 +24,7 @@ public class YamlAnalysisConfig {
     private Dbscan dbscan;
     private Hierarchical hierarchical;
     private Route route;
+    private FactualTravelInfo factualTravelInfo;
     private Bleu bleu;
     private Rouge rouge;
     private PercentileMethod percentile;
@@ -140,6 +141,14 @@ public class YamlAnalysisConfig {
         this.route = route;
     }
 
+    public FactualTravelInfo getFactualTravelInfo() {
+        return factualTravelInfo;
+    }
+
+    public void setFactualTravelInfo(FactualTravelInfo factualTravelInfo) {
+        this.factualTravelInfo = factualTravelInfo;
+    }
+
     public Bleu getBleu() {
         return bleu;
     }
@@ -227,6 +236,36 @@ public class YamlAnalysisConfig {
 
         public void setExpectedStationCount(Integer expectedStationCount) {
             this.expectedStationCount = expectedStationCount;
+        }
+    }
+
+    public static class FactualTravelInfo {
+        private String departureFromBern;
+        private String arrivalAtZurich;
+        private Integer changes;
+
+        public String getDepartureFromBern() {
+            return departureFromBern;
+        }
+
+        public void setDepartureFromBern(String departureFromBern) {
+            this.departureFromBern = departureFromBern;
+        }
+
+        public String getArrivalAtZurich() {
+            return arrivalAtZurich;
+        }
+
+        public void setArrivalAtZurich(String arrivalAtZurich) {
+            this.arrivalAtZurich = arrivalAtZurich;
+        }
+
+        public Integer getChanges() {
+            return changes;
+        }
+
+        public void setChanges(Integer changes) {
+            this.changes = changes;
         }
     }
 

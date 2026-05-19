@@ -3,5 +3,6 @@ package ch.thp.mas.llm.variance.analyze.semantic;
 public enum ClusteringAlgorithm {
     DBSCAN,
     HIERARCHICAL,
-    ROUTE
+    ROUTE,
+    FACTUAL_TRAVEL_INFO
 }
