@@ -5,8 +5,8 @@ description: |
   Die Reiseplanung testet, ob Modelle bei identischem Prompt stabile Stationen, Reihenfolgen
   und Detailauswahl liefern.
 analysis:
-  clusteringAlgorithm: ROUTE
-  route:
+  promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
+  swissRoundTrip:
     expectedStationCount: 5
   bleu:
     maxN: 4

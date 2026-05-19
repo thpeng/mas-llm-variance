@@ -1,16 +1,16 @@
 package ch.thp.mas.llm.variance.analyze;
 
-import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalysis;
-import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalysis;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
+import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextEvaluation;
+import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextEvaluator;
+import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionEvaluation;
+import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionEvaluator;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
-import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalysis;
-import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
-import ch.thp.mas.llm.variance.analyze.route.RouteAnalysis;
-import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
-import ch.thp.mas.llm.variance.analyze.route.RouteCluster;
+import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.TravelerGuidanceFormatEvaluation;
+import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.TravelerGuidanceFormatEvaluator;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripEvaluation;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripEvaluator;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripCluster;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticAnalysis;
@@ -27,10 +27,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class Analyzer {
 
-    private final RouteAnalyzer routeAnalyzer;
-    private final FactualTravelInfoAnalyzer factualTravelInfoAnalyzer;
-    private final LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer;
-    private final CreativeMarketingTextAnalyzer creativeMarketingTextAnalyzer;
+    private final SwissRoundTripEvaluator swissRoundTripEvaluator;
+    private final BernZurichConnectionEvaluator bernZurichConnectionEvaluator;
+    private final TravelerGuidanceFormatEvaluator travelerGuidanceFormatEvaluator;
+    private final LucerneMarketingTextEvaluator lucerneMarketingTextEvaluator;
     private final RougeLMetric rougeLMetric;
     private final BleuMetric bleuMetric;
     private final LiteralAnalyzer literalAnalyzer;
@@ -40,10 +40,10 @@ public class Analyzer {
 
     @Autowired
     public Analyzer(
-            RouteAnalyzer routeAnalyzer,
-            FactualTravelInfoAnalyzer factualTravelInfoAnalyzer,
-            LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer,
-            CreativeMarketingTextAnalyzer creativeMarketingTextAnalyzer,
+            SwissRoundTripEvaluator swissRoundTripEvaluator,
+            BernZurichConnectionEvaluator bernZurichConnectionEvaluator,
+            TravelerGuidanceFormatEvaluator travelerGuidanceFormatEvaluator,
+            LucerneMarketingTextEvaluator lucerneMarketingTextEvaluator,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
             LiteralAnalyzer literalAnalyzer,
@@ -51,10 +51,10 @@ public class Analyzer {
             SystemRunClock runClock
     ) {
         this(
-                routeAnalyzer,
-                factualTravelInfoAnalyzer,
-                literalFormatTravelerGuidanceAnalyzer,
-                creativeMarketingTextAnalyzer,
+                swissRoundTripEvaluator,
+                bernZurichConnectionEvaluator,
+                travelerGuidanceFormatEvaluator,
+                lucerneMarketingTextEvaluator,
                 rougeLMetric,
                 bleuMetric,
                 literalAnalyzer,
@@ -65,10 +65,10 @@ public class Analyzer {
     }
 
     Analyzer(
-            RouteAnalyzer routeAnalyzer,
-            FactualTravelInfoAnalyzer factualTravelInfoAnalyzer,
-            LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer,
-            CreativeMarketingTextAnalyzer creativeMarketingTextAnalyzer,
+            SwissRoundTripEvaluator swissRoundTripEvaluator,
+            BernZurichConnectionEvaluator bernZurichConnectionEvaluator,
+            TravelerGuidanceFormatEvaluator travelerGuidanceFormatEvaluator,
+            LucerneMarketingTextEvaluator lucerneMarketingTextEvaluator,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
             LiteralAnalyzer literalAnalyzer,
@@ -76,10 +76,10 @@ public class Analyzer {
             SystemRunClock runClock,
             Supplier<AnalysisConfig> configSupplier
     ) {
-        this.routeAnalyzer = routeAnalyzer;
-        this.factualTravelInfoAnalyzer = factualTravelInfoAnalyzer;
-        this.literalFormatTravelerGuidanceAnalyzer = literalFormatTravelerGuidanceAnalyzer;
-        this.creativeMarketingTextAnalyzer = creativeMarketingTextAnalyzer;
+        this.swissRoundTripEvaluator = swissRoundTripEvaluator;
+        this.bernZurichConnectionEvaluator = bernZurichConnectionEvaluator;
+        this.travelerGuidanceFormatEvaluator = travelerGuidanceFormatEvaluator;
+        this.lucerneMarketingTextEvaluator = lucerneMarketingTextEvaluator;
         this.rougeLMetric = rougeLMetric;
         this.bleuMetric = bleuMetric;
         this.literalAnalyzer = literalAnalyzer;
@@ -103,28 +103,29 @@ public class Analyzer {
         }
 
         LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses);
-        return switch (config.clusteringAlgorithm()) {
-            case ROUTE -> routeResult(namedRunLog, runLog, responses, config, literalAnalysis);
-            case FACTUAL_TRAVEL_INFO -> factualResult(namedRunLog, runLog, responses, config, literalAnalysis);
-            case LITERAL_FORMAT_TRAVELER_GUIDANCE -> literalFormatResult(
+        return switch (config.promptEvaluation()) {
+            case ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP ->
+                    swissRoundTripResult(namedRunLog, runLog, responses, config, literalAnalysis);
+            case FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION -> factualResult(namedRunLog, runLog, responses, config, literalAnalysis);
+            case LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE -> literalFormatResult(
                     namedRunLog, runLog, responses, config, literalAnalysis);
-            case CREATIVE_MARKETING_TEXT -> creativeResult(namedRunLog, runLog, responses, config, literalAnalysis);
+            case CREATIVE_GENERATIVE_LUCERNE_MARKETING -> creativeResult(namedRunLog, runLog, responses, config, literalAnalysis);
         };
     }
 
-    private AnalysisResult routeResult(
+    private AnalysisResult swissRoundTripResult(
             NamedRunLog namedRunLog,
             RunLog runLog,
             List<String> responses,
             AnalysisConfig config,
             LiteralAnalysis literalAnalysis
     ) {
-        RouteAnalysis routeAnalysis = routeAnalyzer.analyze(
+        SwissRoundTripEvaluation swissRoundTripEvaluation = swissRoundTripEvaluator.analyze(
                 responses,
-                config.route(),
-                clusters -> new SyntacticAnalysis(routeSyntacticClusters(clusters, responses, config))
+                config.swissRoundTrip(),
+                clusters -> new SyntacticAnalysis(swissRoundTripSyntacticClusters(clusters, responses, config))
         );
-        return result(namedRunLog, runLog, config, routeAnalysis, null, null, null, literalAnalysis);
+        return result(namedRunLog, runLog, config, swissRoundTripEvaluation, null, null, null, literalAnalysis);
     }
 
     private AnalysisResult factualResult(
@@ -134,12 +135,12 @@ public class Analyzer {
             AnalysisConfig config,
             LiteralAnalysis literalAnalysis
     ) {
-        FactualTravelInfoAnalysis factualTravelInfoAnalysis = factualTravelInfoAnalyzer.analyze(
+        BernZurichConnectionEvaluation bernZurichConnectionEvaluation = bernZurichConnectionEvaluator.analyze(
                 responses,
-                config.factualTravelInfo(),
+                config.bernZurichConnection(),
                 successIndices -> new SyntacticAnalysis(syntacticClusters(0, successIndices, responses, config))
         );
-        return result(namedRunLog, runLog, config, null, factualTravelInfoAnalysis, null, null, literalAnalysis);
+        return result(namedRunLog, runLog, config, null, bernZurichConnectionEvaluation, null, null, literalAnalysis);
     }
 
     private AnalysisResult literalFormatResult(
@@ -149,9 +150,9 @@ public class Analyzer {
             AnalysisConfig config,
             LiteralAnalysis literalAnalysis
     ) {
-        LiteralFormatTravelerGuidanceAnalysis literalFormatTravelerGuidanceAnalysis =
-                literalFormatTravelerGuidanceAnalyzer.analyze(responses, config.literalFormatTravelerGuidance());
-        return result(namedRunLog, runLog, config, null, null, literalFormatTravelerGuidanceAnalysis, null,
+        TravelerGuidanceFormatEvaluation travelerGuidanceFormatEvaluation =
+                travelerGuidanceFormatEvaluator.analyze(responses, config.travelerGuidanceFormat());
+        return result(namedRunLog, runLog, config, null, null, travelerGuidanceFormatEvaluation, null,
                 literalAnalysis);
     }
 
@@ -162,22 +163,22 @@ public class Analyzer {
             AnalysisConfig config,
             LiteralAnalysis literalAnalysis
     ) {
-        CreativeMarketingTextAnalysis creativeMarketingTextAnalysis = creativeMarketingTextAnalyzer.analyze(
+        LucerneMarketingTextEvaluation lucerneMarketingTextEvaluation = lucerneMarketingTextEvaluator.analyze(
                 responses,
-                config.creativeMarketingText(),
+                config.lucerneMarketingText(),
                 successIndices -> new SyntacticAnalysis(syntacticClusters(0, successIndices, responses, config))
         );
-        return result(namedRunLog, runLog, config, null, null, null, creativeMarketingTextAnalysis, literalAnalysis);
+        return result(namedRunLog, runLog, config, null, null, null, lucerneMarketingTextEvaluation, literalAnalysis);
     }
 
     private AnalysisResult result(
             NamedRunLog namedRunLog,
             RunLog runLog,
             AnalysisConfig config,
-            RouteAnalysis route,
-            FactualTravelInfoAnalysis factualTravelInfo,
-            LiteralFormatTravelerGuidanceAnalysis literalFormatTravelerGuidance,
-            CreativeMarketingTextAnalysis creativeMarketingText,
+            SwissRoundTripEvaluation swissRoundTrip,
+            BernZurichConnectionEvaluation bernZurichConnection,
+            TravelerGuidanceFormatEvaluation travelerGuidanceFormat,
+            LucerneMarketingTextEvaluation lucerneMarketingText,
             LiteralAnalysis literal
     ) {
         return new AnalysisResult(
@@ -185,10 +186,10 @@ public class Analyzer {
                 runClock.now(),
                 config,
                 runInfo(runLog),
-                route,
-                factualTravelInfo,
-                literalFormatTravelerGuidance,
-                creativeMarketingText,
+                swissRoundTrip,
+                bernZurichConnection,
+                travelerGuidanceFormat,
+                lucerneMarketingText,
                 literal
         );
     }
@@ -208,12 +209,12 @@ public class Analyzer {
         );
     }
 
-    private List<SyntacticCluster> routeSyntacticClusters(
-            List<RouteCluster> routeClusters,
+    private List<SyntacticCluster> swissRoundTripSyntacticClusters(
+            List<SwissRoundTripCluster> swissRoundTripClusters,
             List<String> responses,
             AnalysisConfig config
     ) {
-        return routeClusters.stream()
+        return swissRoundTripClusters.stream()
                 .map(cluster -> syntacticCluster(cluster.clusterId(), cluster.repetitionIndices(), responses, config))
                 .toList();
     }

@@ -1,56 +1,56 @@
 package ch.thp.mas.llm.variance.plan;
 
-import ch.thp.mas.llm.variance.analyze.ClusteringAlgorithm;
+import ch.thp.mas.llm.variance.analyze.PromptEvaluation;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 
 public class YamlAnalysisConfig {
 
-    private ClusteringAlgorithm clusteringAlgorithm;
-    private Route route;
-    private FactualTravelInfo factualTravelInfo;
-    private LiteralFormatTravelerGuidance literalFormatTravelerGuidance;
-    private CreativeMarketingText creativeMarketingText;
+    private PromptEvaluation promptEvaluation;
+    private SwissRoundTrip swissRoundTrip;
+    private BernZurichConnection bernZurichConnection;
+    private TravelerGuidanceFormat travelerGuidanceFormat;
+    private LucerneMarketingText lucerneMarketingText;
     private Bleu bleu;
     private Rouge rouge;
 
-    public ClusteringAlgorithm getClusteringAlgorithm() {
-        return clusteringAlgorithm;
+    public PromptEvaluation getPromptEvaluation() {
+        return promptEvaluation;
     }
 
-    public void setClusteringAlgorithm(ClusteringAlgorithm clusteringAlgorithm) {
-        this.clusteringAlgorithm = clusteringAlgorithm;
+    public void setPromptEvaluation(PromptEvaluation promptEvaluation) {
+        this.promptEvaluation = promptEvaluation;
     }
 
-    public Route getRoute() {
-        return route;
+    public SwissRoundTrip getSwissRoundTrip() {
+        return swissRoundTrip;
     }
 
-    public void setRoute(Route route) {
-        this.route = route;
+    public void setSwissRoundTrip(SwissRoundTrip swissRoundTrip) {
+        this.swissRoundTrip = swissRoundTrip;
     }
 
-    public FactualTravelInfo getFactualTravelInfo() {
-        return factualTravelInfo;
+    public BernZurichConnection getBernZurichConnection() {
+        return bernZurichConnection;
     }
 
-    public void setFactualTravelInfo(FactualTravelInfo factualTravelInfo) {
-        this.factualTravelInfo = factualTravelInfo;
+    public void setBernZurichConnection(BernZurichConnection bernZurichConnection) {
+        this.bernZurichConnection = bernZurichConnection;
     }
 
-    public LiteralFormatTravelerGuidance getLiteralFormatTravelerGuidance() {
-        return literalFormatTravelerGuidance;
+    public TravelerGuidanceFormat getTravelerGuidanceFormat() {
+        return travelerGuidanceFormat;
     }
 
-    public void setLiteralFormatTravelerGuidance(LiteralFormatTravelerGuidance literalFormatTravelerGuidance) {
-        this.literalFormatTravelerGuidance = literalFormatTravelerGuidance;
+    public void setTravelerGuidanceFormat(TravelerGuidanceFormat travelerGuidanceFormat) {
+        this.travelerGuidanceFormat = travelerGuidanceFormat;
     }
 
-    public CreativeMarketingText getCreativeMarketingText() {
-        return creativeMarketingText;
+    public LucerneMarketingText getLucerneMarketingText() {
+        return lucerneMarketingText;
     }
 
-    public void setCreativeMarketingText(CreativeMarketingText creativeMarketingText) {
-        this.creativeMarketingText = creativeMarketingText;
+    public void setLucerneMarketingText(LucerneMarketingText lucerneMarketingText) {
+        this.lucerneMarketingText = lucerneMarketingText;
     }
 
     public Bleu getBleu() {
@@ -69,7 +69,7 @@ public class YamlAnalysisConfig {
         this.rouge = rouge;
     }
 
-    public static class Route {
+    public static class SwissRoundTrip {
         private Integer expectedStationCount;
 
         public Integer getExpectedStationCount() {
@@ -81,7 +81,7 @@ public class YamlAnalysisConfig {
         }
     }
 
-    public static class FactualTravelInfo {
+    public static class BernZurichConnection {
         private String departureFromBern;
         private String arrivalAtZurich;
         private Integer changes;
@@ -111,7 +111,7 @@ public class YamlAnalysisConfig {
         }
     }
 
-    public static class LiteralFormatTravelerGuidance {
+    public static class TravelerGuidanceFormat {
         private String reference;
 
         public String getReference() {
@@ -123,7 +123,7 @@ public class YamlAnalysisConfig {
         }
     }
 
-    public static class CreativeMarketingText {
+    public static class LucerneMarketingText {
         private Integer expectedSentenceCount;
         private String requiredTerm;
 

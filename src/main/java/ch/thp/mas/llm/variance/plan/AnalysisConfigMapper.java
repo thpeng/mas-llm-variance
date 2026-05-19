@@ -2,10 +2,10 @@ package ch.thp.mas.llm.variance.plan;
 
 import ch.thp.mas.llm.variance.analyze.AnalysisConfig;
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
-import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextConfig;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
-import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceConfig;
-import ch.thp.mas.llm.variance.analyze.route.RouteConfig;
+import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextConfig;
+import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionConfig;
+import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.TravelerGuidanceFormatConfig;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 import org.springframework.stereotype.Component;
@@ -18,64 +18,64 @@ public class AnalysisConfigMapper {
         if (yaml == null) {
             throw new AnalysisException("Missing analysis block in plan: " + loadedPlan.filename());
         }
-        if (yaml.getClusteringAlgorithm() == null) {
-            throw new AnalysisException("Missing analysis.clusteringAlgorithm in plan: " + loadedPlan.filename());
+        if (yaml.getPromptEvaluation() == null) {
+            throw new AnalysisException("Missing analysis.promptEvaluation in plan: " + loadedPlan.filename());
         }
 
         AnalysisConfig defaults = AnalysisConfig.defaults();
         return new AnalysisConfig(
-                yaml.getClusteringAlgorithm(),
-                route(yaml, defaults),
-                factualTravelInfo(yaml, defaults),
-                literalFormatTravelerGuidance(yaml, defaults),
-                creativeMarketingText(yaml, defaults),
+                yaml.getPromptEvaluation(),
+                swissRoundTrip(yaml, defaults),
+                bernZurichConnection(yaml, defaults),
+                travelerGuidanceFormat(yaml, defaults),
+                lucerneMarketingText(yaml, defaults),
                 bleu(yaml, defaults),
                 rouge(yaml, defaults)
         );
     }
 
-    private static RouteConfig route(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
-        YamlAnalysisConfig.Route route = yaml.getRoute();
-        if (route == null) {
-            return defaults.route();
+    private static SwissRoundTripConfig swissRoundTrip(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
+        YamlAnalysisConfig.SwissRoundTrip swissRoundTrip = yaml.getSwissRoundTrip();
+        if (swissRoundTrip == null) {
+            return defaults.swissRoundTrip();
         }
-        return new RouteConfig(valueOrDefault(route.getExpectedStationCount(), defaults.route().expectedStationCount()));
+        return new SwissRoundTripConfig(valueOrDefault(swissRoundTrip.getExpectedStationCount(), defaults.swissRoundTrip().expectedStationCount()));
     }
 
-    private static FactualTravelInfoConfig factualTravelInfo(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
-        YamlAnalysisConfig.FactualTravelInfo factualTravelInfo = yaml.getFactualTravelInfo();
-        if (factualTravelInfo == null) {
-            return defaults.factualTravelInfo();
+    private static BernZurichConnectionConfig bernZurichConnection(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
+        YamlAnalysisConfig.BernZurichConnection bernZurichConnection = yaml.getBernZurichConnection();
+        if (bernZurichConnection == null) {
+            return defaults.bernZurichConnection();
         }
-        return new FactualTravelInfoConfig(
-                valueOrDefault(factualTravelInfo.getDepartureFromBern(), defaults.factualTravelInfo().departureFromBern()),
-                valueOrDefault(factualTravelInfo.getArrivalAtZurich(), defaults.factualTravelInfo().arrivalAtZurich()),
-                valueOrDefault(factualTravelInfo.getChanges(), defaults.factualTravelInfo().changes())
+        return new BernZurichConnectionConfig(
+                valueOrDefault(bernZurichConnection.getDepartureFromBern(), defaults.bernZurichConnection().departureFromBern()),
+                valueOrDefault(bernZurichConnection.getArrivalAtZurich(), defaults.bernZurichConnection().arrivalAtZurich()),
+                valueOrDefault(bernZurichConnection.getChanges(), defaults.bernZurichConnection().changes())
         );
     }
 
-    private static LiteralFormatTravelerGuidanceConfig literalFormatTravelerGuidance(
+    private static TravelerGuidanceFormatConfig travelerGuidanceFormat(
             YamlAnalysisConfig yaml,
             AnalysisConfig defaults
     ) {
-        YamlAnalysisConfig.LiteralFormatTravelerGuidance config = yaml.getLiteralFormatTravelerGuidance();
+        YamlAnalysisConfig.TravelerGuidanceFormat config = yaml.getTravelerGuidanceFormat();
         if (config == null) {
-            return defaults.literalFormatTravelerGuidance();
+            return defaults.travelerGuidanceFormat();
         }
-        return new LiteralFormatTravelerGuidanceConfig(
-                valueOrDefault(config.getReference(), defaults.literalFormatTravelerGuidance().reference())
+        return new TravelerGuidanceFormatConfig(
+                valueOrDefault(config.getReference(), defaults.travelerGuidanceFormat().reference())
         );
     }
 
-    private static CreativeMarketingTextConfig creativeMarketingText(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
-        YamlAnalysisConfig.CreativeMarketingText config = yaml.getCreativeMarketingText();
+    private static LucerneMarketingTextConfig lucerneMarketingText(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
+        YamlAnalysisConfig.LucerneMarketingText config = yaml.getLucerneMarketingText();
         if (config == null) {
-            return defaults.creativeMarketingText();
+            return defaults.lucerneMarketingText();
         }
-        return new CreativeMarketingTextConfig(
+        return new LucerneMarketingTextConfig(
                 valueOrDefault(config.getExpectedSentenceCount(),
-                        defaults.creativeMarketingText().expectedSentenceCount()),
-                valueOrDefault(config.getRequiredTerm(), defaults.creativeMarketingText().requiredTerm())
+                        defaults.lucerneMarketingText().expectedSentenceCount()),
+                valueOrDefault(config.getRequiredTerm(), defaults.lucerneMarketingText().requiredTerm())
         );
     }
 

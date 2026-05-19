@@ -1,11 +1,11 @@
 package ch.thp.mas.llm.variance.analyze;
 
-import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
+import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextEvaluator;
+import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionEvaluator;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
-import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
-import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
-import ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor;
+import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.TravelerGuidanceFormatEvaluator;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripEvaluator;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripStationExtractor;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.run.SystemRunClock;
@@ -22,10 +22,10 @@ final class TestAnalyzerFactory {
     static Analyzer create(AnalysisConfig config, SystemRunClock clock) {
         TextTokenizer tokenizer = new TextTokenizer();
         return new Analyzer(
-                new RouteAnalyzer(new RouteStationExtractor()),
-                new FactualTravelInfoAnalyzer(),
-                new LiteralFormatTravelerGuidanceAnalyzer(),
-                new CreativeMarketingTextAnalyzer(),
+                new SwissRoundTripEvaluator(new SwissRoundTripStationExtractor()),
+                new BernZurichConnectionEvaluator(),
+                new TravelerGuidanceFormatEvaluator(),
+                new LucerneMarketingTextEvaluator(),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
                 new LiteralAnalyzer(),

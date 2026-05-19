@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
-import ch.thp.mas.llm.variance.analyze.ClusteringAlgorithm;
+import ch.thp.mas.llm.variance.analyze.PromptEvaluation;
 import org.junit.jupiter.api.Test;
 
 class AnalysisConfigMapperTest {
@@ -15,35 +15,35 @@ class AnalysisConfigMapperTest {
     void mapsYamlAnalysisBlockOntoAnalysisConfig() {
         YamlPlan plan = new YamlPlan();
         YamlAnalysisConfig analysis = new YamlAnalysisConfig();
-        analysis.setClusteringAlgorithm(ClusteringAlgorithm.ROUTE);
-        YamlAnalysisConfig.Route route = new YamlAnalysisConfig.Route();
-        route.setExpectedStationCount(5);
-        analysis.setRoute(route);
-        YamlAnalysisConfig.FactualTravelInfo factualTravelInfo = new YamlAnalysisConfig.FactualTravelInfo();
-        factualTravelInfo.setDepartureFromBern("08:02");
-        factualTravelInfo.setArrivalAtZurich("09:15");
-        factualTravelInfo.setChanges(0);
-        analysis.setFactualTravelInfo(factualTravelInfo);
-        YamlAnalysisConfig.LiteralFormatTravelerGuidance literalFormat = new YamlAnalysisConfig.LiteralFormatTravelerGuidance();
+        analysis.setPromptEvaluation(PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
+        YamlAnalysisConfig.SwissRoundTrip swissRoundTrip = new YamlAnalysisConfig.SwissRoundTrip();
+        swissRoundTrip.setExpectedStationCount(5);
+        analysis.setSwissRoundTrip(swissRoundTrip);
+        YamlAnalysisConfig.BernZurichConnection bernZurichConnection = new YamlAnalysisConfig.BernZurichConnection();
+        bernZurichConnection.setDepartureFromBern("08:02");
+        bernZurichConnection.setArrivalAtZurich("09:15");
+        bernZurichConnection.setChanges(0);
+        analysis.setBernZurichConnection(bernZurichConnection);
+        YamlAnalysisConfig.TravelerGuidanceFormat literalFormat = new YamlAnalysisConfig.TravelerGuidanceFormat();
         literalFormat.setReference("Reisende ab Bern bis Zuerich benuetzen ab Bern bis Bern Wankdorf die Linie S3.");
-        analysis.setLiteralFormatTravelerGuidance(literalFormat);
-        YamlAnalysisConfig.CreativeMarketingText creativeMarketingText = new YamlAnalysisConfig.CreativeMarketingText();
-        creativeMarketingText.setExpectedSentenceCount(3);
-        creativeMarketingText.setRequiredTerm("Luzern");
-        analysis.setCreativeMarketingText(creativeMarketingText);
+        analysis.setTravelerGuidanceFormat(literalFormat);
+        YamlAnalysisConfig.LucerneMarketingText lucerneMarketingText = new YamlAnalysisConfig.LucerneMarketingText();
+        lucerneMarketingText.setExpectedSentenceCount(3);
+        lucerneMarketingText.setRequiredTerm("Luzern");
+        analysis.setLucerneMarketingText(lucerneMarketingText);
         plan.setAnalysis(analysis);
 
         var config = mapper.map(new LoadedPlan("0001-test", "0001-test.yml", plan));
 
-        assertThat(config.clusteringAlgorithm()).isEqualTo(ClusteringAlgorithm.ROUTE);
-        assertThat(config.route().expectedStationCount()).isEqualTo(5);
-        assertThat(config.factualTravelInfo().departureFromBern()).isEqualTo("08:02");
-        assertThat(config.factualTravelInfo().arrivalAtZurich()).isEqualTo("09:15");
-        assertThat(config.factualTravelInfo().changes()).isZero();
-        assertThat(config.literalFormatTravelerGuidance().reference())
+        assertThat(config.promptEvaluation()).isEqualTo(PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
+        assertThat(config.swissRoundTrip().expectedStationCount()).isEqualTo(5);
+        assertThat(config.bernZurichConnection().departureFromBern()).isEqualTo("08:02");
+        assertThat(config.bernZurichConnection().arrivalAtZurich()).isEqualTo("09:15");
+        assertThat(config.bernZurichConnection().changes()).isZero();
+        assertThat(config.travelerGuidanceFormat().reference())
                 .isEqualTo("Reisende ab Bern bis Zuerich benuetzen ab Bern bis Bern Wankdorf die Linie S3.");
-        assertThat(config.creativeMarketingText().expectedSentenceCount()).isEqualTo(3);
-        assertThat(config.creativeMarketingText().requiredTerm()).isEqualTo("Luzern");
+        assertThat(config.lucerneMarketingText().expectedSentenceCount()).isEqualTo(3);
+        assertThat(config.lucerneMarketingText().requiredTerm()).isEqualTo("Luzern");
     }
 
     @Test
@@ -56,12 +56,12 @@ class AnalysisConfigMapperTest {
     }
 
     @Test
-    void rejectsMissingClusteringAlgorithm() {
+    void rejectsMissingPromptEvaluation() {
         YamlPlan plan = new YamlPlan();
         plan.setAnalysis(new YamlAnalysisConfig());
 
         assertThatThrownBy(() -> mapper.map(new LoadedPlan("0001-test", "0001-test.yml", plan)))
                 .isInstanceOf(AnalysisException.class)
-                .hasMessageContaining("analysis.clusteringAlgorithm");
+                .hasMessageContaining("analysis.promptEvaluation");
     }
 }

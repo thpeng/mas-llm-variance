@@ -4,8 +4,8 @@ description: |
   Der Plan dient als Gegenpol zu offenen Generierungsaufgaben, weil nur ein einzelner
   Staedtename erwartet wird.
 analysis:
-  clusteringAlgorithm: CREATIVE_MARKETING_TEXT
-  creativeMarketingText:
+  promptEvaluation: CREATIVE_GENERATIVE_LUCERNE_MARKETING
+  lucerneMarketingText:
     expectedSentenceCount: 1
     requiredTerm: Aachen
   bleu:

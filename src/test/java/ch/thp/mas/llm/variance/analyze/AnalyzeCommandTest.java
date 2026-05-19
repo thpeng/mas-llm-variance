@@ -40,7 +40,7 @@ class AnalyzeCommandTest {
     @Test
     void analyzesRunLogWithPlanAnalysisConfig() {
         NamedRunLog runLog = new NamedRunLog("run.json", runLog("0001-test"));
-        LoadedPlan plan = loadedPlan("0001-test", ClusteringAlgorithm.ROUTE);
+        LoadedPlan plan = loadedPlan("0001-test", PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
         AnalysisResult result = mock(AnalysisResult.class);
         when(runLogReader.read("run.json")).thenReturn(runLog);
         when(planLoader.load("0001-test")).thenReturn(plan);
@@ -51,14 +51,14 @@ class AnalyzeCommandTest {
         command.run(args("--analyze=run.json"));
 
         verify(analysisWriter).write("run.json", result);
-        org.assertj.core.api.Assertions.assertThat(configCaptor.getValue().clusteringAlgorithm())
-                .isEqualTo(ClusteringAlgorithm.ROUTE);
+        org.assertj.core.api.Assertions.assertThat(configCaptor.getValue().promptEvaluation())
+                .isEqualTo(PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
     }
 
     @Test
     void loadsPlanByRunLogPlanName() {
         when(runLogReader.read("run.json")).thenReturn(new NamedRunLog("run.json", runLog("0001-test")));
-        when(planLoader.load("0001-test")).thenReturn(loadedPlan("0001-test", ClusteringAlgorithm.CREATIVE_MARKETING_TEXT));
+        when(planLoader.load("0001-test")).thenReturn(loadedPlan("0001-test", PromptEvaluation.CREATIVE_GENERATIVE_LUCERNE_MARKETING));
         AnalysisResult result = mock(AnalysisResult.class);
         when(analyzer.analyze(eq(new NamedRunLog("run.json", runLog("0001-test"))), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(result);
@@ -85,10 +85,10 @@ class AnalyzeCommandTest {
                 .hasMessageContaining("derives the plan");
     }
 
-    private static LoadedPlan loadedPlan(String name, ClusteringAlgorithm clusteringAlgorithm) {
+    private static LoadedPlan loadedPlan(String name, PromptEvaluation promptEvaluation) {
         YamlPlan plan = new YamlPlan();
         YamlAnalysisConfig analysis = new YamlAnalysisConfig();
-        analysis.setClusteringAlgorithm(clusteringAlgorithm);
+        analysis.setPromptEvaluation(promptEvaluation);
         plan.setAnalysis(analysis);
         return new LoadedPlan(name, name + ".yml", plan);
     }

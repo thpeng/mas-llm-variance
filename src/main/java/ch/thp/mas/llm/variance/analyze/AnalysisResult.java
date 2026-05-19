@@ -1,10 +1,10 @@
 package ch.thp.mas.llm.variance.analyze;
 
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalysis;
-import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalysis;
+import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionEvaluation;
+import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextEvaluation;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
-import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalysis;
-import ch.thp.mas.llm.variance.analyze.route.RouteAnalysis;
+import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.TravelerGuidanceFormatEvaluation;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripEvaluation;
 import java.time.OffsetDateTime;
 
 public record AnalysisResult(
@@ -12,10 +12,10 @@ public record AnalysisResult(
         OffsetDateTime analyzedAt,
         AnalysisConfig config,
         AnalysisRunInfo run,
-        RouteAnalysis route,
-        FactualTravelInfoAnalysis factualTravelInfo,
-        LiteralFormatTravelerGuidanceAnalysis literalFormatTravelerGuidance,
-        CreativeMarketingTextAnalysis creativeMarketingText,
+        SwissRoundTripEvaluation swissRoundTrip,
+        BernZurichConnectionEvaluation bernZurichConnection,
+        TravelerGuidanceFormatEvaluation travelerGuidanceFormat,
+        LucerneMarketingTextEvaluation lucerneMarketingText,
         LiteralAnalysis literal
 ) {
 }

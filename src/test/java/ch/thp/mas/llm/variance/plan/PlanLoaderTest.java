@@ -26,9 +26,9 @@ class PlanLoaderTest {
                 .contains("offene Antwort")
                 .contains("Freiheitsgraden.\nDie Reiseplanung")
                 .contains("Detailauswahl");
-        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getClusteringAlgorithm().name())
-                .isEqualTo("ROUTE");
-        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getRoute().getExpectedStationCount()).isEqualTo(5);
+        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getPromptEvaluation().name())
+                .isEqualTo("ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP");
+        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getSwissRoundTrip().getExpectedStationCount()).isEqualTo(5);
     }
 
     @Test
