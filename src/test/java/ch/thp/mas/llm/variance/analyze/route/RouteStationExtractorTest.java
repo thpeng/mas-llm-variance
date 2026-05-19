@@ -40,4 +40,22 @@ class RouteStationExtractorTest {
 
         assertThat(extractor.extract(response)).containsExactly("Luzern", "Interlaken & Lauterbrunnen", "Zermatt");
     }
+
+    @Test
+    void extractsBoldNumberedLineStations() {
+        String response = """
+                # Circuit en Suisse - 5 etapes
+
+                **1. Geneve**
+                Point de depart ideal.
+
+                **2. Lausanne**
+                Ville dynamique sur les rives du lac Leman.
+
+                **3. Interlaken**
+                Situe entre deux lacs.
+                """;
+
+        assertThat(extractor.extract(response)).containsExactly("Geneve", "Lausanne", "Interlaken");
+    }
 }

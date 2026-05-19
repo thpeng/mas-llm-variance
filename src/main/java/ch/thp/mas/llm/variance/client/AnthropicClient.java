@@ -23,10 +23,9 @@ public class AnthropicClient implements LlmClient {
                 .maxTokens(1024)
                 .addUserMessage(prompt);
 
-        if (config.temperature() != null) {
+        if (useTemperature(config)) {
             builder.temperature(config.temperature());
-        }
-        if (config.topP() != null) {
+        } else if (useTopP(config)) {
             builder.topP(config.topP());
         }
         if (config.topK() != null) {
@@ -49,5 +48,13 @@ public class AnthropicClient implements LlmClient {
 
     private TokenUsage tokenUsage(Usage usage) {
         return TokenUsage.of(usage.inputTokens(), usage.outputTokens());
+    }
+
+    static boolean useTemperature(LlmRequestConfig config) {
+        return config.temperature() != null && Double.compare(config.temperature(), 0.0) != 0;
+    }
+
+    static boolean useTopP(LlmRequestConfig config) {
+        return !useTemperature(config) && config.topP() != null;
     }
 }

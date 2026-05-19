@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 public class RouteStationExtractor {
 
     private static final Pattern NUMBERED_LINE = Pattern.compile("^\\s*#*\\s*\\d+[.)]\\s*(.+?)\\s*$");
+    private static final Pattern BOLD_NUMBERED_LINE = Pattern.compile("^\\s*\\*\\*\\s*\\d+[.)]\\s*(.+?)\\s*\\*\\*\\s*$");
     private static final Pattern BOLD_NAME = Pattern.compile("\\*\\*\\s*(.+?)\\s*\\*\\*");
     private static final Pattern EDGE_MARKDOWN = Pattern.compile("^[\\s*_`]+|[\\s*_`,.;:!?-]+$");
 
@@ -17,16 +18,21 @@ public class RouteStationExtractor {
         List<String> names = new ArrayList<>();
         for (String line : response.split("\\R")) {
             Matcher lineMatcher = NUMBERED_LINE.matcher(line);
-            if (!lineMatcher.matches()) {
-                continue;
-            }
-            String item = lineMatcher.group(1);
-            String name = extractName(item);
-            if (!name.isBlank()) {
-                names.add(name);
+            Matcher boldLineMatcher = BOLD_NUMBERED_LINE.matcher(line);
+            if (lineMatcher.matches()) {
+                addName(names, lineMatcher.group(1));
+            } else if (boldLineMatcher.matches()) {
+                addName(names, boldLineMatcher.group(1));
             }
         }
         return names;
+    }
+
+    private void addName(List<String> names, String item) {
+        String name = extractName(item);
+        if (!name.isBlank()) {
+            names.add(name);
+        }
     }
 
     private String extractName(String item) {

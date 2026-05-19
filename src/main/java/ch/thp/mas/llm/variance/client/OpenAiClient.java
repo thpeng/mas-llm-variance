@@ -31,10 +31,13 @@ public class OpenAiClient implements LlmClient {
         if (config.topP() != null) {
             builder.topP(config.topP());
         }
-        if (config.reasoning() != null) {
+        if (config.reasoning() != null && supportsReasoning(config.model())) {
             builder.reasoning(com.openai.models.Reasoning.builder()
                     .effort(ReasoningEffort.of(config.reasoning().openAiReasoningEffort()))
                     .build());
+        } else if (config.reasoning() != null && config.reasoning() != Reasoning.OFF) {
+            throw new IllegalArgumentException("OpenAI model '" + config.model()
+                    + "' does not support reasoning. Set reasoning to 'off' or use an OpenAI reasoning model.");
         }
 
         Response response = client.responses().create(builder.build());
@@ -64,5 +67,16 @@ public class OpenAiClient implements LlmClient {
 
     private TokenUsage tokenUsage(ResponseUsage usage) {
         return new TokenUsage(usage.inputTokens(), usage.outputTokens(), usage.totalTokens());
+    }
+
+    static boolean supportsReasoning(String model) {
+        if (model == null || model.isBlank()) {
+            return false;
+        }
+        String normalized = model.toLowerCase(java.util.Locale.ROOT);
+        return normalized.startsWith("o1")
+                || normalized.startsWith("o3")
+                || normalized.startsWith("o4")
+                || normalized.startsWith("gpt-5");
     }
 }
