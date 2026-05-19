@@ -6,14 +6,12 @@ import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalysis;
 import ch.thp.mas.llm.variance.analyze.route.RouteAnalysis;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 public record AnalysisResult(
         String sourceRun,
         OffsetDateTime analyzedAt,
         AnalysisConfig config,
         AnalysisRunInfo run,
-        List<AnalysisScan> scans,
         RouteAnalysis route,
         FactualTravelInfoAnalysis factualTravelInfo,
         LiteralFormatTravelerGuidanceAnalysis literalFormatTravelerGuidance,

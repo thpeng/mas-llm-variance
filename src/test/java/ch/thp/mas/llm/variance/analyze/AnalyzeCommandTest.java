@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.plan.AnalysisConfigMapper;
@@ -41,7 +40,7 @@ class AnalyzeCommandTest {
     @Test
     void analyzesRunLogWithPlanAnalysisConfig() {
         NamedRunLog runLog = new NamedRunLog("run.json", runLog("0001-test"));
-        LoadedPlan plan = loadedPlan("0001-test", ClusteringAlgorithm.DBSCAN);
+        LoadedPlan plan = loadedPlan("0001-test", ClusteringAlgorithm.ROUTE);
         AnalysisResult result = mock(AnalysisResult.class);
         when(runLogReader.read("run.json")).thenReturn(runLog);
         when(planLoader.load("0001-test")).thenReturn(plan);
@@ -53,13 +52,13 @@ class AnalyzeCommandTest {
 
         verify(analysisWriter).write("run.json", result);
         org.assertj.core.api.Assertions.assertThat(configCaptor.getValue().clusteringAlgorithm())
-                .isEqualTo(ClusteringAlgorithm.DBSCAN);
+                .isEqualTo(ClusteringAlgorithm.ROUTE);
     }
 
     @Test
     void loadsPlanByRunLogPlanName() {
         when(runLogReader.read("run.json")).thenReturn(new NamedRunLog("run.json", runLog("0001-test")));
-        when(planLoader.load("0001-test")).thenReturn(loadedPlan("0001-test", ClusteringAlgorithm.HIERARCHICAL));
+        when(planLoader.load("0001-test")).thenReturn(loadedPlan("0001-test", ClusteringAlgorithm.CREATIVE_MARKETING_TEXT));
         AnalysisResult result = mock(AnalysisResult.class);
         when(analyzer.analyze(eq(new NamedRunLog("run.json", runLog("0001-test"))), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(result);

@@ -6,7 +6,6 @@ public record LiteralAnalysis(
         boolean allResponsesIdentical,
         int responseCount,
         int distinctResponseCount,
-        double exactMatchRate,
-        List<LiteralClusterAnalysis> clusters
+        double exactMatchRate
 ) {
 }

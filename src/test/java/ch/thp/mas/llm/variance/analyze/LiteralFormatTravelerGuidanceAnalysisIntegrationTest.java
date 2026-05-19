@@ -2,23 +2,8 @@ package ch.thp.mas.llm.variance.analyze;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
-import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
-import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
-import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceClassification;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceConfig;
-import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
-import ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor;
-import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
-import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
-import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
-import ch.thp.mas.llm.variance.analyze.semantic.CosineDistance;
-import ch.thp.mas.llm.variance.analyze.semantic.DbscanClusterer;
-import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalClusterer;
-import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
-import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
-import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
@@ -35,7 +20,7 @@ class LiteralFormatTravelerGuidanceAnalysisIntegrationTest {
             "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.";
 
     @Test
-    void analyzesLiteralFormatTravelerGuidanceWithoutEmbeddingService() {
+    void analyzesLiteralFormatTravelerGuidanceDirectly() {
         AnalysisResult result = analyzer().analyze(
                 new NamedRunLog("0005-literal-format-traveler-guidance-run.json", runLog(List.of(
                         REFERENCE,
@@ -48,7 +33,6 @@ class LiteralFormatTravelerGuidanceAnalysisIntegrationTest {
                 literalFormatConfig()
         );
 
-        assertThat(result.scans()).isEmpty();
         assertThat(result.route()).isNull();
         assertThat(result.factualTravelInfo()).isNull();
         assertThat(result.literalFormatTravelerGuidance()).isNotNull();
@@ -77,55 +61,19 @@ class LiteralFormatTravelerGuidanceAnalysisIntegrationTest {
     }
 
     private static Analyzer analyzer() {
-        TextTokenizer tokenizer = new TextTokenizer();
-        CosineDistance cosineDistance = new CosineDistance();
-        return new Analyzer(
-                (texts, config) -> {
-                    throw new AssertionError(
-                            "Literal format traveler guidance analysis must not call the embedding service.");
-                },
-                cosineDistance,
-                new ChunkAverageMinDistance(cosineDistance),
-                new MedoidSelector(),
-                new DbscanClusterer(),
-                new HierarchicalClusterer(),
-                new RouteAnalyzer(new RouteStationExtractor()),
-                new FactualTravelInfoAnalyzer(),
-                new LiteralFormatTravelerGuidanceAnalyzer(),
-                new CreativeMarketingTextAnalyzer(),
-                new AnswerChunker(tokenizer),
-                new RougeLMetric(tokenizer),
-                new BleuMetric(tokenizer),
-                new LiteralAnalyzer(),
-                new SummaryStatistics(),
-                new FixedClock(),
-                AnalysisConfig::defaults
-        );
+        return TestAnalyzerFactory.create(literalFormatConfig(), new FixedClock());
     }
 
     private static AnalysisConfig literalFormatConfig() {
         AnalysisConfig defaults = AnalysisConfig.defaults();
         return new AnalysisConfig(
-                defaults.embeddingProvider(),
-                defaults.embeddingBaseUrl(),
-                defaults.embeddingModel(),
-                defaults.embeddingPrefix(),
-                defaults.maxEmbeddingTokens(),
-                defaults.semanticDistanceMethod(),
-                defaults.semanticRepresentation(),
-                defaults.chunk(),
-                defaults.distance(),
                 ClusteringAlgorithm.LITERAL_FORMAT_TRAVELER_GUIDANCE,
-                defaults.scanIncrement(),
-                defaults.dbscan(),
-                defaults.hierarchical(),
                 defaults.route(),
                 defaults.factualTravelInfo(),
                 new LiteralFormatTravelerGuidanceConfig(REFERENCE),
                 defaults.creativeMarketingText(),
                 defaults.bleu(),
-                defaults.rouge(),
-                defaults.percentile()
+                defaults.rouge()
         );
     }
 

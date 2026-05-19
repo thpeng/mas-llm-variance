@@ -2,23 +2,8 @@ package ch.thp.mas.llm.variance.analyze;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
-import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoStatus;
-import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
-import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
-import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
-import ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor;
-import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
-import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
-import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
-import ch.thp.mas.llm.variance.analyze.semantic.CosineDistance;
-import ch.thp.mas.llm.variance.analyze.semantic.DbscanClusterer;
-import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalClusterer;
-import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
-import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
-import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.run.RunConfigLog;
@@ -32,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class FactualTravelInfoAnalysisIntegrationTest {
 
     @Test
-    void analyzesCriticalTravelFactsWithoutEmbeddingService() {
+    void analyzesCriticalTravelFactsDirectly() {
         AnalysisResult result = analyzer().analyze(
                 new NamedRunLog("0004-critical-travel-info-run.json", runLog(List.of(
                         "Die Verbindung faehrt um 08:02 ab Bern, kommt um 09:15 in Zuerich HB an und hat keine Umstiege.",
@@ -44,7 +29,6 @@ class FactualTravelInfoAnalysisIntegrationTest {
                 factualConfig()
         );
 
-        assertThat(result.scans()).isEmpty();
         assertThat(result.route()).isNull();
         assertThat(result.factualTravelInfo()).isNotNull();
         assertThat(result.factualTravelInfo().responseCount()).isEqualTo(5);
@@ -76,54 +60,19 @@ class FactualTravelInfoAnalysisIntegrationTest {
     }
 
     private static Analyzer analyzer() {
-        TextTokenizer tokenizer = new TextTokenizer();
-        CosineDistance cosineDistance = new CosineDistance();
-        return new Analyzer(
-                (texts, config) -> {
-                    throw new AssertionError("Factual travel info analysis must not call the embedding service.");
-                },
-                cosineDistance,
-                new ChunkAverageMinDistance(cosineDistance),
-                new MedoidSelector(),
-                new DbscanClusterer(),
-                new HierarchicalClusterer(),
-                new RouteAnalyzer(new RouteStationExtractor()),
-                new FactualTravelInfoAnalyzer(),
-                new LiteralFormatTravelerGuidanceAnalyzer(),
-                new CreativeMarketingTextAnalyzer(),
-                new AnswerChunker(tokenizer),
-                new RougeLMetric(tokenizer),
-                new BleuMetric(tokenizer),
-                new LiteralAnalyzer(),
-                new SummaryStatistics(),
-                new FixedClock(),
-                AnalysisConfig::defaults
-        );
+        return TestAnalyzerFactory.create(factualConfig(), new FixedClock());
     }
 
     private static AnalysisConfig factualConfig() {
         AnalysisConfig defaults = AnalysisConfig.defaults();
         return new AnalysisConfig(
-                defaults.embeddingProvider(),
-                defaults.embeddingBaseUrl(),
-                defaults.embeddingModel(),
-                defaults.embeddingPrefix(),
-                defaults.maxEmbeddingTokens(),
-                defaults.semanticDistanceMethod(),
-                defaults.semanticRepresentation(),
-                defaults.chunk(),
-                defaults.distance(),
                 ClusteringAlgorithm.FACTUAL_TRAVEL_INFO,
-                defaults.scanIncrement(),
-                defaults.dbscan(),
-                defaults.hierarchical(),
                 defaults.route(),
                 new FactualTravelInfoConfig("08:02", "09:15", 0),
                 defaults.literalFormatTravelerGuidance(),
                 defaults.creativeMarketingText(),
                 defaults.bleu(),
-                defaults.rouge(),
-                defaults.percentile()
+                defaults.rouge()
         );
     }
 

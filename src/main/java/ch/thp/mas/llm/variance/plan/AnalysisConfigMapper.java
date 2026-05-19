@@ -5,14 +5,9 @@ import ch.thp.mas.llm.variance.analyze.AnalysisException;
 import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextConfig;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceConfig;
-import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
-import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
-import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
-import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.route.RouteConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
-import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,59 +23,14 @@ public class AnalysisConfigMapper {
         }
 
         AnalysisConfig defaults = AnalysisConfig.defaults();
-        double scanIncrement = valueOrDefault(yaml.getScanIncrement(), defaults.scanIncrement());
         return new AnalysisConfig(
-                valueOrDefault(yaml.getEmbeddingProvider(), defaults.embeddingProvider()),
-                valueOrDefault(yaml.getEmbeddingBaseUrl(), defaults.embeddingBaseUrl()),
-                valueOrDefault(yaml.getEmbeddingModel(), defaults.embeddingModel()),
-                valueOrDefault(yaml.getEmbeddingPrefix(), defaults.embeddingPrefix()),
-                valueOrDefault(yaml.getMaxEmbeddingTokens(), defaults.maxEmbeddingTokens()),
-                valueOrDefault(yaml.getSemanticDistanceMethod(), defaults.semanticDistanceMethod()),
-                valueOrDefault(yaml.getSemanticRepresentation(), defaults.semanticRepresentation()),
-                chunk(yaml, defaults),
-                valueOrDefault(yaml.getDistance(), defaults.distance()),
                 yaml.getClusteringAlgorithm(),
-                scanIncrement,
-                dbscan(yaml, defaults, scanIncrement),
-                hierarchical(yaml, defaults, scanIncrement),
                 route(yaml, defaults),
                 factualTravelInfo(yaml, defaults),
                 literalFormatTravelerGuidance(yaml, defaults),
                 creativeMarketingText(yaml, defaults),
                 bleu(yaml, defaults),
-                rouge(yaml, defaults),
-                valueOrDefault(yaml.getPercentile(), defaults.percentile())
-        );
-    }
-
-    private static ChunkConfig chunk(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
-        YamlAnalysisConfig.Chunk chunk = yaml.getChunk();
-        if (chunk == null) {
-            return defaults.chunk();
-        }
-        return new ChunkConfig(valueOrDefault(chunk.getTargetTokens(), defaults.chunk().targetTokens()));
-    }
-
-    private static DbscanConfig dbscan(YamlAnalysisConfig yaml, AnalysisConfig defaults, double scanIncrement) {
-        YamlAnalysisConfig.Dbscan dbscan = yaml.getDbscan();
-        if (dbscan == null) {
-            return defaults.dbscan();
-        }
-        return new DbscanConfig(
-                rangeOrDefault(dbscan.getEpsilon(), defaults.dbscan().epsilon(), scanIncrement, "analysis.dbscan.epsilon"),
-                valueOrDefault(dbscan.getMinPts(), defaults.dbscan().minPts())
-        );
-    }
-
-    private static HierarchicalConfig hierarchical(YamlAnalysisConfig yaml, AnalysisConfig defaults, double scanIncrement) {
-        YamlAnalysisConfig.Hierarchical hierarchical = yaml.getHierarchical();
-        if (hierarchical == null) {
-            return defaults.hierarchical();
-        }
-        return new HierarchicalConfig(
-                rangeOrDefault(hierarchical.getThreshold(), defaults.hierarchical().threshold(), scanIncrement,
-                        "analysis.hierarchical.threshold"),
-                valueOrDefault(hierarchical.getLinkage(), defaults.hierarchical().linkage())
+                rouge(yaml, defaults)
         );
     }
 
@@ -155,40 +105,4 @@ public class AnalysisConfigMapper {
         return value == null ? fallback : value;
     }
 
-    private static ScanRange rangeOrDefault(Object raw, ScanRange fallback, double scanIncrement, String name) {
-        if (raw == null) {
-            return fallback;
-        }
-        if (raw instanceof Number) {
-            throw new AnalysisException(name + " must be a range with from/to, not a scalar value.");
-        }
-        Double from;
-        Double to;
-        if (raw instanceof YamlAnalysisConfig.Range range) {
-            from = range.getFrom();
-            to = range.getTo();
-        } else if (raw instanceof Map<?, ?> map) {
-            from = numberValue(map.get("from"), name + ".from");
-            to = numberValue(map.get("to"), name + ".to");
-        } else {
-            throw new AnalysisException(name + " must be a range with from/to.");
-        }
-        if (from == null) {
-            throw new AnalysisException("Missing " + name + ".from");
-        }
-        if (to == null) {
-            throw new AnalysisException("Missing " + name + ".to");
-        }
-        return ScanRange.of(from, to, scanIncrement, name);
-    }
-
-    private static Double numberValue(Object raw, String name) {
-        if (raw == null) {
-            return null;
-        }
-        if (raw instanceof Number number) {
-            return number.doubleValue();
-        }
-        throw new AnalysisException(name + " must be numeric.");
-    }
 }

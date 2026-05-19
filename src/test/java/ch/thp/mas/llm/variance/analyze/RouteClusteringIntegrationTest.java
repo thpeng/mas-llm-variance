@@ -2,24 +2,9 @@ package ch.thp.mas.llm.variance.analyze;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
-import ch.thp.mas.llm.variance.analyze.creative.CreativeMarketingTextAnalyzer;
-import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.route.Destination;
-import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
 import ch.thp.mas.llm.variance.analyze.route.RouteConfig;
 import ch.thp.mas.llm.variance.analyze.route.RouteExtractionStatus;
-import ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor;
-import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
-import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
-import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
-import ch.thp.mas.llm.variance.analyze.semantic.CosineDistance;
-import ch.thp.mas.llm.variance.analyze.semantic.DbscanClusterer;
-import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalClusterer;
-import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
-import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
-import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.run.LmStudioLoadConfigLog;
@@ -133,7 +118,6 @@ class RouteClusteringIntegrationTest {
                 routeConfig()
         );
 
-        assertThat(result.scans()).isEmpty();
         assertThat(result.route()).isNotNull();
         assertThat(result.route().responseCount()).isEqualTo(50);
         assertThat(result.route().successfulExtractionCount()).isEqualTo(50);
@@ -238,7 +222,6 @@ class RouteClusteringIntegrationTest {
                 routeConfig()
         );
 
-        assertThat(result.scans()).isEmpty();
         assertThat(result.route().responseCount()).isEqualTo(20);
         assertThat(result.route().successfulExtractionCount()).isZero();
         assertThat(result.route().partialExtractionCount()).isEqualTo(20);
@@ -275,54 +258,19 @@ class RouteClusteringIntegrationTest {
     }
 
     private static Analyzer analyzer() {
-        TextTokenizer tokenizer = new TextTokenizer();
-        CosineDistance cosineDistance = new CosineDistance();
-        return new Analyzer(
-                (texts, config) -> {
-                    throw new AssertionError("Route clustering must not call the embedding service.");
-                },
-                cosineDistance,
-                new ChunkAverageMinDistance(cosineDistance),
-                new MedoidSelector(),
-                new DbscanClusterer(),
-                new HierarchicalClusterer(),
-                new RouteAnalyzer(new RouteStationExtractor()),
-                new FactualTravelInfoAnalyzer(),
-                new LiteralFormatTravelerGuidanceAnalyzer(),
-                new CreativeMarketingTextAnalyzer(),
-                new AnswerChunker(tokenizer),
-                new RougeLMetric(tokenizer),
-                new BleuMetric(tokenizer),
-                new LiteralAnalyzer(),
-                new SummaryStatistics(),
-                new FixedClock(),
-                AnalysisConfig::defaults
-        );
+        return TestAnalyzerFactory.create(routeConfig(), new FixedClock());
     }
 
     private static AnalysisConfig routeConfig() {
         AnalysisConfig defaults = AnalysisConfig.defaults();
         return new AnalysisConfig(
-                defaults.embeddingProvider(),
-                defaults.embeddingBaseUrl(),
-                defaults.embeddingModel(),
-                defaults.embeddingPrefix(),
-                defaults.maxEmbeddingTokens(),
-                defaults.semanticDistanceMethod(),
-                defaults.semanticRepresentation(),
-                defaults.chunk(),
-                defaults.distance(),
                 ClusteringAlgorithm.ROUTE,
-                defaults.scanIncrement(),
-                defaults.dbscan(),
-                defaults.hierarchical(),
                 new RouteConfig(5),
                 defaults.factualTravelInfo(),
                 defaults.literalFormatTravelerGuidance(),
                 defaults.creativeMarketingText(),
                 defaults.bleu(),
-                defaults.rouge(),
-                defaults.percentile()
+                defaults.rouge()
         );
     }
 

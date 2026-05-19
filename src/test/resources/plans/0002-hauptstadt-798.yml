@@ -4,35 +4,16 @@ description: |
   Der Plan dient als Gegenpol zu offenen Generierungsaufgaben, weil nur ein einzelner
   Staedtename erwartet wird.
 analysis:
-  embeddingProvider: e5-http
-  embeddingBaseUrl: http://localhost:8000
-  embeddingModel: intfloat/multilingual-e5-large
-  embeddingPrefix: "passage:"
-  maxEmbeddingTokens: 514
-  semanticDistanceMethod: EMBEDDING_COSINE
-  semanticRepresentation: FULL_TEXT
-  chunk:
-    targetTokens: 120
-  distance: COSINE
-  clusteringAlgorithm: DBSCAN
-  scanIncrement: 0.01
-  dbscan:
-    epsilon:
-      from: 0.15
-      to: 0.15
-    minPts: 2
-  hierarchical:
-    threshold:
-      from: 0.08
-      to: 0.08
-    linkage: COMPLETE
+  clusteringAlgorithm: CREATIVE_MARKETING_TEXT
+  creativeMarketingText:
+    expectedSentenceCount: 1
+    requiredTerm: Aachen
   bleu:
     maxN: 4
     smoothingEpsilon: 0.1
   rouge:
     variant: ROUGE_L
     aggregation: F1
-  percentile: NEAREST_RANK
 run:
   prompt: "Frage: Was war die Hauptstadt der Schweiz im Jahre 798?\nAntworte nur mit dem Städtenamen."
   iterations: 5

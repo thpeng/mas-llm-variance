@@ -27,11 +27,8 @@ class PlanLoaderTest {
                 .contains("Freiheitsgraden.\nDie Reiseplanung")
                 .contains("Detailauswahl");
         assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getClusteringAlgorithm().name())
-                .isEqualTo("HIERARCHICAL");
-        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getHierarchical().getThreshold())
-                .isInstanceOfSatisfying(java.util.Map.class, threshold -> assertThat(threshold)
-                        .containsEntry("from", 0.08)
-                        .containsEntry("to", 0.08));
+                .isEqualTo("ROUTE");
+        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getRoute().getExpectedStationCount()).isEqualTo(5);
     }
 
     @Test
