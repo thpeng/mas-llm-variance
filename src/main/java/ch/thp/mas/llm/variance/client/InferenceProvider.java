@@ -34,7 +34,7 @@ public enum InferenceProvider {
         }
     },
 
-    GEMINI {
+    GOOGLE {
         @Override
         public LlmClient createClient() {
             String apiKey = System.getenv("GOOGLE_API_KEY");

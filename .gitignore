@@ -38,3 +38,4 @@ out/
 /gradle/wrapper/gradle-wrapper.jar
 
 .claude
+/src/main/resources/

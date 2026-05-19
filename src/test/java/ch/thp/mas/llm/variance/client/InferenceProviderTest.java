@@ -8,6 +8,6 @@ class InferenceProviderTest {
 
     @Test
     void geminiHasDefaultModel() {
-        assertThat(InferenceProvider.GEMINI.defaultModel()).isEqualTo("gemini-3-flash");
+        assertThat(InferenceProvider.GOOGLE.defaultModel()).isEqualTo("gemini-3-flash");
     }
 }
