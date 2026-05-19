@@ -1,5 +1,6 @@
 package ch.thp.mas.llm.variance.analyze;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionEvaluation;
 import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextEvaluation;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
@@ -7,6 +8,7 @@ import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.Traveler
 import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripEvaluation;
 import java.time.OffsetDateTime;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record AnalysisResult(
         String sourceRun,
         OffsetDateTime analyzedAt,

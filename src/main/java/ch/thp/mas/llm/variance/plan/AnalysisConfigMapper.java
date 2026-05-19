@@ -2,6 +2,7 @@ package ch.thp.mas.llm.variance.plan;
 
 import ch.thp.mas.llm.variance.analyze.AnalysisConfig;
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
+import ch.thp.mas.llm.variance.analyze.PromptEvaluation;
 import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextConfig;
 import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionConfig;
 import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.TravelerGuidanceFormatConfig;
@@ -23,12 +24,17 @@ public class AnalysisConfigMapper {
         }
 
         AnalysisConfig defaults = AnalysisConfig.defaults();
+        var promptEvaluation = yaml.getPromptEvaluation();
         return new AnalysisConfig(
-                yaml.getPromptEvaluation(),
-                swissRoundTrip(yaml, defaults),
-                bernZurichConnection(yaml, defaults),
-                travelerGuidanceFormat(yaml, defaults),
-                lucerneMarketingText(yaml, defaults),
+                promptEvaluation,
+                promptEvaluation == PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
+                        ? swissRoundTrip(yaml, defaults) : null,
+                promptEvaluation == PromptEvaluation.FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION
+                        ? bernZurichConnection(yaml, defaults) : null,
+                promptEvaluation == PromptEvaluation.LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE
+                        ? travelerGuidanceFormat(yaml, defaults) : null,
+                promptEvaluation == PromptEvaluation.CREATIVE_GENERATIVE_LUCERNE_MARKETING
+                        ? lucerneMarketingText(yaml, defaults) : null,
                 bleu(yaml, defaults),
                 rouge(yaml, defaults)
         );

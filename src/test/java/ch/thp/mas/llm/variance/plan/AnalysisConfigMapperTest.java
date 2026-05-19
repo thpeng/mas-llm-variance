@@ -12,7 +12,7 @@ class AnalysisConfigMapperTest {
     private final AnalysisConfigMapper mapper = new AnalysisConfigMapper();
 
     @Test
-    void mapsYamlAnalysisBlockOntoAnalysisConfig() {
+    void mapsOnlyActiveYamlAnalysisBlockOntoAnalysisConfig() {
         YamlPlan plan = new YamlPlan();
         YamlAnalysisConfig analysis = new YamlAnalysisConfig();
         analysis.setPromptEvaluation(PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
@@ -37,13 +37,9 @@ class AnalysisConfigMapperTest {
 
         assertThat(config.promptEvaluation()).isEqualTo(PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
         assertThat(config.swissRoundTrip().expectedStationCount()).isEqualTo(5);
-        assertThat(config.bernZurichConnection().departureFromBern()).isEqualTo("08:02");
-        assertThat(config.bernZurichConnection().arrivalAtZurich()).isEqualTo("09:15");
-        assertThat(config.bernZurichConnection().changes()).isZero();
-        assertThat(config.travelerGuidanceFormat().reference())
-                .isEqualTo("Reisende ab Bern bis Zuerich benuetzen ab Bern bis Bern Wankdorf die Linie S3.");
-        assertThat(config.lucerneMarketingText().expectedSentenceCount()).isEqualTo(3);
-        assertThat(config.lucerneMarketingText().requiredTerm()).isEqualTo("Luzern");
+        assertThat(config.bernZurichConnection()).isNull();
+        assertThat(config.travelerGuidanceFormat()).isNull();
+        assertThat(config.lucerneMarketingText()).isNull();
     }
 
     @Test

@@ -184,7 +184,7 @@ public class Analyzer {
         return new AnalysisResult(
                 namedRunLog.filename(),
                 runClock.now(),
-                config,
+                config.visibleForResult(),
                 runInfo(runLog),
                 swissRoundTrip,
                 bernZurichConnection,

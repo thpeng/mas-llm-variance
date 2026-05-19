@@ -30,6 +30,19 @@ class AnalysisWriterTest {
     }
 
     @Test
+    void omitsUnrelatedPromptConfigurationFromAnalysisJson() throws Exception {
+        AnalysisWriter writer = new AnalysisWriter(tempDir, new AnalysisFileNameFactory(), objectMapper());
+
+        Path written = writer.write("run.json", result());
+
+        assertThat(Files.readString(written))
+                .contains("\"swissRoundTrip\"")
+                .doesNotContain("\"bernZurichConnection\"")
+                .doesNotContain("\"travelerGuidanceFormat\"")
+                .doesNotContain("\"lucerneMarketingText\"");
+    }
+
+    @Test
     void refusesToOverwriteExistingAnalysis() {
         AnalysisWriter writer = new AnalysisWriter(tempDir, new AnalysisFileNameFactory(), objectMapper());
         writer.write("run.json", result());
@@ -43,7 +56,7 @@ class AnalysisWriterTest {
         return new AnalysisResult(
                 "run.json",
                 OffsetDateTime.parse("2026-05-02T11:00:00+02:00"),
-                AnalysisConfig.defaults(),
+                AnalysisConfig.defaults().visibleForResult(),
                 new AnalysisRunInfo("0001-test", InferenceProvider.OPENAI, "gpt-test", null, 1, 0.0, null, null, null, Reasoning.OFF),
                 null,
                 null,

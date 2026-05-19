@@ -1,5 +1,6 @@
 package ch.thp.mas.llm.variance.analyze;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionConfig;
 import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextConfig;
 import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.TravelerGuidanceFormatConfig;
@@ -8,6 +9,7 @@ import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 import java.util.Objects;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record AnalysisConfig(
         PromptEvaluation promptEvaluation,
         SwissRoundTripConfig swissRoundTrip,
@@ -20,12 +22,6 @@ public record AnalysisConfig(
 
     public AnalysisConfig {
         Objects.requireNonNull(promptEvaluation, "promptEvaluation must not be null");
-        Objects.requireNonNull(swissRoundTrip, "swissRoundTrip must not be null");
-        Objects.requireNonNull(bernZurichConnection, "bernZurichConnection must not be null");
-        Objects.requireNonNull(travelerGuidanceFormat, "travelerGuidanceFormat must not be null");
-        Objects.requireNonNull(lucerneMarketingText, "lucerneMarketingText must not be null");
-        Objects.requireNonNull(bleu, "bleu must not be null");
-        Objects.requireNonNull(rouge, "rouge must not be null");
     }
 
     public static AnalysisConfig defaults() {
@@ -41,6 +37,19 @@ public record AnalysisConfig(
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1)
         );
+    }
+
+    public AnalysisConfig visibleForResult() {
+        return switch (promptEvaluation) {
+            case ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP -> new AnalysisConfig(
+                    promptEvaluation, swissRoundTrip, null, null, null, bleu, rouge);
+            case FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION -> new AnalysisConfig(
+                    promptEvaluation, null, bernZurichConnection, null, null, bleu, rouge);
+            case LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE -> new AnalysisConfig(
+                    promptEvaluation, null, null, travelerGuidanceFormat, null, null, null);
+            case CREATIVE_GENERATIVE_LUCERNE_MARKETING -> new AnalysisConfig(
+                    promptEvaluation, null, null, null, lucerneMarketingText, bleu, rouge);
+        };
     }
 
     private static String getenv(String name, String fallback) {
