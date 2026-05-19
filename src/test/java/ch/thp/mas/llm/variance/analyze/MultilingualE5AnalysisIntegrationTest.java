@@ -144,6 +144,7 @@ class MultilingualE5AnalysisIntegrationTest {
                 new DbscanConfig(ScanRange.of(epsilon, epsilon, defaults.scanIncrement(), "analysis.dbscan.epsilon"),
                         defaults.dbscan().minPts()),
                 defaults.hierarchical(),
+                defaults.route(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

@@ -6,6 +6,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
+import ch.thp.mas.llm.variance.analyze.route.RouteConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class AnalysisConfigMapper {
                 scanIncrement,
                 dbscan(yaml, defaults, scanIncrement),
                 hierarchical(yaml, defaults, scanIncrement),
+                route(yaml, defaults),
                 bleu(yaml, defaults),
                 rouge(yaml, defaults),
                 valueOrDefault(yaml.getPercentile(), defaults.percentile())
@@ -74,6 +76,14 @@ public class AnalysisConfigMapper {
                         "analysis.hierarchical.threshold"),
                 valueOrDefault(hierarchical.getLinkage(), defaults.hierarchical().linkage())
         );
+    }
+
+    private static RouteConfig route(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
+        YamlAnalysisConfig.Route route = yaml.getRoute();
+        if (route == null) {
+            return defaults.route();
+        }
+        return new RouteConfig(valueOrDefault(route.getExpectedStationCount(), defaults.route().expectedStationCount()));
     }
 
     private static BleuConfig bleu(YamlAnalysisConfig yaml, AnalysisConfig defaults) {

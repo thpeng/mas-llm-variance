@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.analyze;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
@@ -17,6 +18,8 @@ import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
 import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
+import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
+import ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
@@ -31,6 +34,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpClient;
+import java.net.URI;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -66,6 +72,7 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
             String answersFilename,
             double threshold
     ) throws Exception {
+        assumeTrue(e5ServerAvailable(), "E5 server is not reachable at " + E5_BASE_URL);
         List<String> responses = loadAnswers(answersFilename);
 
         AnalysisResult result = analyzer(name, configWithThreshold(threshold))
@@ -103,6 +110,23 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
         return Objects.requireNonNull(inputStream, "Missing test resource: " + name);
     }
 
+    private static boolean e5ServerAvailable() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(E5_BASE_URL + "/load"))
+                    .POST(HttpRequest.BodyPublishers.noBody())
+                    .build();
+            int status = HttpClient.newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.discarding())
+                    .statusCode();
+            return status >= 200 && status < 300;
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return false;
+        }
+    }
+
     private static Analyzer analyzer(String name, AnalysisConfig config) {
         TextTokenizer tokenizer = new TextTokenizer();
         CosineDistance cosineDistance = new CosineDistance();
@@ -113,6 +137,7 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
                 new MedoidSelector(),
                 new DbscanClusterer(),
                 new HierarchicalClusterer(),
+                new RouteAnalyzer(new RouteStationExtractor()),
                 new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
@@ -139,6 +164,7 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
                 new DbscanConfig(ScanRange.ofHundredths(15, 15), 2),
                 new HierarchicalConfig(ScanRange.of(threshold, threshold, 0.01, "analysis.hierarchical.threshold"),
                         HierarchicalLinkage.COMPLETE),
+                AnalysisConfig.defaults().route(),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

@@ -2,6 +2,7 @@ package ch.thp.mas.llm.variance.analyze;
 
 
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
+import ch.thp.mas.llm.variance.analyze.route.RouteAnalysis;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -11,6 +12,7 @@ public record AnalysisResult(
         AnalysisConfig config,
         AnalysisRunInfo run,
         List<AnalysisScan> scans,
+        RouteAnalysis route,
         LiteralAnalysis literal
 ) {
 }

@@ -16,6 +16,9 @@ import ch.thp.mas.llm.variance.analyze.semantic.SemanticAnalysis;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticCluster;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticDistanceMethod;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
+import ch.thp.mas.llm.variance.analyze.route.RouteAnalysis;
+import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
+import ch.thp.mas.llm.variance.analyze.route.RouteCluster;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticAnalysis;
@@ -41,6 +44,7 @@ public class Analyzer {
     private final MedoidSelector medoidSelector;
     private final DbscanClusterer dbscanClusterer;
     private final HierarchicalClusterer hierarchicalClusterer;
+    private final RouteAnalyzer routeAnalyzer;
     private final AnswerChunker answerChunker;
     private final RougeLMetric rougeLMetric;
     private final BleuMetric bleuMetric;
@@ -57,6 +61,7 @@ public class Analyzer {
             MedoidSelector medoidSelector,
             DbscanClusterer dbscanClusterer,
             HierarchicalClusterer hierarchicalClusterer,
+            RouteAnalyzer routeAnalyzer,
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
@@ -71,6 +76,7 @@ public class Analyzer {
                 medoidSelector,
                 dbscanClusterer,
                 hierarchicalClusterer,
+                routeAnalyzer,
                 answerChunker,
                 rougeLMetric,
                 bleuMetric,
@@ -98,6 +104,7 @@ public class Analyzer {
                 medoidSelector,
                 dbscanClusterer,
                 new HierarchicalClusterer(),
+                new RouteAnalyzer(new ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor()),
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
@@ -126,6 +133,7 @@ public class Analyzer {
                 medoidSelector,
                 dbscanClusterer,
                 new HierarchicalClusterer(),
+                new RouteAnalyzer(new ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor()),
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
@@ -143,6 +151,7 @@ public class Analyzer {
             MedoidSelector medoidSelector,
             DbscanClusterer dbscanClusterer,
             HierarchicalClusterer hierarchicalClusterer,
+            RouteAnalyzer routeAnalyzer,
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
@@ -157,6 +166,7 @@ public class Analyzer {
         this.medoidSelector = medoidSelector;
         this.dbscanClusterer = dbscanClusterer;
         this.hierarchicalClusterer = hierarchicalClusterer;
+        this.routeAnalyzer = routeAnalyzer;
         this.answerChunker = answerChunker;
         this.rougeLMetric = rougeLMetric;
         this.bleuMetric = bleuMetric;
@@ -180,6 +190,24 @@ public class Analyzer {
             throw new AnalysisException("Run log has no responses: " + namedRunLog.filename());
         }
 
+        LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses);
+        if (config.clusteringAlgorithm() == ClusteringAlgorithm.ROUTE) {
+            RouteAnalysis routeAnalysis = routeAnalyzer.analyze(
+                    responses,
+                    config.route(),
+                    clusters -> new SyntacticAnalysis(routeSyntacticClusters(clusters, responses, config))
+            );
+            return new AnalysisResult(
+                    namedRunLog.filename(),
+                    runClock.now(),
+                    config,
+                    runInfo(runLog),
+                    List.of(),
+                    routeAnalysis,
+                    literalAnalysis
+            );
+        }
+
         SemanticEmbeddings semanticEmbeddings = semanticEmbeddings(responses, config);
         double[][] distances = semanticEmbeddings.distances();
         Medoid medoid = medoidSelector.select(distances);
@@ -190,7 +218,6 @@ public class Analyzer {
         );
         MetricSummary pairwiseSummary = summaryStatistics.summarize(upperTriangle(distances));
         List<AnalysisScan> scans = scans(responses, config, semanticEmbeddings, distances, medoidAnalysis, pairwiseSummary);
-        LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses);
 
         return new AnalysisResult(
                 namedRunLog.filename(),
@@ -198,6 +225,7 @@ public class Analyzer {
                 config,
                 runInfo(runLog),
                 scans,
+                null,
                 literalAnalysis
         );
     }
@@ -237,6 +265,7 @@ public class Analyzer {
                             medoidAnalysis,
                             pairwiseSummary))
                     .toList();
+            case ROUTE -> throw new AnalysisException("ROUTE clustering does not use semantic scan entries.");
         };
     }
 
@@ -371,8 +400,27 @@ public class Analyzer {
                 .toList();
     }
 
+    private List<SyntacticCluster> routeSyntacticClusters(
+            List<RouteCluster> routeClusters,
+            List<String> responses,
+            AnalysisConfig config
+    ) {
+        return routeClusters.stream()
+                .map(cluster -> syntacticCluster(cluster.clusterId(), cluster.repetitionIndices(), responses, config))
+                .toList();
+    }
+
     private SyntacticCluster syntacticCluster(SemanticCluster cluster, List<String> responses, AnalysisConfig config) {
-        List<Integer> indices = cluster.repetitionIndices().stream().map(index -> index - 1).toList();
+        return syntacticCluster(cluster.clusterId(), cluster.repetitionIndices(), responses, config);
+    }
+
+    private SyntacticCluster syntacticCluster(
+            int clusterId,
+            List<Integer> repetitionIndices,
+            List<String> responses,
+            AnalysisConfig config
+    ) {
+        List<Integer> indices = repetitionIndices.stream().map(index -> index - 1).toList();
         List<Double> rougeDistances = new ArrayList<>();
         List<Double> bleuDistances = new ArrayList<>();
         for (int i = 0; i < indices.size(); i++) {
@@ -384,7 +432,7 @@ public class Analyzer {
             }
         }
         return new SyntacticCluster(
-                cluster.clusterId(),
+                clusterId,
                 rougeDistances.size(),
                 summaryStatistics.summarize(rougeDistances),
                 summaryStatistics.summarize(bleuDistances)

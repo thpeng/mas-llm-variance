@@ -16,6 +16,8 @@ import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
 import ch.thp.mas.llm.variance.analyze.semantic.MedoidSelector;
 import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
+import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
+import ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeLMetric;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticCluster;
@@ -272,6 +274,7 @@ class AnalyzerTest {
                 new MedoidSelector(),
                 new DbscanClusterer(),
                 new HierarchicalClusterer(),
+                new RouteAnalyzer(new RouteStationExtractor()),
                 new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
@@ -302,6 +305,7 @@ class AnalyzerTest {
                 defaults.scanIncrement(),
                 defaults.dbscan(),
                 hierarchicalConfig,
+                defaults.route(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

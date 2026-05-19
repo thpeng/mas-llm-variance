@@ -170,6 +170,7 @@ class E5HttpEmbeddingServiceTest {
                 0.01,
                 new DbscanConfig(ScanRange.ofHundredths(15, 15), 2),
                 new HierarchicalConfig(ScanRange.ofHundredths(8, 8), HierarchicalLinkage.COMPLETE),
+                AnalysisConfig.defaults().route(),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

@@ -23,6 +23,7 @@ public class YamlAnalysisConfig {
     private Double scanIncrement;
     private Dbscan dbscan;
     private Hierarchical hierarchical;
+    private Route route;
     private Bleu bleu;
     private Rouge rouge;
     private PercentileMethod percentile;
@@ -131,6 +132,14 @@ public class YamlAnalysisConfig {
         this.hierarchical = hierarchical;
     }
 
+    public Route getRoute() {
+        return route;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+
     public Bleu getBleu() {
         return bleu;
     }
@@ -206,6 +215,18 @@ public class YamlAnalysisConfig {
 
         public void setLinkage(HierarchicalLinkage linkage) {
             this.linkage = linkage;
+        }
+    }
+
+    public static class Route {
+        private Integer expectedStationCount;
+
+        public Integer getExpectedStationCount() {
+            return expectedStationCount;
+        }
+
+        public void setExpectedStationCount(Integer expectedStationCount) {
+            this.expectedStationCount = expectedStationCount;
         }
     }
 

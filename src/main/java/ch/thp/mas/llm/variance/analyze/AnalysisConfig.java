@@ -9,6 +9,7 @@ import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalLinkage;
 import ch.thp.mas.llm.variance.analyze.semantic.ScanRange;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticDistanceMethod;
 import ch.thp.mas.llm.variance.analyze.semantic.SemanticRepresentation;
+import ch.thp.mas.llm.variance.analyze.route.RouteConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 import java.util.Objects;
@@ -55,6 +56,7 @@ public record AnalysisConfig(
         double scanIncrement,
         DbscanConfig dbscan,
         HierarchicalConfig hierarchical,
+        RouteConfig route,
         BleuConfig bleu,
         RougeConfig rouge,
         PercentileMethod percentile
@@ -82,6 +84,7 @@ public record AnalysisConfig(
         ScanRange.incrementHundredths(scanIncrement);
         Objects.requireNonNull(dbscan, "dbscan must not be null");
         Objects.requireNonNull(hierarchical, "hierarchical must not be null");
+        Objects.requireNonNull(route, "route must not be null");
         Objects.requireNonNull(bleu, "bleu must not be null");
         Objects.requireNonNull(rouge, "rouge must not be null");
         Objects.requireNonNull(percentile, "percentile must not be null");
@@ -127,6 +130,7 @@ public record AnalysisConfig(
                         ScanRange.of(hierarchicalThreshold, hierarchicalThreshold, scanIncrement,
                                 "analysis.hierarchical.threshold"),
                         linkage),
+                new RouteConfig(5),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK
@@ -168,6 +172,7 @@ public record AnalysisConfig(
         return switch (value.toLowerCase(java.util.Locale.ROOT)) {
             case "dbscan" -> ClusteringAlgorithm.DBSCAN;
             case "hierarchical" -> ClusteringAlgorithm.HIERARCHICAL;
+            case "route" -> ClusteringAlgorithm.ROUTE;
             default -> throw new AnalysisException("Unknown clustering algorithm: " + value);
         };
     }

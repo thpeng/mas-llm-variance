@@ -29,6 +29,9 @@
       },
       "linkage": "COMPLETE"
     },
+    "route": {
+      "expectedStationCount": 5
+    },
     "bleu": {
       "maxN": 4,
       "smoothingEpsilon": 0.1
@@ -117,6 +120,7 @@
       }
     }
   ],
+  "route": null,
   "literal": {
     "allResponsesIdentical": true,
     "responseCount": 3,
