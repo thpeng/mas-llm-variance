@@ -3,10 +3,10 @@ package ch.thp.mas.llm.variance.analyze;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
-import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoStatus;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceClassification;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceConfig;
 import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
 import ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
@@ -28,49 +28,50 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class FactualTravelInfoAnalysisIntegrationTest {
+class LiteralFormatTravelerGuidanceAnalysisIntegrationTest {
+
+    private static final String REFERENCE =
+            "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.";
 
     @Test
-    void analyzesCriticalTravelFactsWithoutEmbeddingService() {
+    void analyzesLiteralFormatTravelerGuidanceWithoutEmbeddingService() {
         AnalysisResult result = analyzer().analyze(
-                new NamedRunLog("0004-critical-travel-info-run.json", runLog(List.of(
-                        "Die Verbindung faehrt um 08:02 ab Bern, kommt um 09:15 in Zuerich HB an und hat keine Umstiege.",
-                        "Abfahrt ab Bern: 08:02, Ankunft Zuerich HB: 09:15, Umstiege: keine.",
-                        "Abfahrt 08.02, Ankunft 9.15, 0 Umstiege.",
-                        "Die Verbindung faehrt um 06:45 ab Lausanne und kommt um 09:15 in Zuerich HB an.",
-                        "Abfahrt 08:34, Ankunft 09:15, keine Umstiege."
+                new NamedRunLog("0005-literal-format-traveler-guidance-run.json", runLog(List.of(
+                        REFERENCE,
+                        "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf\n"
+                                + "die Linie S3.",
+                        REFERENCE + " Bitte beachten Sie die Anzeigen am Bahnhof.",
+                        "Reisende ab Sargans bis Chur benützen ab Sargans bis Landquart die Linien RE5 oder S12.",
+                        "Reisende von Bern nach Zürich sollen von Bern bis Bern Wankdorf die Linie S3 verwenden."
                 ))),
-                factualConfig()
+                literalFormatConfig()
         );
 
         assertThat(result.scans()).isEmpty();
         assertThat(result.route()).isNull();
-        assertThat(result.factualTravelInfo()).isNotNull();
-        assertThat(result.factualTravelInfo().responseCount()).isEqualTo(5);
-        assertThat(result.factualTravelInfo().successCount()).isEqualTo(3);
-        assertThat(result.factualTravelInfo().outlierCount()).isEqualTo(2);
-        assertThat(result.factualTravelInfo().successShare()).isEqualTo(0.6);
-        assertThat(result.factualTravelInfo().outliers()).containsExactly(4, 5);
-        assertThat(result.factualTravelInfo().departureFoundCount()).isEqualTo(3);
-        assertThat(result.factualTravelInfo().arrivalFoundCount()).isEqualTo(5);
-        assertThat(result.factualTravelInfo().changesFoundCount()).isEqualTo(4);
-        assertThat(result.factualTravelInfo().extraTimeCounts())
-                .containsEntry("06:45", 1)
-                .containsEntry("08:34", 1);
-        assertThat(result.factualTravelInfo().extractions())
-                .extracting("status")
+        assertThat(result.factualTravelInfo()).isNull();
+        assertThat(result.literalFormatTravelerGuidance()).isNotNull();
+        assertThat(result.literalFormatTravelerGuidance().responseCount()).isEqualTo(5);
+        assertThat(result.literalFormatTravelerGuidance().exactMatchCount()).isEqualTo(1);
+        assertThat(result.literalFormatTravelerGuidance().normalizedExactMatchCount()).isEqualTo(1);
+        assertThat(result.literalFormatTravelerGuidance().noMatchCount()).isEqualTo(3);
+        assertThat(result.literalFormatTravelerGuidance().outliers()).containsExactly(3, 4, 5);
+        assertThat(result.literalFormatTravelerGuidance().forbiddenTemplateTermCounts())
+                .containsEntry("Sargans", 1)
+                .containsEntry("Chur", 1)
+                .containsEntry("Landquart", 1)
+                .containsEntry("RE5", 1)
+                .containsEntry("S12", 1);
+        assertThat(result.literalFormatTravelerGuidance().additionalSentenceCandidateCount()).isEqualTo(1);
+        assertThat(result.literalFormatTravelerGuidance().extractions())
+                .extracting("classification")
                 .containsExactly(
-                        FactualTravelInfoStatus.SUCCESS,
-                        FactualTravelInfoStatus.SUCCESS,
-                        FactualTravelInfoStatus.SUCCESS,
-                        FactualTravelInfoStatus.OUTLIER,
-                        FactualTravelInfoStatus.OUTLIER
+                        LiteralFormatTravelerGuidanceClassification.EXACT_MATCH,
+                        LiteralFormatTravelerGuidanceClassification.NORMALIZED_EXACT_MATCH,
+                        LiteralFormatTravelerGuidanceClassification.NO_MATCH,
+                        LiteralFormatTravelerGuidanceClassification.NO_MATCH,
+                        LiteralFormatTravelerGuidanceClassification.NO_MATCH
                 );
-        assertThat(result.factualTravelInfo().extractions().get(3).failureReasons())
-                .containsExactly("departure_missing", "changes_missing");
-        assertThat(result.factualTravelInfo().extractions().get(4).failureReasons())
-                .containsExactly("departure_missing");
-        assertThat(result.factualTravelInfo().syntactic().clusters()).hasSize(1);
         assertThat(result.literal().responseCount()).isEqualTo(5);
     }
 
@@ -79,7 +80,8 @@ class FactualTravelInfoAnalysisIntegrationTest {
         CosineDistance cosineDistance = new CosineDistance();
         return new Analyzer(
                 (texts, config) -> {
-                    throw new AssertionError("Factual travel info analysis must not call the embedding service.");
+                    throw new AssertionError(
+                            "Literal format traveler guidance analysis must not call the embedding service.");
                 },
                 cosineDistance,
                 new ChunkAverageMinDistance(cosineDistance),
@@ -99,7 +101,7 @@ class FactualTravelInfoAnalysisIntegrationTest {
         );
     }
 
-    private static AnalysisConfig factualConfig() {
+    private static AnalysisConfig literalFormatConfig() {
         AnalysisConfig defaults = AnalysisConfig.defaults();
         return new AnalysisConfig(
                 defaults.embeddingProvider(),
@@ -111,13 +113,13 @@ class FactualTravelInfoAnalysisIntegrationTest {
                 defaults.semanticRepresentation(),
                 defaults.chunk(),
                 defaults.distance(),
-                ClusteringAlgorithm.FACTUAL_TRAVEL_INFO,
+                ClusteringAlgorithm.LITERAL_FORMAT_TRAVELER_GUIDANCE,
                 defaults.scanIncrement(),
                 defaults.dbscan(),
                 defaults.hierarchical(),
                 defaults.route(),
-                new FactualTravelInfoConfig("08:02", "09:15", 0),
-                defaults.literalFormatTravelerGuidance(),
+                defaults.factualTravelInfo(),
+                new LiteralFormatTravelerGuidanceConfig(REFERENCE),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()
@@ -125,12 +127,12 @@ class FactualTravelInfoAnalysisIntegrationTest {
     }
 
     private static RunLog runLog(List<String> responses) {
-        OffsetDateTime now = OffsetDateTime.parse("2026-05-19T10:00:00+02:00");
+        OffsetDateTime now = OffsetDateTime.parse("2026-05-19T11:00:00+02:00");
         List<RunLogEntry> entries = java.util.stream.IntStream.range(0, responses.size())
                 .mapToObj(index -> new RunLogEntry(index + 1, now, now, responses.get(index), null))
                 .toList();
         return new RunLog(
-                "0004-critical-travel-info",
+                "0005-literal-format-traveler-guidance",
                 now,
                 now,
                 InferenceProvider.OPENAI,
@@ -139,7 +141,7 @@ class FactualTravelInfoAnalysisIntegrationTest {
                 null,
                 responses.size(),
                 new RunConfigLog(0.0, 1.0, 1, 1L, Reasoning.OFF),
-                "Extrahiere Reiseinformationen.",
+                "Formuliere den Reisehinweis.",
                 entries
         );
     }
@@ -148,7 +150,7 @@ class FactualTravelInfoAnalysisIntegrationTest {
 
         @Override
         public OffsetDateTime now() {
-            return OffsetDateTime.parse("2026-05-19T10:30:00+02:00");
+            return OffsetDateTime.parse("2026-05-19T11:30:00+02:00");
         }
     }
 }

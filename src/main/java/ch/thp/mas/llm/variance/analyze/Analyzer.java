@@ -4,6 +4,8 @@ import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalysis;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalysis;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
 import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
@@ -47,6 +49,7 @@ public class Analyzer {
     private final HierarchicalClusterer hierarchicalClusterer;
     private final RouteAnalyzer routeAnalyzer;
     private final FactualTravelInfoAnalyzer factualTravelInfoAnalyzer;
+    private final LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer;
     private final AnswerChunker answerChunker;
     private final RougeLMetric rougeLMetric;
     private final BleuMetric bleuMetric;
@@ -65,6 +68,7 @@ public class Analyzer {
             HierarchicalClusterer hierarchicalClusterer,
             RouteAnalyzer routeAnalyzer,
             FactualTravelInfoAnalyzer factualTravelInfoAnalyzer,
+            LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer,
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
@@ -81,6 +85,7 @@ public class Analyzer {
                 hierarchicalClusterer,
                 routeAnalyzer,
                 factualTravelInfoAnalyzer,
+                literalFormatTravelerGuidanceAnalyzer,
                 answerChunker,
                 rougeLMetric,
                 bleuMetric,
@@ -110,6 +115,7 @@ public class Analyzer {
                 new HierarchicalClusterer(),
                 new RouteAnalyzer(new ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor()),
                 new FactualTravelInfoAnalyzer(),
+                new LiteralFormatTravelerGuidanceAnalyzer(),
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
@@ -140,6 +146,7 @@ public class Analyzer {
                 new HierarchicalClusterer(),
                 new RouteAnalyzer(new ch.thp.mas.llm.variance.analyze.route.RouteStationExtractor()),
                 new FactualTravelInfoAnalyzer(),
+                new LiteralFormatTravelerGuidanceAnalyzer(),
                 new AnswerChunker(new TextTokenizer()),
                 rougeLMetric,
                 bleuMetric,
@@ -159,6 +166,7 @@ public class Analyzer {
             HierarchicalClusterer hierarchicalClusterer,
             RouteAnalyzer routeAnalyzer,
             FactualTravelInfoAnalyzer factualTravelInfoAnalyzer,
+            LiteralFormatTravelerGuidanceAnalyzer literalFormatTravelerGuidanceAnalyzer,
             AnswerChunker answerChunker,
             RougeLMetric rougeLMetric,
             BleuMetric bleuMetric,
@@ -175,6 +183,7 @@ public class Analyzer {
         this.hierarchicalClusterer = hierarchicalClusterer;
         this.routeAnalyzer = routeAnalyzer;
         this.factualTravelInfoAnalyzer = factualTravelInfoAnalyzer;
+        this.literalFormatTravelerGuidanceAnalyzer = literalFormatTravelerGuidanceAnalyzer;
         this.answerChunker = answerChunker;
         this.rougeLMetric = rougeLMetric;
         this.bleuMetric = bleuMetric;
@@ -213,6 +222,7 @@ public class Analyzer {
                     List.of(),
                     routeAnalysis,
                     null,
+                    null,
                     literalAnalysis
             );
         }
@@ -231,6 +241,26 @@ public class Analyzer {
                     List.of(),
                     null,
                     factualTravelInfoAnalysis,
+                    null,
+                    literalAnalysis
+            );
+        }
+
+        if (config.clusteringAlgorithm() == ClusteringAlgorithm.LITERAL_FORMAT_TRAVELER_GUIDANCE) {
+            LiteralFormatTravelerGuidanceAnalysis literalFormatTravelerGuidanceAnalysis =
+                    literalFormatTravelerGuidanceAnalyzer.analyze(
+                            responses,
+                            config.literalFormatTravelerGuidance()
+                    );
+            return new AnalysisResult(
+                    namedRunLog.filename(),
+                    runClock.now(),
+                    config,
+                    runInfo(runLog),
+                    List.of(),
+                    null,
+                    null,
+                    literalFormatTravelerGuidanceAnalysis,
                     literalAnalysis
             );
         }
@@ -252,6 +282,7 @@ public class Analyzer {
                 config,
                 runInfo(runLog),
                 scans,
+                null,
                 null,
                 null,
                 literalAnalysis
@@ -296,6 +327,8 @@ public class Analyzer {
             case ROUTE -> throw new AnalysisException("ROUTE clustering does not use semantic scan entries.");
             case FACTUAL_TRAVEL_INFO -> throw new AnalysisException(
                     "FACTUAL_TRAVEL_INFO clustering does not use semantic scan entries.");
+            case LITERAL_FORMAT_TRAVELER_GUIDANCE -> throw new AnalysisException(
+                    "LITERAL_FORMAT_TRAVELER_GUIDANCE clustering does not use semantic scan entries.");
         };
     }
 

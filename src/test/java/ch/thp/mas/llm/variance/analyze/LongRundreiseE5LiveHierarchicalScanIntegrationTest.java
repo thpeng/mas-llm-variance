@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.semantic.AnswerChunker;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkAverageMinDistance;
@@ -140,6 +141,7 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
                 new HierarchicalClusterer(),
                 new RouteAnalyzer(new RouteStationExtractor()),
                 new FactualTravelInfoAnalyzer(),
+                new LiteralFormatTravelerGuidanceAnalyzer(),
                 new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
@@ -168,6 +170,7 @@ class LongRundreiseE5LiveHierarchicalScanIntegrationTest {
                         HierarchicalLinkage.COMPLETE),
                 AnalysisConfig.defaults().route(),
                 AnalysisConfig.defaults().factualTravelInfo(),
+                AnalysisConfig.defaults().literalFormatTravelerGuidance(),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

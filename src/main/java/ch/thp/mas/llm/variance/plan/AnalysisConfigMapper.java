@@ -3,6 +3,7 @@ package ch.thp.mas.llm.variance.plan;
 import ch.thp.mas.llm.variance.analyze.AnalysisConfig;
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.HierarchicalConfig;
@@ -43,6 +44,7 @@ public class AnalysisConfigMapper {
                 hierarchical(yaml, defaults, scanIncrement),
                 route(yaml, defaults),
                 factualTravelInfo(yaml, defaults),
+                literalFormatTravelerGuidance(yaml, defaults),
                 bleu(yaml, defaults),
                 rouge(yaml, defaults),
                 valueOrDefault(yaml.getPercentile(), defaults.percentile())
@@ -97,6 +99,19 @@ public class AnalysisConfigMapper {
                 valueOrDefault(factualTravelInfo.getDepartureFromBern(), defaults.factualTravelInfo().departureFromBern()),
                 valueOrDefault(factualTravelInfo.getArrivalAtZurich(), defaults.factualTravelInfo().arrivalAtZurich()),
                 valueOrDefault(factualTravelInfo.getChanges(), defaults.factualTravelInfo().changes())
+        );
+    }
+
+    private static LiteralFormatTravelerGuidanceConfig literalFormatTravelerGuidance(
+            YamlAnalysisConfig yaml,
+            AnalysisConfig defaults
+    ) {
+        YamlAnalysisConfig.LiteralFormatTravelerGuidance config = yaml.getLiteralFormatTravelerGuidance();
+        if (config == null) {
+            return defaults.literalFormatTravelerGuidance();
+        }
+        return new LiteralFormatTravelerGuidanceConfig(
+                valueOrDefault(config.getReference(), defaults.literalFormatTravelerGuidance().reference())
         );
     }
 

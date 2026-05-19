@@ -172,6 +172,7 @@ class E5HttpEmbeddingServiceTest {
                 new HierarchicalConfig(ScanRange.ofHundredths(8, 8), HierarchicalLinkage.COMPLETE),
                 AnalysisConfig.defaults().route(),
                 AnalysisConfig.defaults().factualTravelInfo(),
+                AnalysisConfig.defaults().literalFormatTravelerGuidance(),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK

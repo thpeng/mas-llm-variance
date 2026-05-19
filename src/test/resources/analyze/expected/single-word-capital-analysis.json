@@ -37,6 +37,9 @@
       "arrivalAtZurich": "09:15",
       "changes": 0
     },
+    "literalFormatTravelerGuidance": {
+      "reference": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3."
+    },
     "bleu": {
       "maxN": 4,
       "smoothingEpsilon": 0.1
@@ -127,6 +130,7 @@
   ],
   "route": null,
   "factualTravelInfo": null,
+  "literalFormatTravelerGuidance": null,
   "literal": {
     "allResponsesIdentical": true,
     "responseCount": 3,

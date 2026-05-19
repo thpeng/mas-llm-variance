@@ -25,6 +25,7 @@ public class YamlAnalysisConfig {
     private Hierarchical hierarchical;
     private Route route;
     private FactualTravelInfo factualTravelInfo;
+    private LiteralFormatTravelerGuidance literalFormatTravelerGuidance;
     private Bleu bleu;
     private Rouge rouge;
     private PercentileMethod percentile;
@@ -149,6 +150,14 @@ public class YamlAnalysisConfig {
         this.factualTravelInfo = factualTravelInfo;
     }
 
+    public LiteralFormatTravelerGuidance getLiteralFormatTravelerGuidance() {
+        return literalFormatTravelerGuidance;
+    }
+
+    public void setLiteralFormatTravelerGuidance(LiteralFormatTravelerGuidance literalFormatTravelerGuidance) {
+        this.literalFormatTravelerGuidance = literalFormatTravelerGuidance;
+    }
+
     public Bleu getBleu() {
         return bleu;
     }
@@ -266,6 +275,18 @@ public class YamlAnalysisConfig {
 
         public void setChanges(Integer changes) {
             this.changes = changes;
+        }
+    }
+
+    public static class LiteralFormatTravelerGuidance {
+        private String reference;
+
+        public String getReference() {
+            return reference;
+        }
+
+        public void setReference(String reference) {
+            this.reference = reference;
         }
     }
 

@@ -3,6 +3,7 @@ package ch.thp.mas.llm.variance.analyze;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalyzer;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalyzer;
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalyzer;
 import ch.thp.mas.llm.variance.analyze.route.Destination;
 import ch.thp.mas.llm.variance.analyze.route.RouteAnalyzer;
@@ -286,6 +287,7 @@ class RouteClusteringIntegrationTest {
                 new HierarchicalClusterer(),
                 new RouteAnalyzer(new RouteStationExtractor()),
                 new FactualTravelInfoAnalyzer(),
+                new LiteralFormatTravelerGuidanceAnalyzer(),
                 new AnswerChunker(tokenizer),
                 new RougeLMetric(tokenizer),
                 new BleuMetric(tokenizer),
@@ -314,6 +316,7 @@ class RouteClusteringIntegrationTest {
                 defaults.hierarchical(),
                 new RouteConfig(5),
                 defaults.factualTravelInfo(),
+                defaults.literalFormatTravelerGuidance(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()

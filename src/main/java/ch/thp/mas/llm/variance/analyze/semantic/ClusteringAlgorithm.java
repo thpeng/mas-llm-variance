@@ -4,5 +4,6 @@ public enum ClusteringAlgorithm {
     DBSCAN,
     HIERARCHICAL,
     ROUTE,
-    FACTUAL_TRAVEL_INFO
+    FACTUAL_TRAVEL_INFO,
+    LITERAL_FORMAT_TRAVELER_GUIDANCE
 }

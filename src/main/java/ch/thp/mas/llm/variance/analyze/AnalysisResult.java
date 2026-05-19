@@ -2,6 +2,7 @@ package ch.thp.mas.llm.variance.analyze;
 
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoAnalysis;
 import ch.thp.mas.llm.variance.analyze.literal.LiteralAnalysis;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceAnalysis;
 import ch.thp.mas.llm.variance.analyze.route.RouteAnalysis;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -14,6 +15,7 @@ public record AnalysisResult(
         List<AnalysisScan> scans,
         RouteAnalysis route,
         FactualTravelInfoAnalysis factualTravelInfo,
+        LiteralFormatTravelerGuidanceAnalysis literalFormatTravelerGuidance,
         LiteralAnalysis literal
 ) {
 }

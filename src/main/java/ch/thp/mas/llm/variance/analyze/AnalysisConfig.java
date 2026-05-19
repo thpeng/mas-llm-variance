@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.analyze;
 
 import ch.thp.mas.llm.variance.analyze.factual.FactualTravelInfoConfig;
+import ch.thp.mas.llm.variance.analyze.literalformat.LiteralFormatTravelerGuidanceConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ChunkConfig;
 import ch.thp.mas.llm.variance.analyze.semantic.ClusteringAlgorithm;
 import ch.thp.mas.llm.variance.analyze.semantic.DbscanConfig;
@@ -59,6 +60,7 @@ public record AnalysisConfig(
         HierarchicalConfig hierarchical,
         RouteConfig route,
         FactualTravelInfoConfig factualTravelInfo,
+        LiteralFormatTravelerGuidanceConfig literalFormatTravelerGuidance,
         BleuConfig bleu,
         RougeConfig rouge,
         PercentileMethod percentile
@@ -88,6 +90,7 @@ public record AnalysisConfig(
         Objects.requireNonNull(hierarchical, "hierarchical must not be null");
         Objects.requireNonNull(route, "route must not be null");
         Objects.requireNonNull(factualTravelInfo, "factualTravelInfo must not be null");
+        Objects.requireNonNull(literalFormatTravelerGuidance, "literalFormatTravelerGuidance must not be null");
         Objects.requireNonNull(bleu, "bleu must not be null");
         Objects.requireNonNull(rouge, "rouge must not be null");
         Objects.requireNonNull(percentile, "percentile must not be null");
@@ -135,6 +138,8 @@ public record AnalysisConfig(
                         linkage),
                 new RouteConfig(5),
                 new FactualTravelInfoConfig("08:02", "09:15", 0),
+                new LiteralFormatTravelerGuidanceConfig(
+                        "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3."),
                 new BleuConfig(4, 0.1),
                 new RougeConfig(RougeConfig.Variant.ROUGE_L, RougeConfig.Aggregation.F1),
                 PercentileMethod.NEAREST_RANK
@@ -178,6 +183,8 @@ public record AnalysisConfig(
             case "hierarchical" -> ClusteringAlgorithm.HIERARCHICAL;
             case "route" -> ClusteringAlgorithm.ROUTE;
             case "factual-travel-info", "factual_travel_info" -> ClusteringAlgorithm.FACTUAL_TRAVEL_INFO;
+            case "literal-format-traveler-guidance", "literal_format_traveler_guidance" ->
+                    ClusteringAlgorithm.LITERAL_FORMAT_TRAVELER_GUIDANCE;
             default -> throw new AnalysisException("Unknown clustering algorithm: " + value);
         };
     }

@@ -146,6 +146,7 @@ class MultilingualE5AnalysisIntegrationTest {
                 defaults.hierarchical(),
                 defaults.route(),
                 defaults.factualTravelInfo(),
+                defaults.literalFormatTravelerGuidance(),
                 defaults.bleu(),
                 defaults.rouge(),
                 defaults.percentile()
