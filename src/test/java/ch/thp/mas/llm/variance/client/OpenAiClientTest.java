@@ -22,4 +22,27 @@ class OpenAiClientTest {
         assertThat(OpenAiClient.supportsReasoning(null)).isFalse();
         assertThat(OpenAiClient.supportsReasoning("")).isFalse();
     }
+
+    @Test
+    void omitsSamplingParametersForReasoningModelWhenReasoningIsEnabled() {
+        assertThat(OpenAiClient.sendsSamplingParameters(
+                config("gpt-5.4-mini-2026-03-17", Reasoning.LOW))).isFalse();
+        assertThat(OpenAiClient.sendsSamplingParameters(
+                config("gpt-5.4-mini-2026-03-17", Reasoning.MEDIUM))).isFalse();
+        assertThat(OpenAiClient.sendsSamplingParameters(
+                config("gpt-5.4-mini-2026-03-17", Reasoning.HIGH))).isFalse();
+        assertThat(OpenAiClient.sendsSamplingParameters(
+                config("gpt-5.4-mini-2026-03-17", Reasoning.XHIGH))).isFalse();
+        assertThat(OpenAiClient.sendsSamplingParameters(
+                config("gpt-5.4-mini-2026-03-17", Reasoning.OFF))).isTrue();
+        assertThat(OpenAiClient.sendsSamplingParameters(
+                new LlmRequestConfig("gpt-5.4-mini-2026-03-17", 0.0, 1.0, 1, 1L, Reasoning.HIGH, false)))
+                .isTrue();
+        assertThat(OpenAiClient.sendsSamplingParameters(
+                config("gpt-4o-2024-11-20", Reasoning.LOW))).isTrue();
+    }
+
+    private static LlmRequestConfig config(String model, Reasoning reasoning) {
+        return new LlmRequestConfig(model, 0.0, 1.0, 1, 1L, reasoning);
+    }
 }

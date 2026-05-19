@@ -13,6 +13,25 @@ public record AnalysisRunInfo(
         Double topP,
         Integer topK,
         Long seed,
-        Reasoning reasoning
+        String seedSetting,
+        Reasoning reasoning,
+        boolean sendReasoning,
+        String reasoningProviderValue
 ) {
+
+    public AnalysisRunInfo(
+            String planName,
+            InferenceProvider inferenceProvider,
+            String model,
+            String modelVersion,
+            int iterations,
+            Double temperature,
+            Double topP,
+            Integer topK,
+            Long seed,
+            Reasoning reasoning
+    ) {
+        this(planName, inferenceProvider, model, modelVersion, iterations, temperature, topP, topK, seed,
+                seed == null ? "RANDOM" : seed.toString(), reasoning, true, null);
+    }
 }

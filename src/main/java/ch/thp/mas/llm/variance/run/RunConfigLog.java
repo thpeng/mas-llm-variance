@@ -7,6 +7,19 @@ public record RunConfigLog(
         Double topP,
         Integer topK,
         Long seed,
-        Reasoning reasoning
+        String seedSetting,
+        Reasoning reasoning,
+        boolean sendReasoning,
+        String reasoningProviderValue
 ) {
+
+    public RunConfigLog(
+            Double temperature,
+            Double topP,
+            Integer topK,
+            Long seed,
+            Reasoning reasoning
+    ) {
+        this(temperature, topP, topK, seed, seed == null ? "RANDOM" : seed.toString(), reasoning, true, null);
+    }
 }

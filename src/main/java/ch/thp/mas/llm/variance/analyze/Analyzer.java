@@ -205,7 +205,10 @@ public class Analyzer {
                 runLog.config().topP(),
                 runLog.config().topK(),
                 runLog.config().seed(),
-                runLog.config().reasoning()
+                runLog.config().seedSetting(),
+                runLog.config().reasoning(),
+                runLog.config().sendReasoning(),
+                runLog.config().reasoningProviderValue()
         );
     }
 

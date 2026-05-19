@@ -16,6 +16,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.random.RandomGenerator;
 import org.junit.jupiter.api.Test;
 
 class PlanRunnerTest {
@@ -48,8 +49,11 @@ class PlanRunnerTest {
         assertThat(runLog.planName()).isEqualTo("0001-test");
         assertThat(runLog.modelVersion()).isNull();
         assertThat(runLog.config().seed()).isEqualTo(123L);
+        assertThat(runLog.config().seedSetting()).isEqualTo("123");
         assertThat(runLog.config().reasoning()).isEqualTo(Reasoning.OFF);
         assertThat(runLog.repetitions()).hasSize(3);
+        assertThat(runLog.repetitions()).extracting(RunLogEntry::seed)
+                .containsExactly(123L, 123L, 123L);
         assertThat(runLog.repetitions()).extracting(RunLogEntry::response)
                 .containsExactly("answer-1", "answer-2", "answer-3");
         assertThat(runLog.repetitions().getFirst().tokenUsage())
@@ -63,6 +67,43 @@ class PlanRunnerTest {
             assertThat(config.seed()).isEqualTo(123L);
             assertThat(config.reasoning()).isEqualTo(Reasoning.OFF);
         });
+    }
+
+    @Test
+    void generatesAndLogsConcreteSeedForEachRandomSeedRepetition() throws Exception {
+        RecordingClient client = new RecordingClient();
+        RecordingRunLogWriter writer = new RecordingRunLogWriter();
+        PlanRunner runner = new PlanRunner(
+                (InferenceSessionFactory) plan -> new RecordingSession(client),
+                new FixedRunClock(),
+                writer,
+                new FixedRandomGenerator(41L)
+        );
+
+        RunLog runLog = runner.run(new ResolvedPlan(
+                "0001-test",
+                InferenceProvider.OPENAI,
+                "gpt-test",
+                "hello",
+                3,
+                0.1,
+                0.9,
+                4,
+                null,
+                "RANDOM",
+                Reasoning.OFF,
+                true,
+                null,
+                null,
+                null
+        ));
+
+        assertThat(runLog.config().seed()).isNull();
+        assertThat(runLog.config().seedSetting()).isEqualTo("RANDOM");
+        assertThat(runLog.repetitions()).extracting(RunLogEntry::seed)
+                .containsExactly(42L, 43L, 44L);
+        assertThat(client.configs).extracting(LlmRequestConfig::seed)
+                .containsExactly(42L, 43L, 44L);
     }
 
     @Test
@@ -239,6 +280,30 @@ class PlanRunnerTest {
         public java.nio.file.Path write(RunLog runLog) {
             logs.add(runLog);
             return java.nio.file.Path.of("ignored");
+        }
+    }
+
+    private static class FixedRandomGenerator implements RandomGenerator {
+
+        private long value;
+
+        FixedRandomGenerator(long initialValue) {
+            this.value = initialValue;
+        }
+
+        @Override
+        public long nextLong(long origin, long bound) {
+            return ++value;
+        }
+
+        @Override
+        public long nextLong() {
+            return nextLong(0, Long.MAX_VALUE);
+        }
+
+        @Override
+        public int nextInt() {
+            return Math.toIntExact(nextLong());
         }
     }
 }

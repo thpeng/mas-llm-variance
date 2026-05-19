@@ -43,7 +43,9 @@ public class LmStudioChatClient implements LlmClient {
         request.put("model", config.model());
         request.put("input", prompt);
         request.put("store", false);
-        request.put("reasoning", config.reasoning().lmStudioValue());
+        if (config.sendReasoning()) {
+            request.put("reasoning", reasoningValue(config));
+        }
         if (config.temperature() != null) {
             request.put("temperature", config.temperature());
         }
@@ -110,5 +112,12 @@ public class LmStudioChatClient implements LlmClient {
 
     private static String stripTrailingSlash(String value) {
         return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+
+    private static String reasoningValue(LlmRequestConfig config) {
+        if (config.reasoningProviderValue() != null && !config.reasoningProviderValue().isBlank()) {
+            return config.reasoningProviderValue();
+        }
+        return config.reasoning().lmStudioValue();
     }
 }

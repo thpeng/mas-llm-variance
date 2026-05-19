@@ -7,7 +7,18 @@ public record RunLogEntry(
         int index,
         OffsetDateTime startedAt,
         OffsetDateTime endedAt,
+        Long seed,
         String response,
         TokenUsage tokenUsage
 ) {
+
+    public RunLogEntry(
+            int index,
+            OffsetDateTime startedAt,
+            OffsetDateTime endedAt,
+            String response,
+            TokenUsage tokenUsage
+    ) {
+        this(index, startedAt, endedAt, null, response, tokenUsage);
+    }
 }

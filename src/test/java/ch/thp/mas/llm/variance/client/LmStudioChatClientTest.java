@@ -74,7 +74,7 @@ class LmStudioChatClientTest {
     }
 
     @Test
-    void sendsOffReasoningAndOmitsNullGenerationParameters() throws Exception {
+    void omitsOffReasoningAndNullGenerationParameters() throws Exception {
         startServer(200, """
                 {
                   "output": [{"type": "message", "content": "Antwort"}],
@@ -83,14 +83,44 @@ class LmStudioChatClientTest {
                 """);
         LmStudioChatClient client = new LmStudioChatClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
 
-        client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.OFF));
+        client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.OFF, false));
 
         JsonNode request = requests.getFirst();
-        assertThat(request.path("reasoning").asText()).isEqualTo("off");
+        assertThat(request.has("reasoning")).isFalse();
         assertThat(request.has("temperature")).isFalse();
         assertThat(request.has("top_p")).isFalse();
         assertThat(request.has("top_k")).isFalse();
         assertThat(authorizationHeaders).containsExactly("<none>");
+    }
+
+    @Test
+    void sendsOffReasoningWhenConfiguredExplicitly() throws Exception {
+        startServer(200, """
+                {
+                  "output": [{"type": "message", "content": "Antwort"}],
+                  "stats": {}
+                }
+                """);
+        LmStudioChatClient client = new LmStudioChatClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
+
+        client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.OFF, true));
+
+        assertThat(requests.getFirst().path("reasoning").asText()).isEqualTo("off");
+    }
+
+    @Test
+    void sendsProviderReasoningValueWhenConfigured() throws Exception {
+        startServer(200, """
+                {
+                  "output": [{"type": "message", "content": "Antwort"}],
+                  "stats": {}
+                }
+                """);
+        LmStudioChatClient client = new LmStudioChatClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
+
+        client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.HIGH, true, "on"));
+
+        assertThat(requests.getFirst().path("reasoning").asText()).isEqualTo("on");
     }
 
     @Test

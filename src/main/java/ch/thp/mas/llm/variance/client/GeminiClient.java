@@ -65,9 +65,9 @@ public class GeminiClient implements LlmClient {
         if (config.seed() != null) {
             generationConfig.put("seed", Math.toIntExact(config.seed()));
         }
-        if (config.reasoning() != null) {
+        if (config.sendReasoning() && config.reasoning() != null) {
             generationConfig.set("thinkingConfig", objectMapper.createObjectNode()
-                    .put("thinkingLevel", config.reasoning().geminiThinkingLevel()));
+                    .put("thinkingLevel", reasoningValue(config)));
         }
         if (!generationConfig.isEmpty()) {
             request.set("generationConfig", generationConfig);
@@ -121,5 +121,12 @@ public class GeminiClient implements LlmClient {
 
     private static String stripTrailingSlash(String value) {
         return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+
+    private static String reasoningValue(LlmRequestConfig config) {
+        if (config.reasoningProviderValue() != null && !config.reasoningProviderValue().isBlank()) {
+            return config.reasoningProviderValue();
+        }
+        return config.reasoning().geminiThinkingLevel();
     }
 }

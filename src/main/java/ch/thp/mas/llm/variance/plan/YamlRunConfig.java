@@ -9,6 +9,8 @@ public class YamlRunConfig {
     private Integer topK;
     private String seed;
     private String reasoning;
+    private Boolean sendReasoning;
+    private String reasoningProviderValue;
     private LmStudioLoadConfig load;
 
     public String getPrompt() {
@@ -65,6 +67,22 @@ public class YamlRunConfig {
 
     public void setReasoning(String reasoning) {
         this.reasoning = reasoning;
+    }
+
+    public Boolean getSendReasoning() {
+        return sendReasoning;
+    }
+
+    public void setSendReasoning(Boolean sendReasoning) {
+        this.sendReasoning = sendReasoning;
+    }
+
+    public String getReasoningProviderValue() {
+        return reasoningProviderValue;
+    }
+
+    public void setReasoningProviderValue(String reasoningProviderValue) {
+        this.reasoningProviderValue = reasoningProviderValue;
     }
 
     public LmStudioLoadConfig getLoad() {

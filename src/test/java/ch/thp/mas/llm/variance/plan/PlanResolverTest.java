@@ -46,8 +46,19 @@ class PlanResolverTest {
         assertThat(resolved.topP()).isEqualTo(0.8);
         assertThat(resolved.topK()).isEqualTo(5);
         assertThat(resolved.seed()).isEqualTo(123L);
+        assertThat(resolved.seedSetting()).isEqualTo("123");
         assertThat(resolved.reasoning()).isEqualTo(Reasoning.HIGH);
+        assertThat(resolved.sendReasoning()).isTrue();
+        assertThat(resolved.reasoningProviderValue()).isNull();
         assertThat(resolved.modelVersion()).isEqualTo("2026-05");
+    }
+
+    @Test
+    void commandLineCanDisableSendingReasoning() {
+        ResolvedPlan resolved = resolver.resolve(loadedPlan(), args("--sendReasoning=false"));
+
+        assertThat(resolved.reasoning()).isEqualTo(Reasoning.OFF);
+        assertThat(resolved.sendReasoning()).isFalse();
     }
 
     @Test
@@ -55,6 +66,7 @@ class PlanResolverTest {
         ResolvedPlan resolved = resolver.resolve(loadedPlan(), args());
 
         assertThat(resolved.reasoning()).isEqualTo(Reasoning.OFF);
+        assertThat(resolved.sendReasoning()).isTrue();
     }
 
     @Test
@@ -69,6 +81,15 @@ class PlanResolverTest {
         ResolvedPlan resolved = resolver.resolve(loadedPlan(), args("--seed=random"));
 
         assertThat(resolved.seed()).isNull();
+        assertThat(resolved.seedSetting()).isEqualTo("RANDOM");
+    }
+
+    @Test
+    void acceptsReasoningProviderValue() {
+        ResolvedPlan resolved = resolver.resolve(loadedPlan(), args("--reasoning=high", "--reasoningProviderValue=on"));
+
+        assertThat(resolved.reasoning()).isEqualTo(Reasoning.HIGH);
+        assertThat(resolved.reasoningProviderValue()).isEqualTo("on");
     }
 
     @Test

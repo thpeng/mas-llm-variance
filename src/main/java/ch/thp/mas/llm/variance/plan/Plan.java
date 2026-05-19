@@ -20,6 +20,10 @@ public interface Plan {
 
     String getReasoning();
 
+    Boolean getSendReasoning();
+
+    String getReasoningProviderValue();
+
     LmStudioLoadConfig getLoad();
 
     int getIterations();

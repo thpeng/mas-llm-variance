@@ -25,17 +25,17 @@ public class OpenAiClient implements LlmClient {
                 .model(config.model())
                 .input(prompt);
 
-        if (config.temperature() != null) {
+        if (sendsSamplingParameters(config) && config.temperature() != null) {
             builder.temperature(config.temperature());
         }
-        if (config.topP() != null) {
+        if (sendsSamplingParameters(config) && config.topP() != null) {
             builder.topP(config.topP());
         }
-        if (config.reasoning() != null && supportsReasoning(config.model())) {
+        if (config.sendReasoning() && config.reasoning() != null && supportsReasoning(config.model())) {
             builder.reasoning(com.openai.models.Reasoning.builder()
-                    .effort(ReasoningEffort.of(config.reasoning().openAiReasoningEffort()))
+                    .effort(ReasoningEffort.of(reasoningValue(config)))
                     .build());
-        } else if (config.reasoning() != null && config.reasoning() != Reasoning.OFF) {
+        } else if (config.sendReasoning() && config.reasoning() != null && config.reasoning() != Reasoning.OFF) {
             throw new IllegalArgumentException("OpenAI model '" + config.model()
                     + "' does not support reasoning. Set reasoning to 'off' or use an OpenAI reasoning model.");
         }
@@ -78,5 +78,17 @@ public class OpenAiClient implements LlmClient {
                 || normalized.startsWith("o3")
                 || normalized.startsWith("o4")
                 || normalized.startsWith("gpt-5");
+    }
+
+    static boolean sendsSamplingParameters(LlmRequestConfig config) {
+        return !(config.sendReasoning() && supportsReasoning(config.model()) && config.reasoning() != null
+                && config.reasoning() != Reasoning.OFF);
+    }
+
+    private static String reasoningValue(LlmRequestConfig config) {
+        if (config.reasoningProviderValue() != null && !config.reasoningProviderValue().isBlank()) {
+            return config.reasoningProviderValue();
+        }
+        return config.reasoning().openAiReasoningEffort();
     }
 }

@@ -15,6 +15,8 @@ public class YamlPlan implements Plan {
     private Integer topK;
     private Long seed;
     private String reasoning;
+    private Boolean sendReasoning;
+    private String reasoningProviderValue;
     private LmStudioLoadConfig load;
     private int iterations = 30;
 
@@ -115,6 +117,24 @@ public class YamlPlan implements Plan {
 
     public void setReasoning(String reasoning) {
         this.reasoning = reasoning;
+    }
+
+    @Override
+    public Boolean getSendReasoning() {
+        return run == null ? sendReasoning : run.getSendReasoning();
+    }
+
+    public void setSendReasoning(Boolean sendReasoning) {
+        this.sendReasoning = sendReasoning;
+    }
+
+    @Override
+    public String getReasoningProviderValue() {
+        return run == null ? reasoningProviderValue : run.getReasoningProviderValue();
+    }
+
+    public void setReasoningProviderValue(String reasoningProviderValue) {
+        this.reasoningProviderValue = reasoningProviderValue;
     }
 
     @Override

@@ -27,12 +27,9 @@ class DestinationTest {
         assertThat(Destination.fromRawName("Losanna")).contains(Destination.LAUSANNE);
         assertThat(Destination.fromRawName("Locarno")).contains(Destination.LOCARNO);
         assertThat(Destination.fromRawName("Grindelwald")).contains(Destination.GRINDELWALD);
-        assertThat(Destination.fromRawName("Jungfraujoch")).contains(Destination.JUNGFRAUJOCH);
         assertThat(Destination.fromRawName("Lauterbrunnen")).contains(Destination.LAUTERBRUNNEN);
         assertThat(Destination.fromRawName("Muerren")).contains(Destination.MUERREN);
         assertThat(Destination.fromRawName("Mürren")).contains(Destination.MUERREN);
-        assertThat(Destination.fromRawName("Pilatus")).contains(Destination.PILATUS);
-        assertThat(Destination.fromRawName("Rigi")).contains(Destination.RIGI);
         assertThat(Destination.fromRawName("Saas Fee")).contains(Destination.SAAS_FEE);
         assertThat(Destination.fromRawName("Saas-Fee")).contains(Destination.SAAS_FEE);
         assertThat(Destination.fromRawName("Schaffhouse")).contains(Destination.SCHAFFHAUSEN);
@@ -56,5 +53,8 @@ class DestinationTest {
         assertThat(Destination.fromRawName("St. Moritz oder Engadin")).isEmpty();
         assertThat(Destination.fromRawName("St. Moritz oder Chur")).isEmpty();
         assertThat(Destination.fromRawName("Engadin")).isEmpty();
+        assertThat(Destination.fromRawName("Jungfraujoch")).isEmpty();
+        assertThat(Destination.fromRawName("Pilatus")).isEmpty();
+        assertThat(Destination.fromRawName("Rigi")).isEmpty();
     }
 }
