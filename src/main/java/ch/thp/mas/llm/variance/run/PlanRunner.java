@@ -67,7 +67,10 @@ public class PlanRunner {
                 OffsetDateTime startedAt = runClock.now();
                 LlmResponse response = session.client().call(plan.prompt(), config);
                 OffsetDateTime endedAt = runClock.now();
-                repetitions.add(new RunLogEntry(i + 1, startedAt, endedAt, requestSeed, response.text(),
+                repetitions.add(new RunLogEntry(i + 1, startedAt, endedAt, requestSeed,
+                        response.requestTrace() == null ? null : response.requestTrace().url(),
+                        response.requestTrace() == null ? null : response.requestTrace().headers(),
+                        response.text(),
                         response.tokenUsage()));
                 System.out.println(response.text() + ", ");
             }

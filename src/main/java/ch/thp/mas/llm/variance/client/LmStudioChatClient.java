@@ -56,7 +56,8 @@ public class LmStudioChatClient implements LlmClient {
             request.put("top_k", config.topK());
         }
 
-        JsonNode response = post("/api/v1/chat", request);
+        HttpJsonResponse httpResponse = post("/api/v1/chat", request);
+        JsonNode response = httpResponse.body();
         List<String> messages = new ArrayList<>();
         for (JsonNode item : response.path("output")) {
             if ("message".equals(item.path("type").asText())) {
@@ -76,22 +77,24 @@ public class LmStudioChatClient implements LlmClient {
         return new LlmResponse(
                 String.join("\n", messages).trim(),
                 TokenUsage.of(inputTokens, outputTokens),
-                textValue(response, "model_instance_id")
+                textValue(response, "model_instance_id"),
+                httpResponse.requestTrace()
         );
     }
 
-    private JsonNode post(String path, JsonNode body) throws Exception {
+    private HttpJsonResponse post(String path, JsonNode body) throws Exception {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path))
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofMinutes(10))
                 .version(HttpClient.Version.HTTP_1_1)
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)));
         addAuthorization(builder);
-        HttpResponse<String> response = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        HttpRequest request = builder.build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new IllegalStateException(path + " failed with HTTP " + response.statusCode() + ": " + response.body());
         }
-        return objectMapper.readTree(response.body());
+        return new HttpJsonResponse(objectMapper.readTree(response.body()), RequestTrace.of(request));
     }
 
     private void addAuthorization(HttpRequest.Builder builder) {
@@ -119,5 +122,8 @@ public class LmStudioChatClient implements LlmClient {
             return config.reasoningProviderValue();
         }
         return config.reasoning().lmStudioValue();
+    }
+
+    private record HttpJsonResponse(JsonNode body, RequestTrace requestTrace) {
     }
 }

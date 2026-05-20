@@ -38,12 +38,13 @@ public class GeminiClient implements LlmClient {
 
     @Override
     public LlmResponse call(String prompt, LlmRequestConfig config) throws Exception {
-        JsonNode response = post(config.model(), request(prompt, config));
+        HttpJsonResponse httpResponse = post(config.model(), request(prompt, config));
+        JsonNode response = httpResponse.body();
         String text = responseText(response);
         if (text.isBlank()) {
             throw new IllegalStateException("Gemini response did not contain text output.");
         }
-        return new LlmResponse(text.trim(), tokenUsage(response));
+        return new LlmResponse(text.trim(), tokenUsage(response), null, httpResponse.requestTrace());
     }
 
     private ObjectNode request(String prompt, LlmRequestConfig config) {
@@ -75,7 +76,7 @@ public class GeminiClient implements LlmClient {
         return request;
     }
 
-    private JsonNode post(String model, JsonNode body) throws Exception {
+    private HttpJsonResponse post(String model, JsonNode body) throws Exception {
         String encodedModel = URLEncoder.encode(model, StandardCharsets.UTF_8).replace("+", "%20");
         String encodedApiKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
         URI uri = URI.create(baseUrl + "/models/" + encodedModel + ":generateContent?key=" + encodedApiKey);
@@ -90,7 +91,7 @@ public class GeminiClient implements LlmClient {
             throw new IllegalStateException("Gemini generateContent failed for model '" + model + "' with HTTP "
                     + response.statusCode() + ": " + response.body());
         }
-        return objectMapper.readTree(response.body());
+        return new HttpJsonResponse(objectMapper.readTree(response.body()), RequestTrace.of(request));
     }
 
     private static String responseText(JsonNode response) {
@@ -128,5 +129,8 @@ public class GeminiClient implements LlmClient {
             return config.reasoningProviderValue();
         }
         return config.reasoning().geminiThinkingLevel();
+    }
+
+    private record HttpJsonResponse(JsonNode body, RequestTrace requestTrace) {
     }
 }

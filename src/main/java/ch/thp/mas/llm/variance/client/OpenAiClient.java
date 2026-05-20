@@ -8,6 +8,8 @@ import com.openai.models.responses.ResponseCreateParams;
 import com.openai.models.responses.ResponseOutputItem;
 import com.openai.models.responses.ResponseOutputMessage;
 import com.openai.models.responses.ResponseUsage;
+import java.util.List;
+import java.util.Map;
 
 public class OpenAiClient implements LlmClient {
 
@@ -49,14 +51,14 @@ public class OpenAiClient implements LlmClient {
                     if (content.isOutputText()) {
                         String text = content.asOutputText().text();
                         if (text != null && !text.isBlank()) {
-                            return new LlmResponse(text.trim(), tokenUsage(response));
+                            return new LlmResponse(text.trim(), tokenUsage(response), null, requestTrace());
                         }
                     }
                 }
             }
         }
 
-        return new LlmResponse(response.toString(), tokenUsage(response));
+        return new LlmResponse(response.toString(), tokenUsage(response), null, requestTrace());
     }
 
     private TokenUsage tokenUsage(Response response) {
@@ -90,5 +92,11 @@ public class OpenAiClient implements LlmClient {
             return config.reasoningProviderValue();
         }
         return config.reasoning().openAiReasoningEffort();
+    }
+
+    private static RequestTrace requestTrace() {
+        return RequestTrace.of("https://api.openai.com/v1/responses", Map.of(
+                "Content-Type", List.of("application/json")
+        ));
     }
 }

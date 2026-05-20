@@ -62,6 +62,10 @@ class GeminiClientTest {
 
         assertThat(response.text()).isEqualTo("Antwort eins\nAntwort zwei");
         assertThat(response.tokenUsage()).isEqualTo(new TokenUsage(10L, 5L, 15L));
+        assertThat(response.requestTrace().url())
+                .isEqualTo(baseUrl() + "/models/gemini-3-flash:generateContent?key=%3Credacted%3E");
+        assertThat(response.requestTrace().headers())
+                .containsEntry("Content-Type", List.of("application/json"));
         assertThat(paths).containsExactly("/models/gemini-3-flash:generateContent");
         assertThat(queries).containsExactly("key=key-1");
         JsonNode request = requests.getFirst();

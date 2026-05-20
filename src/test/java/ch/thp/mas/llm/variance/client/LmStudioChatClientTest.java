@@ -61,6 +61,10 @@ class LmStudioChatClientTest {
         assertThat(response.text()).isEqualTo("Antwort eins\nAntwort zwei");
         assertThat(response.tokenUsage()).isEqualTo(new TokenUsage(10L, 5L, 15L));
         assertThat(response.modelInstanceId()).isEqualTo("instance-1");
+        assertThat(response.requestTrace().url()).isEqualTo(baseUrl() + "/api/v1/chat");
+        assertThat(response.requestTrace().headers())
+                .containsEntry("Content-Type", List.of("application/json"));
+        assertThat(response.requestTrace().headers()).doesNotContainKey("Authorization");
         assertThat(requests).hasSize(1);
         JsonNode request = requests.getFirst();
         assertThat(request.path("model").asText()).isEqualTo("model-a");

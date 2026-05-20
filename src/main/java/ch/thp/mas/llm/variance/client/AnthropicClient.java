@@ -5,6 +5,8 @@ import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.Message;
 import com.anthropic.models.messages.MessageCreateParams;
 import com.anthropic.models.messages.Usage;
+import java.util.List;
+import java.util.Map;
 
 public class AnthropicClient implements LlmClient {
 
@@ -38,12 +40,12 @@ public class AnthropicClient implements LlmClient {
             if (block.isText()) {
                 String text = block.asText().text();
                 if (text != null && !text.isBlank()) {
-                    return new LlmResponse(text.trim(), tokenUsage(message.usage()));
+                    return new LlmResponse(text.trim(), tokenUsage(message.usage()), null, requestTrace());
                 }
             }
         }
 
-        return new LlmResponse(message.toString(), tokenUsage(message.usage()));
+        return new LlmResponse(message.toString(), tokenUsage(message.usage()), null, requestTrace());
     }
 
     private TokenUsage tokenUsage(Usage usage) {
@@ -56,5 +58,11 @@ public class AnthropicClient implements LlmClient {
 
     static boolean useTopP(LlmRequestConfig config) {
         return !useTemperature(config) && config.topP() != null;
+    }
+
+    private static RequestTrace requestTrace() {
+        return RequestTrace.of("https://api.anthropic.com/v1/messages", Map.of(
+                "Content-Type", List.of("application/json")
+        ));
     }
 }

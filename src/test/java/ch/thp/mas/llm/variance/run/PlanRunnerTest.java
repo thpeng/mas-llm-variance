@@ -7,6 +7,7 @@ import ch.thp.mas.llm.variance.client.LlmClient;
 import ch.thp.mas.llm.variance.client.LlmRequestConfig;
 import ch.thp.mas.llm.variance.client.LlmResponse;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
+import ch.thp.mas.llm.variance.client.RequestTrace;
 import ch.thp.mas.llm.variance.client.Reasoning;
 import ch.thp.mas.llm.variance.client.TokenUsage;
 import ch.thp.mas.llm.variance.plan.ResolvedPlan;
@@ -15,6 +16,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.random.RandomGenerator;
 import org.junit.jupiter.api.Test;
@@ -56,6 +58,11 @@ class PlanRunnerTest {
                 .containsExactly(123L, 123L, 123L);
         assertThat(runLog.repetitions()).extracting(RunLogEntry::response)
                 .containsExactly("answer-1", "answer-2", "answer-3");
+        assertThat(runLog.repetitions().getFirst().requestUrl()).isEqualTo("https://example.test/chat");
+        assertThat(runLog.repetitions().getFirst().requestHeaders())
+                .containsEntry("Content-Type", List.of("application/json"));
+        assertThat(runLog.repetitions().getFirst().requestHeaders())
+                .doesNotContainKey("Authorization");
         assertThat(runLog.repetitions().getFirst().tokenUsage())
                 .isEqualTo(new TokenUsage(10L, 5L, 15L));
         assertThat(client.prompts).containsExactly("hello", "hello", "hello");
@@ -185,7 +192,15 @@ class PlanRunnerTest {
         public LlmResponse call(String prompt, LlmRequestConfig config) {
             prompts.add(prompt);
             configs.add(config);
-            return new LlmResponse("answer-" + prompts.size(), new TokenUsage(10L, 5L, 15L));
+            return new LlmResponse(
+                    "answer-" + prompts.size(),
+                    new TokenUsage(10L, 5L, 15L),
+                    null,
+                    RequestTrace.of("https://example.test/chat", Map.of(
+                            "Authorization", List.of("Bearer secret"),
+                            "Content-Type", List.of("application/json")
+                    ))
+            );
         }
     }
 
