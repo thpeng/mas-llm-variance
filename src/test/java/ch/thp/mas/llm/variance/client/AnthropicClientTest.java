@@ -2,9 +2,77 @@ package ch.thp.mas.llm.variance.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class AnthropicClientTest {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private HttpServer server;
+    private final List<JsonNode> requests = new ArrayList<>();
+    private final List<String> apiKeyHeaders = new ArrayList<>();
+    private final List<String> versionHeaders = new ArrayList<>();
+
+    @AfterEach
+    void stopServer() {
+        if (server != null) {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void sendsMessagesRequestAndMapsResponse() throws Exception {
+        startServer(200, """
+                {
+                  "content": [
+                    {"type": "text", "text": "Antwort eins"},
+                    {"type": "text", "text": "Antwort zwei"}
+                  ],
+                  "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 5
+                  }
+                }
+                """);
+        AnthropicClient client = new AnthropicClient("token", baseUrl(), HttpClient.newHttpClient(), objectMapper);
+
+        LlmResponse response = client.call("prompt", new LlmRequestConfig(
+                "claude-sonnet-4-6",
+                0.0,
+                1.0,
+                1,
+                123L,
+                Reasoning.OFF
+        ));
+
+        assertThat(response.text()).isEqualTo("Antwort eins\nAntwort zwei");
+        assertThat(response.tokenUsage()).isEqualTo(new TokenUsage(10L, 5L, 15L));
+        assertThat(response.requestTrace().url()).isEqualTo(baseUrl() + "/messages");
+        assertThat(response.requestTrace().headers())
+                .containsEntry("Content-Type", List.of("application/json"))
+                .containsEntry("anthropic-version", List.of("2023-06-01"));
+        assertThat(response.requestTrace().headers()).doesNotContainKey("x-api-key");
+        assertThat(apiKeyHeaders).containsExactly("token");
+        assertThat(versionHeaders).containsExactly("2023-06-01");
+        JsonNode request = requests.getFirst();
+        assertThat(request.path("model").asText()).isEqualTo("claude-sonnet-4-6");
+        assertThat(request.path("max_tokens").asInt()).isEqualTo(1024);
+        assertThat(request.path("messages").get(0).path("role").asText()).isEqualTo("user");
+        assertThat(request.path("messages").get(0).path("content").asText()).isEqualTo("prompt");
+        assertThat(request.path("top_p").asDouble()).isEqualTo(1.0);
+        assertThat(request.path("top_k").asInt()).isEqualTo(1);
+        assertThat(request.has("temperature")).isFalse();
+        assertThat(request.has("seed")).isFalse();
+    }
 
     @Test
     void usesTemperatureWhenItIsNonZero() {
@@ -36,5 +104,24 @@ class AnthropicClientTest {
 
         assertThat(AnthropicClient.useTemperature(config)).isFalse();
         assertThat(AnthropicClient.useTopP(config)).isFalse();
+    }
+
+    private void startServer(int status, String responseBody) throws IOException {
+        server = HttpServer.create(new InetSocketAddress(0), 0);
+        server.createContext("/messages", exchange -> {
+            apiKeyHeaders.add(exchange.getRequestHeaders().getFirst("x-api-key"));
+            versionHeaders.add(exchange.getRequestHeaders().getFirst("anthropic-version"));
+            String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            requests.add(objectMapper.readTree(requestBody));
+            byte[] response = responseBody.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(status, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        server.start();
+    }
+
+    private String baseUrl() {
+        return "http://localhost:" + server.getAddress().getPort();
     }
 }

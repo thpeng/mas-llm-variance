@@ -1,74 +1,115 @@
 package ch.thp.mas.llm.variance.client;
 
-import com.openai.client.OpenAIClient;
-import com.openai.client.okhttp.OpenAIOkHttpClient;
-import com.openai.models.ReasoningEffort;
-import com.openai.models.responses.Response;
-import com.openai.models.responses.ResponseCreateParams;
-import com.openai.models.responses.ResponseOutputItem;
-import com.openai.models.responses.ResponseOutputMessage;
-import com.openai.models.responses.ResponseUsage;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class OpenAiClient implements LlmClient {
 
-    private final OpenAIClient client;
+    private static final String DEFAULT_BASE_URL = "https://api.openai.com/v1";
+
+    private final String apiKey;
+    private final String baseUrl;
+    private final HttpClient httpClient;
+    private final ObjectMapper objectMapper;
 
     public OpenAiClient(String apiKey) {
-        this.client = OpenAIOkHttpClient.builder()
-                .apiKey(apiKey)
-                .build();
+        this(apiKey, DEFAULT_BASE_URL, HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .version(HttpClient.Version.HTTP_1_1)
+                .build(), new ObjectMapper());
+    }
+
+    OpenAiClient(String apiKey, String baseUrl, HttpClient httpClient, ObjectMapper objectMapper) {
+        this.apiKey = apiKey;
+        this.baseUrl = stripTrailingSlash(baseUrl);
+        this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public LlmResponse call(String prompt, LlmRequestConfig config) throws Exception {
-        ResponseCreateParams.Builder builder = ResponseCreateParams.builder()
-                .model(config.model())
-                .input(prompt);
+        HttpJsonResponse httpResponse = post(request(prompt, config));
+        JsonNode response = httpResponse.body();
+        String text = responseText(response);
+        if (text.isBlank()) {
+            text = response.toString();
+        }
+        return new LlmResponse(text.trim(), tokenUsage(response), null, httpResponse.requestTrace());
+    }
+
+    private ObjectNode request(String prompt, LlmRequestConfig config) {
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("model", config.model());
+        request.put("input", prompt);
 
         if (sendsSamplingParameters(config) && config.temperature() != null) {
-            builder.temperature(config.temperature());
+            request.put("temperature", config.temperature());
         }
         if (sendsSamplingParameters(config) && config.topP() != null) {
-            builder.topP(config.topP());
+            request.put("top_p", config.topP());
         }
         if (config.sendReasoning() && config.reasoning() != null && supportsReasoning(config.model())) {
-            builder.reasoning(com.openai.models.Reasoning.builder()
-                    .effort(ReasoningEffort.of(reasoningValue(config)))
-                    .build());
+            request.set("reasoning", objectMapper.createObjectNode()
+                    .put("effort", reasoningValue(config)));
         } else if (config.sendReasoning() && config.reasoning() != null && config.reasoning() != Reasoning.OFF) {
             throw new IllegalArgumentException("OpenAI model '" + config.model()
                     + "' does not support reasoning. Set reasoning to 'off' or use an OpenAI reasoning model.");
         }
+        return request;
+    }
 
-        Response response = client.responses().create(builder.build());
+    private HttpJsonResponse post(JsonNode body) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/responses"))
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .timeout(Duration.ofMinutes(10))
+                .version(HttpClient.Version.HTTP_1_1)
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IllegalStateException("OpenAI responses failed with HTTP "
+                    + response.statusCode() + ": " + response.body());
+        }
+        return new HttpJsonResponse(objectMapper.readTree(response.body()), RequestTrace.of(request));
+    }
 
-        for (ResponseOutputItem item : response.output()) {
-            if (item.isMessage()) {
-                ResponseOutputMessage msg = item.asMessage();
-                for (ResponseOutputMessage.Content content : msg.content()) {
-                    if (content.isOutputText()) {
-                        String text = content.asOutputText().text();
-                        if (text != null && !text.isBlank()) {
-                            return new LlmResponse(text.trim(), tokenUsage(response), null, requestTrace());
-                        }
-                    }
+    private static String responseText(JsonNode response) {
+        List<String> parts = new ArrayList<>();
+        for (JsonNode output : response.path("output")) {
+            if (!"message".equals(output.path("type").asText())) {
+                continue;
+            }
+            for (JsonNode content : output.path("content")) {
+                String text = content.path("text").asText();
+                if (!text.isBlank()) {
+                    parts.add(text);
                 }
             }
         }
-
-        return new LlmResponse(response.toString(), tokenUsage(response), null, requestTrace());
+        return String.join("\n", parts);
     }
 
-    private TokenUsage tokenUsage(Response response) {
-        return response.usage()
-                .map(this::tokenUsage)
-                .orElse(new TokenUsage(null, null, null));
+    private static TokenUsage tokenUsage(JsonNode response) {
+        JsonNode usage = response.path("usage");
+        return new TokenUsage(
+                longValue(usage, "input_tokens"),
+                longValue(usage, "output_tokens"),
+                longValue(usage, "total_tokens")
+        );
     }
 
-    private TokenUsage tokenUsage(ResponseUsage usage) {
-        return new TokenUsage(usage.inputTokens(), usage.outputTokens(), usage.totalTokens());
+    private static Long longValue(JsonNode node, String field) {
+        JsonNode value = node.path(field);
+        return value.isNumber() ? value.asLong() : null;
     }
 
     static boolean supportsReasoning(String model) {
@@ -94,9 +135,10 @@ public class OpenAiClient implements LlmClient {
         return config.reasoning().openAiReasoningEffort();
     }
 
-    private static RequestTrace requestTrace() {
-        return RequestTrace.of("https://api.openai.com/v1/responses", Map.of(
-                "Content-Type", List.of("application/json")
-        ));
+    private static String stripTrailingSlash(String value) {
+        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+
+    private record HttpJsonResponse(JsonNode body, RequestTrace requestTrace) {
     }
 }

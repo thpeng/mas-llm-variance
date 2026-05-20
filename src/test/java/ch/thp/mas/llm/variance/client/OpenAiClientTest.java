@@ -2,9 +2,103 @@ package ch.thp.mas.llm.variance.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class OpenAiClientTest {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private HttpServer server;
+    private final List<JsonNode> requests = new ArrayList<>();
+    private final List<String> authorizationHeaders = new ArrayList<>();
+
+    @AfterEach
+    void stopServer() {
+        if (server != null) {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void sendsResponsesRequestAndMapsResponse() throws Exception {
+        startServer(200, """
+                {
+                  "output": [{
+                    "type": "message",
+                    "content": [
+                      {"type": "output_text", "text": "Antwort eins"},
+                      {"type": "output_text", "text": "Antwort zwei"}
+                    ]
+                  }],
+                  "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 5,
+                    "total_tokens": 15
+                  }
+                }
+                """);
+        OpenAiClient client = new OpenAiClient("token", baseUrl(), HttpClient.newHttpClient(), objectMapper);
+
+        LlmResponse response = client.call("prompt", new LlmRequestConfig(
+                "gpt-4o-2024-08-06",
+                0.0,
+                1.0,
+                1,
+                123L,
+                Reasoning.OFF,
+                false
+        ));
+
+        assertThat(response.text()).isEqualTo("Antwort eins\nAntwort zwei");
+        assertThat(response.tokenUsage()).isEqualTo(new TokenUsage(10L, 5L, 15L));
+        assertThat(response.requestTrace().url()).isEqualTo(baseUrl() + "/responses");
+        assertThat(response.requestTrace().headers())
+                .containsEntry("Content-Type", List.of("application/json"));
+        assertThat(response.requestTrace().headers()).doesNotContainKey("Authorization");
+        assertThat(authorizationHeaders).containsExactly("Bearer token");
+        JsonNode request = requests.getFirst();
+        assertThat(request.path("model").asText()).isEqualTo("gpt-4o-2024-08-06");
+        assertThat(request.path("input").asText()).isEqualTo("prompt");
+        assertThat(request.path("temperature").asDouble()).isEqualTo(0.0);
+        assertThat(request.path("top_p").asDouble()).isEqualTo(1.0);
+        assertThat(request.has("top_k")).isFalse();
+        assertThat(request.has("seed")).isFalse();
+        assertThat(request.has("reasoning")).isFalse();
+    }
+
+    @Test
+    void sendsReasoningForReasoningModelAndOmitsSamplingParameters() throws Exception {
+        startServer(200, """
+                {
+                  "output": [{"type": "message", "content": [{"type": "output_text", "text": "Antwort"}]}],
+                  "usage": {}
+                }
+                """);
+        OpenAiClient client = new OpenAiClient("token", baseUrl(), HttpClient.newHttpClient(), objectMapper);
+
+        client.call("prompt", new LlmRequestConfig(
+                "gpt-5.4-mini-2026-03-17",
+                0.7,
+                0.9,
+                1,
+                123L,
+                Reasoning.HIGH
+        ));
+
+        JsonNode request = requests.getFirst();
+        assertThat(request.path("reasoning").path("effort").asText()).isEqualTo("high");
+        assertThat(request.has("temperature")).isFalse();
+        assertThat(request.has("top_p")).isFalse();
+    }
 
     @Test
     void detectsOpenAiModelsWithReasoningSupport() {
@@ -44,5 +138,23 @@ class OpenAiClientTest {
 
     private static LlmRequestConfig config(String model, Reasoning reasoning) {
         return new LlmRequestConfig(model, 0.0, 1.0, 1, 1L, reasoning);
+    }
+
+    private void startServer(int status, String responseBody) throws IOException {
+        server = HttpServer.create(new InetSocketAddress(0), 0);
+        server.createContext("/responses", exchange -> {
+            authorizationHeaders.add(exchange.getRequestHeaders().getFirst("Authorization"));
+            String requestBody = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            requests.add(objectMapper.readTree(requestBody));
+            byte[] response = responseBody.getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(status, response.length);
+            exchange.getResponseBody().write(response);
+            exchange.close();
+        });
+        server.start();
+    }
+
+    private String baseUrl() {
+        return "http://localhost:" + server.getAddress().getPort();
     }
 }

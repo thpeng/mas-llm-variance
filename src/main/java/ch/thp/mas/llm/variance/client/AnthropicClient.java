@@ -1,55 +1,112 @@
 package ch.thp.mas.llm.variance.client;
 
-import com.anthropic.client.okhttp.AnthropicOkHttpClient;
-import com.anthropic.models.messages.ContentBlock;
-import com.anthropic.models.messages.Message;
-import com.anthropic.models.messages.MessageCreateParams;
-import com.anthropic.models.messages.Usage;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class AnthropicClient implements LlmClient {
 
-    private final com.anthropic.client.AnthropicClient client;
+    private static final String DEFAULT_BASE_URL = "https://api.anthropic.com/v1";
+    private static final String ANTHROPIC_VERSION = "2023-06-01";
+
+    private final String apiKey;
+    private final String baseUrl;
+    private final HttpClient httpClient;
+    private final ObjectMapper objectMapper;
 
     public AnthropicClient(String apiKey) {
-        this.client = AnthropicOkHttpClient.builder()
-                .apiKey(apiKey)
-                .build();
+        this(apiKey, DEFAULT_BASE_URL, HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10))
+                .version(HttpClient.Version.HTTP_1_1)
+                .build(), new ObjectMapper());
+    }
+
+    AnthropicClient(String apiKey, String baseUrl, HttpClient httpClient, ObjectMapper objectMapper) {
+        this.apiKey = apiKey;
+        this.baseUrl = stripTrailingSlash(baseUrl);
+        this.httpClient = httpClient;
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public LlmResponse call(String prompt, LlmRequestConfig config) throws Exception {
-        MessageCreateParams.Builder builder = MessageCreateParams.builder()
-                .model(config.model())
-                .maxTokens(1024)
-                .addUserMessage(prompt);
-
-        if (useTemperature(config)) {
-            builder.temperature(config.temperature());
-        } else if (useTopP(config)) {
-            builder.topP(config.topP());
+        HttpJsonResponse httpResponse = post(request(prompt, config));
+        JsonNode response = httpResponse.body();
+        String text = responseText(response);
+        if (text.isBlank()) {
+            text = response.toString();
         }
-        if (config.topK() != null) {
-            builder.topK(config.topK().longValue());
-        }
-
-        Message message = client.messages().create(builder.build());
-
-        for (ContentBlock block : message.content()) {
-            if (block.isText()) {
-                String text = block.asText().text();
-                if (text != null && !text.isBlank()) {
-                    return new LlmResponse(text.trim(), tokenUsage(message.usage()), null, requestTrace());
-                }
-            }
-        }
-
-        return new LlmResponse(message.toString(), tokenUsage(message.usage()), null, requestTrace());
+        return new LlmResponse(text.trim(), tokenUsage(response), null, httpResponse.requestTrace());
     }
 
-    private TokenUsage tokenUsage(Usage usage) {
-        return TokenUsage.of(usage.inputTokens(), usage.outputTokens());
+    private ObjectNode request(String prompt, LlmRequestConfig config) {
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("model", config.model());
+        request.put("max_tokens", 1024);
+        request.putArray("messages").add(objectMapper.createObjectNode()
+                .put("role", "user")
+                .put("content", prompt));
+
+        if (useTemperature(config)) {
+            request.put("temperature", config.temperature());
+        } else if (useTopP(config)) {
+            request.put("top_p", config.topP());
+        }
+        if (config.topK() != null) {
+            request.put("top_k", config.topK());
+        }
+        return request;
+    }
+
+    private HttpJsonResponse post(JsonNode body) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/messages"))
+                .header("x-api-key", apiKey)
+                .header("anthropic-version", ANTHROPIC_VERSION)
+                .header("Content-Type", "application/json")
+                .timeout(Duration.ofMinutes(10))
+                .version(HttpClient.Version.HTTP_1_1)
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IllegalStateException("Anthropic messages failed with HTTP "
+                    + response.statusCode() + ": " + response.body());
+        }
+        return new HttpJsonResponse(objectMapper.readTree(response.body()), RequestTrace.of(request));
+    }
+
+    private static String responseText(JsonNode response) {
+        List<String> parts = new ArrayList<>();
+        for (JsonNode content : response.path("content")) {
+            if (!"text".equals(content.path("type").asText())) {
+                continue;
+            }
+            String text = content.path("text").asText();
+            if (!text.isBlank()) {
+                parts.add(text);
+            }
+        }
+        return String.join("\n", parts);
+    }
+
+    private static TokenUsage tokenUsage(JsonNode response) {
+        JsonNode usage = response.path("usage");
+        return TokenUsage.of(
+                longValue(usage, "input_tokens"),
+                longValue(usage, "output_tokens")
+        );
+    }
+
+    private static Long longValue(JsonNode node, String field) {
+        JsonNode value = node.path(field);
+        return value.isNumber() ? value.asLong() : null;
     }
 
     static boolean useTemperature(LlmRequestConfig config) {
@@ -60,9 +117,10 @@ public class AnthropicClient implements LlmClient {
         return !useTemperature(config) && config.topP() != null;
     }
 
-    private static RequestTrace requestTrace() {
-        return RequestTrace.of("https://api.anthropic.com/v1/messages", Map.of(
-                "Content-Type", List.of("application/json")
-        ));
+    private static String stripTrailingSlash(String value) {
+        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+
+    private record HttpJsonResponse(JsonNode body, RequestTrace requestTrace) {
     }
 }

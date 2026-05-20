@@ -53,12 +53,16 @@ Implemented providers:
 
 - OpenAI
 - Anthropic
+- Google Gemini
 - LM Studio through the native developer REST API
+
+All provider integrations use explicit HTTP request paths instead of vendor SDKs. This keeps request URL and header logging consistent across providers.
 
 The `LlmClient` abstraction returns an `LlmResponse`, including:
 
 - Full generated text
 - Token usage where the provider exposes it
+- Sanitized request trace metadata for the run log
 
 ### `plan`
 
@@ -97,9 +101,10 @@ For each resolved plan, the runner:
 2. Loads the LM Studio model when the selected provider requires an explicit lifecycle.
 3. Executes the prompt for the configured number of iterations.
 4. Captures start/end timestamps for every repetition.
-5. Captures the full answer and token usage.
-6. Unloads LM Studio models loaded by the run.
-7. Writes one JSON run log if and only if the full plan succeeds.
+5. Captures the sanitized request URL and request headers, excluding authentication.
+6. Captures the full answer and token usage.
+7. Unloads LM Studio models loaded by the run.
+8. Writes one JSON run log if and only if the full plan succeeds.
 
 Run log files are timestamped:
 
@@ -192,6 +197,7 @@ Provider environment variables:
 ```text
 OPENAI_API_KEY
 ANTHROPIC_API_KEY
+GOOGLE_API_KEY
 LMSTUDIO_BASE_URL
 LM_API_TOKEN
 ```
