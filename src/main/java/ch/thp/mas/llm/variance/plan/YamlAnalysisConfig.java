@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.plan;
 
 import ch.thp.mas.llm.variance.analyze.PromptEvaluation;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.PromptLanguage;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
 
 public class YamlAnalysisConfig {
@@ -71,6 +72,7 @@ public class YamlAnalysisConfig {
 
     public static class SwissRoundTrip {
         private Integer expectedStationCount;
+        private PromptLanguage language;
 
         public Integer getExpectedStationCount() {
             return expectedStationCount;
@@ -78,6 +80,14 @@ public class YamlAnalysisConfig {
 
         public void setExpectedStationCount(Integer expectedStationCount) {
             this.expectedStationCount = expectedStationCount;
+        }
+
+        public PromptLanguage getLanguage() {
+            return language;
+        }
+
+        public void setLanguage(PromptLanguage language) {
+            this.language = language;
         }
     }
 

@@ -9,6 +9,7 @@ import ch.thp.mas.llm.variance.client.LlmResponse;
 import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.client.RequestTrace;
 import ch.thp.mas.llm.variance.client.Reasoning;
+import ch.thp.mas.llm.variance.client.ServingException;
 import ch.thp.mas.llm.variance.client.TokenUsage;
 import ch.thp.mas.llm.variance.plan.ResolvedPlan;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -48,6 +49,7 @@ class PlanRunnerTest {
         RunLog runLog = runner.run(plan);
 
         assertThat(writer.logs).containsExactly(runLog);
+        assertThat(writer.sourcePlanPaths).containsExactly("");
         assertThat(runLog.planName()).isEqualTo("0001-test");
         assertThat(runLog.modelVersion()).isNull();
         assertThat(runLog.config().seed()).isEqualTo(123L);
@@ -63,6 +65,9 @@ class PlanRunnerTest {
                 .containsEntry("Content-Type", List.of("application/json"));
         assertThat(runLog.repetitions().getFirst().requestHeaders())
                 .doesNotContainKey("Authorization");
+        assertThat(runLog.repetitions().getFirst().requestBody()).contains("prompt");
+        assertThat(runLog.repetitions().getFirst().responseStatusCode()).isEqualTo(200);
+        assertThat(runLog.repetitions().getFirst().responseBody()).contains("raw-provider-response");
         assertThat(runLog.repetitions().getFirst().tokenUsage())
                 .isEqualTo(new TokenUsage(10L, 5L, 15L));
         assertThat(client.prompts).containsExactly("hello", "hello", "hello");
@@ -142,6 +147,31 @@ class PlanRunnerTest {
     }
 
     @Test
+    void recordsServingErrorsAndContinuesRun() throws Exception {
+        ServingErrorThenSuccessClient client = new ServingErrorThenSuccessClient();
+        RecordingRunLogWriter writer = new RecordingRunLogWriter();
+        PlanRunner runner = new PlanRunner(
+                (ch.thp.mas.llm.variance.client.LlmClientFactory) inferenceProvider -> client,
+                new FixedRunClock(),
+                writer);
+
+        RunLog runLog = runner.run(plan(2));
+
+        assertThat(runLog.repetitions()).hasSize(2);
+        assertThat(runLog.errors().servingErrorCount()).isEqualTo(1);
+        assertThat(runLog.repetitions().getFirst().status()).isEqualTo(RunLogEntryStatus.SERVING_ERROR);
+        assertThat(runLog.repetitions().getFirst().errorStatusCode()).isEqualTo(503);
+        assertThat(runLog.repetitions().getFirst().requestUrl()).isEqualTo("https://example.test/chat");
+        assertThat(runLog.repetitions().getFirst().requestBody()).contains("prompt");
+        assertThat(runLog.repetitions().getFirst().responseStatusCode()).isEqualTo(503);
+        assertThat(runLog.repetitions().getFirst().responseBody()).contains("busy");
+        assertThat(runLog.repetitions().getFirst().response()).isNull();
+        assertThat(runLog.repetitions().get(1).status()).isEqualTo(RunLogEntryStatus.SUCCESS);
+        assertThat(runLog.repetitions().get(1).response()).isEqualTo("answer-2");
+        assertThat(writer.logs).containsExactly(runLog);
+    }
+
+    @Test
     void closesSessionBeforeWritingRunLogAndIncludesModelInstance() throws Exception {
         RecordingClient client = new RecordingClient();
         RecordingRunLogWriter writer = new RecordingRunLogWriter();
@@ -185,11 +215,11 @@ class PlanRunnerTest {
 
     private static class RecordingClient implements LlmClient {
 
-        private final List<String> prompts = new ArrayList<>();
-        private final List<LlmRequestConfig> configs = new ArrayList<>();
+        protected final List<String> prompts = new ArrayList<>();
+        protected final List<LlmRequestConfig> configs = new ArrayList<>();
 
         @Override
-        public LlmResponse call(String prompt, LlmRequestConfig config) {
+        public LlmResponse call(String prompt, LlmRequestConfig config) throws Exception {
             prompts.add(prompt);
             configs.add(config);
             return new LlmResponse(
@@ -199,7 +229,8 @@ class PlanRunnerTest {
                     RequestTrace.of("https://example.test/chat", Map.of(
                             "Authorization", List.of("Bearer secret"),
                             "Content-Type", List.of("application/json")
-                    ))
+                    ), "{\"input\":\"prompt\"}", 200, Map.of("Content-Type", List.of("application/json")),
+                            "{\"output\":\"raw-provider-response\"}")
             );
         }
     }
@@ -209,6 +240,24 @@ class PlanRunnerTest {
         @Override
         public LlmResponse call(String prompt, LlmRequestConfig config) {
             throw new IllegalStateException("boom");
+        }
+    }
+
+    private static class ServingErrorThenSuccessClient extends RecordingClient {
+
+        @Override
+        public LlmResponse call(String prompt, LlmRequestConfig config) throws Exception {
+            if (prompts.isEmpty()) {
+                prompts.add(prompt);
+                configs.add(config);
+                throw new ServingException("provider unavailable", 503, "{\"error\":\"busy\"}",
+                        RequestTrace.of("https://example.test/chat", Map.of(
+                                "Authorization", List.of("Bearer secret"),
+                                "Content-Type", List.of("application/json")
+                        ), "{\"input\":\"prompt\"}", 503, Map.of("Content-Type", List.of("application/json")),
+                                "{\"error\":\"busy\"}"));
+            }
+            return super.call(prompt, config);
         }
     }
 
@@ -286,6 +335,7 @@ class PlanRunnerTest {
     private static class RecordingRunLogWriter extends RunLogWriter {
 
         private final List<RunLog> logs = new ArrayList<>();
+        private final List<String> sourcePlanPaths = new ArrayList<>();
 
         RecordingRunLogWriter() {
             super(new RunFileNameFactory());
@@ -293,7 +343,13 @@ class PlanRunnerTest {
 
         @Override
         public java.nio.file.Path write(RunLog runLog) {
+            return write(runLog, "");
+        }
+
+        @Override
+        public java.nio.file.Path write(RunLog runLog, String sourcePlanPath) {
             logs.add(runLog);
+            sourcePlanPaths.add(sourcePlanPath == null ? "" : sourcePlanPath);
             return java.nio.file.Path.of("ignored");
         }
     }

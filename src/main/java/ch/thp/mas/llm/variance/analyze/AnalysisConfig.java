@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import ch.thp.mas.llm.variance.analyze.evaluation.factualcritical.BernZurichConnectionConfig;
 import ch.thp.mas.llm.variance.analyze.evaluation.creativegenerative.LucerneMarketingTextConfig;
 import ch.thp.mas.llm.variance.analyze.evaluation.literalformatcritical.TravelerGuidanceFormatConfig;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.PromptLanguage;
 import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.SwissRoundTripConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.BleuConfig;
 import ch.thp.mas.llm.variance.analyze.syntactic.RougeConfig;
@@ -29,7 +30,7 @@ public record AnalysisConfig(
                 getenv("LLM_VARIANCE_PROMPT_EVALUATION", "ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP"));
         return new AnalysisConfig(
                 promptEvaluation,
-                new SwissRoundTripConfig(5),
+                new SwissRoundTripConfig(5, PromptLanguage.DE),
                 new BernZurichConnectionConfig("08:02", "09:15", 0),
                 new TravelerGuidanceFormatConfig(
                         "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3."),

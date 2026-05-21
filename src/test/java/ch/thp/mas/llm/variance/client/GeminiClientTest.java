@@ -66,6 +66,9 @@ class GeminiClientTest {
                 .isEqualTo(baseUrl() + "/models/gemini-3-flash:generateContent?key=%3Credacted%3E");
         assertThat(response.requestTrace().headers())
                 .containsEntry("Content-Type", List.of("application/json"));
+        assertThat(response.requestTrace().body()).contains("\"contents\"").doesNotContain("key-1");
+        assertThat(response.requestTrace().responseStatusCode()).isEqualTo(200);
+        assertThat(response.requestTrace().responseBody()).contains("Antwort eins");
         assertThat(paths).containsExactly("/models/gemini-3-flash:generateContent");
         assertThat(queries).containsExactly("key=key-1");
         JsonNode request = requests.getFirst();
@@ -114,7 +117,7 @@ class GeminiClientTest {
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
                 "gemini-3.1-pro", null, null, null, null, Reasoning.OFF)))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(ServingException.class)
                 .hasMessageContaining("gemini-3.1-pro")
                 .hasMessageContaining("thinking level not supported");
     }

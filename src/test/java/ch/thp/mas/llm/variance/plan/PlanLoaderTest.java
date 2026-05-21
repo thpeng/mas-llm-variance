@@ -32,6 +32,7 @@ class PlanLoaderTest {
         assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getPromptEvaluation().name())
                 .isEqualTo("ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP");
         assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getSwissRoundTrip().getExpectedStationCount()).isEqualTo(5);
+        assertThat(((YamlPlan) loadedPlan.plan()).getAnalysis().getSwissRoundTrip().getLanguage().name()).isEqualTo("DE");
     }
 
     @Test
@@ -107,6 +108,7 @@ class PlanLoaderTest {
                   promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
                   swissRoundTrip:
                     expectedStationCount: 5
+                    language: DE
                 run:
                   prompt: "Erstelle eine Rundreise"
                   iterations: 1

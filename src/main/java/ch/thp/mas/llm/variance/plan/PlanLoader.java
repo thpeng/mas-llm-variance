@@ -122,6 +122,10 @@ public class PlanLoader {
             ensureInsidePlansDirectory(direct);
             return direct.normalize();
         }
+        Path directFile = directFileWithOptionalSuffix(normalized);
+        if (directFile != null) {
+            return directFile;
+        }
         if (isRootedSelection(normalized)) {
             throw new PlanException("Plan selection not found: " + selection);
         }
@@ -206,6 +210,21 @@ public class PlanLoader {
         }
         String relative = stripRootPrefix(selection);
         return plansDirectory.resolve(relative).normalize();
+    }
+
+    private Path directFileWithOptionalSuffix(String selection) {
+        if (!selection.contains("/")) {
+            return null;
+        }
+        String relative = stripRootPrefix(selection);
+        for (String candidate : candidateFileNames(relative)) {
+            Path path = plansDirectory.resolve(candidate).normalize();
+            if (Files.exists(path)) {
+                ensureInsidePlansDirectory(path);
+                return path;
+            }
+        }
+        return null;
     }
 
     private String relativeName(Path path) {

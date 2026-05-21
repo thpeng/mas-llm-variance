@@ -67,19 +67,22 @@ public class OpenAiClient implements LlmClient {
     }
 
     private HttpJsonResponse post(JsonNode body) throws Exception {
+        String requestBody = objectMapper.writeValueAsString(body);
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/responses"))
                 .header("Authorization", "Bearer " + apiKey)
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofMinutes(10))
                 .version(HttpClient.Version.HTTP_1_1)
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        RequestTrace requestTrace = RequestTrace.of(request, requestBody, response);
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IllegalStateException("OpenAI responses failed with HTTP "
-                    + response.statusCode() + ": " + response.body());
+            throw new ServingException("OpenAI responses failed with HTTP "
+                    + response.statusCode() + ": " + response.body(), response.statusCode(), response.body(),
+                    requestTrace);
         }
-        return new HttpJsonResponse(objectMapper.readTree(response.body()), RequestTrace.of(request));
+        return new HttpJsonResponse(objectMapper.readTree(response.body()), requestTrace);
     }
 
     private static String responseText(JsonNode response) {

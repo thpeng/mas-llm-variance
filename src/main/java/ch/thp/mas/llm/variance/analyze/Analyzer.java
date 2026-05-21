@@ -96,10 +96,11 @@ public class Analyzer {
     public AnalysisResult analyze(NamedRunLog namedRunLog, AnalysisConfig config) {
         RunLog runLog = namedRunLog.runLog();
         List<String> responses = runLog.repetitions().stream()
+                .filter(entry -> entry.status() == ch.thp.mas.llm.variance.run.RunLogEntryStatus.SUCCESS)
                 .map(RunLogEntry::response)
                 .toList();
         if (responses.isEmpty()) {
-            throw new AnalysisException("Run log has no responses: " + namedRunLog.filename());
+            throw new AnalysisException("Run log has no successful responses: " + namedRunLog.filename());
         }
 
         LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses);
@@ -208,7 +209,8 @@ public class Analyzer {
                 runLog.config().seedSetting(),
                 runLog.config().reasoning(),
                 runLog.config().sendReasoning(),
-                runLog.config().reasoningProviderValue()
+                runLog.config().reasoningProviderValue(),
+                runLog.errors() == null ? 0 : runLog.errors().servingErrorCount()
         );
     }
 

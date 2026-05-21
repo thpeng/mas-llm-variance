@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.client.Reasoning;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.PromptLanguage;
 import ch.thp.mas.llm.variance.plan.AnalysisConfigMapper;
 import ch.thp.mas.llm.variance.plan.LoadedPlan;
 import ch.thp.mas.llm.variance.plan.PlanLoader;
@@ -69,6 +70,19 @@ class AnalyzeCommandTest {
     }
 
     @Test
+    void loadsPlanFromSameRelativeFolderAsRunLog() {
+        NamedRunLog runLog = new NamedRunLog("test/run.json", runLog("0001-test"));
+        when(runLogReader.readSelection("runs/test")).thenReturn(List.of(runLog));
+        when(planLoader.load("test/0001-test")).thenReturn(loadedPlan("0001-test", PromptEvaluation.CREATIVE_GENERATIVE_LUCERNE_MARKETING));
+        AnalysisResult result = mock(AnalysisResult.class);
+        when(analyzer.analyze(eq(runLog), org.mockito.ArgumentMatchers.any())).thenReturn(result);
+
+        command.run(args("--analyze=runs/test"));
+
+        verify(planLoader).load("test/0001-test");
+    }
+
+    @Test
     void rejectsPlanWithoutAnalysisBlock() {
         when(runLogReader.readSelection("run.json")).thenReturn(List.of(new NamedRunLog("run.json", runLog("0001-test"))));
         when(planLoader.load("0001-test")).thenReturn(new LoadedPlan("0001-test", "0001-test.yml", new YamlPlan()));
@@ -89,6 +103,12 @@ class AnalyzeCommandTest {
         YamlPlan plan = new YamlPlan();
         YamlAnalysisConfig analysis = new YamlAnalysisConfig();
         analysis.setPromptEvaluation(promptEvaluation);
+        if (promptEvaluation == PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP) {
+            YamlAnalysisConfig.SwissRoundTrip swissRoundTrip = new YamlAnalysisConfig.SwissRoundTrip();
+            swissRoundTrip.setExpectedStationCount(5);
+            swissRoundTrip.setLanguage(PromptLanguage.DE);
+            analysis.setSwissRoundTrip(swissRoundTrip);
+        }
         plan.setAnalysis(analysis);
         return new LoadedPlan(name, name + ".yml", plan);
     }

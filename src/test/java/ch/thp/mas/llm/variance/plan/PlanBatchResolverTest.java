@@ -47,6 +47,8 @@ class PlanBatchResolverTest {
 
         assertThat(plans).extracting(ResolvedPlan::name)
                 .containsExactly("0001-openai");
+        assertThat(plans).extracting(ResolvedPlan::sourcePath)
+                .containsExactly("openai/0001-openai.yml");
     }
 
     @Test

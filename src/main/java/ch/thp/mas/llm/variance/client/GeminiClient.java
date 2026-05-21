@@ -80,18 +80,21 @@ public class GeminiClient implements LlmClient {
         String encodedModel = URLEncoder.encode(model, StandardCharsets.UTF_8).replace("+", "%20");
         String encodedApiKey = URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
         URI uri = URI.create(baseUrl + "/models/" + encodedModel + ":generateContent?key=" + encodedApiKey);
+        String requestBody = objectMapper.writeValueAsString(body);
         HttpRequest request = HttpRequest.newBuilder(uri)
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofMinutes(10))
                 .version(HttpClient.Version.HTTP_1_1)
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        RequestTrace requestTrace = RequestTrace.of(request, requestBody, response);
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IllegalStateException("Gemini generateContent failed for model '" + model + "' with HTTP "
-                    + response.statusCode() + ": " + response.body());
+            throw new ServingException("Gemini generateContent failed for model '" + model + "' with HTTP "
+                    + response.statusCode() + ": " + response.body(), response.statusCode(), response.body(),
+                    requestTrace);
         }
-        return new HttpJsonResponse(objectMapper.readTree(response.body()), RequestTrace.of(request));
+        return new HttpJsonResponse(objectMapper.readTree(response.body()), requestTrace);
     }
 
     private static String responseText(JsonNode response) {

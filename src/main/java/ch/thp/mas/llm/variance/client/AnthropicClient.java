@@ -66,20 +66,23 @@ public class AnthropicClient implements LlmClient {
     }
 
     private HttpJsonResponse post(JsonNode body) throws Exception {
+        String requestBody = objectMapper.writeValueAsString(body);
         HttpRequest request = HttpRequest.newBuilder(URI.create(baseUrl + "/messages"))
                 .header("x-api-key", apiKey)
                 .header("anthropic-version", ANTHROPIC_VERSION)
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofMinutes(10))
                 .version(HttpClient.Version.HTTP_1_1)
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        RequestTrace requestTrace = RequestTrace.of(request, requestBody, response);
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IllegalStateException("Anthropic messages failed with HTTP "
-                    + response.statusCode() + ": " + response.body());
+            throw new ServingException("Anthropic messages failed with HTTP "
+                    + response.statusCode() + ": " + response.body(), response.statusCode(), response.body(),
+                    requestTrace);
         }
-        return new HttpJsonResponse(objectMapper.readTree(response.body()), RequestTrace.of(request));
+        return new HttpJsonResponse(objectMapper.readTree(response.body()), requestTrace);
     }
 
     private static String responseText(JsonNode response) {

@@ -2,12 +2,20 @@ package ch.thp.mas.llm.variance.client;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
-public record RequestTrace(String url, Map<String, List<String>> headers) {
+public record RequestTrace(
+        String url,
+        Map<String, List<String>> headers,
+        String body,
+        Integer responseStatusCode,
+        Map<String, List<String>> responseHeaders,
+        String responseBody
+) {
 
     private static final List<String> AUTHENTICATION_HEADER_NAMES = List.of(
             "authorization",
@@ -19,14 +27,44 @@ public record RequestTrace(String url, Map<String, List<String>> headers) {
 
     public RequestTrace {
         headers = headers == null ? Map.of() : Map.copyOf(headers);
+        responseHeaders = responseHeaders == null ? Map.of() : Map.copyOf(responseHeaders);
     }
 
     public static RequestTrace of(HttpRequest request) {
-        return new RequestTrace(sanitizeUrl(request.uri()), sanitizeHeaders(request.headers().map()));
+        return of(request, null, null);
+    }
+
+    public static RequestTrace of(HttpRequest request, String requestBody, HttpResponse<String> response) {
+        return new RequestTrace(
+                sanitizeUrl(request.uri()),
+                sanitizeHeaders(request.headers().map()),
+                requestBody,
+                response == null ? null : response.statusCode(),
+                response == null ? null : sanitizeHeaders(response.headers().map()),
+                response == null ? null : response.body()
+        );
     }
 
     public static RequestTrace of(String url, Map<String, List<String>> headers) {
-        return new RequestTrace(sanitizeUrl(URI.create(url)), sanitizeHeaders(headers));
+        return new RequestTrace(sanitizeUrl(URI.create(url)), sanitizeHeaders(headers), null, null, null, null);
+    }
+
+    public static RequestTrace of(
+            String url,
+            Map<String, List<String>> headers,
+            String body,
+            Integer responseStatusCode,
+            Map<String, List<String>> responseHeaders,
+            String responseBody
+    ) {
+        return new RequestTrace(
+                sanitizeUrl(URI.create(url)),
+                sanitizeHeaders(headers),
+                body,
+                responseStatusCode,
+                sanitizeHeaders(responseHeaders),
+                responseBody
+        );
     }
 
     private static Map<String, List<String>> sanitizeHeaders(Map<String, List<String>> headers) {

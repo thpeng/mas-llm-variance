@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
 import ch.thp.mas.llm.variance.analyze.PromptEvaluation;
+import ch.thp.mas.llm.variance.analyze.evaluation.advisoryrecommendation.PromptLanguage;
 import org.junit.jupiter.api.Test;
 
 class AnalysisConfigMapperTest {
@@ -18,6 +19,7 @@ class AnalysisConfigMapperTest {
         analysis.setPromptEvaluation(PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
         YamlAnalysisConfig.SwissRoundTrip swissRoundTrip = new YamlAnalysisConfig.SwissRoundTrip();
         swissRoundTrip.setExpectedStationCount(5);
+        swissRoundTrip.setLanguage(PromptLanguage.FR);
         analysis.setSwissRoundTrip(swissRoundTrip);
         YamlAnalysisConfig.BernZurichConnection bernZurichConnection = new YamlAnalysisConfig.BernZurichConnection();
         bernZurichConnection.setDepartureFromBern("08:02");
@@ -37,6 +39,7 @@ class AnalysisConfigMapperTest {
 
         assertThat(config.promptEvaluation()).isEqualTo(PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
         assertThat(config.swissRoundTrip().expectedStationCount()).isEqualTo(5);
+        assertThat(config.swissRoundTrip().language()).isEqualTo(PromptLanguage.FR);
         assertThat(config.bernZurichConnection()).isNull();
         assertThat(config.travelerGuidanceFormat()).isNull();
         assertThat(config.lucerneMarketingText()).isNull();
@@ -59,5 +62,20 @@ class AnalysisConfigMapperTest {
         assertThatThrownBy(() -> mapper.map(new LoadedPlan("0001-test", "0001-test.yml", plan)))
                 .isInstanceOf(AnalysisException.class)
                 .hasMessageContaining("analysis.promptEvaluation");
+    }
+
+    @Test
+    void rejectsMissingSwissRoundTripLanguageForAdvisoryPrompt() {
+        YamlPlan plan = new YamlPlan();
+        YamlAnalysisConfig analysis = new YamlAnalysisConfig();
+        analysis.setPromptEvaluation(PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
+        YamlAnalysisConfig.SwissRoundTrip swissRoundTrip = new YamlAnalysisConfig.SwissRoundTrip();
+        swissRoundTrip.setExpectedStationCount(5);
+        analysis.setSwissRoundTrip(swissRoundTrip);
+        plan.setAnalysis(analysis);
+
+        assertThatThrownBy(() -> mapper.map(new LoadedPlan("0001-test", "0001-test.yml", plan)))
+                .isInstanceOf(AnalysisException.class)
+                .hasMessageContaining("analysis.swissRoundTrip.language");
     }
 }

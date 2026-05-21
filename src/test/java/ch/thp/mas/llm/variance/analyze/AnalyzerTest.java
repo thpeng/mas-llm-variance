@@ -33,7 +33,7 @@ class AnalyzerTest {
         assertThatThrownBy(() -> TestAnalyzerFactory.create(AnalysisConfig.defaults())
                 .analyze(new NamedRunLog("empty.json", empty)))
                 .isInstanceOf(AnalysisException.class)
-                .hasMessageContaining("no responses");
+                .hasMessageContaining("no successful responses");
     }
 
     static class FixedClock extends SystemRunClock {

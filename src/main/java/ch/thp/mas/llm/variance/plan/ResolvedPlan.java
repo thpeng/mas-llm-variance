@@ -18,7 +18,8 @@ public record ResolvedPlan(
         boolean sendReasoning,
         String reasoningProviderValue,
         LmStudioLoadConfig load,
-        String modelVersion
+        String modelVersion,
+        String sourcePath
 ) {
 
     public ResolvedPlan(
@@ -36,7 +37,28 @@ public record ResolvedPlan(
             String modelVersion
     ) {
         this(name, inferenceProvider, model, prompt, iterations, temperature, topP, topK, seed,
-                seed == null ? "RANDOM" : seed.toString(), reasoning, true, null, load, modelVersion);
+                seed == null ? "RANDOM" : seed.toString(), reasoning, true, null, load, modelVersion, "");
+    }
+
+    public ResolvedPlan(
+            String name,
+            InferenceProvider inferenceProvider,
+            String model,
+            String prompt,
+            int iterations,
+            Double temperature,
+            Double topP,
+            Integer topK,
+            Long seed,
+            String seedSetting,
+            Reasoning reasoning,
+            boolean sendReasoning,
+            String reasoningProviderValue,
+            LmStudioLoadConfig load,
+            String modelVersion
+    ) {
+        this(name, inferenceProvider, model, prompt, iterations, temperature, topP, topK, seed, seedSetting,
+                reasoning, sendReasoning, reasoningProviderValue, load, modelVersion, "");
     }
 
     public InferenceProvider getInferenceProvider() {

@@ -43,13 +43,20 @@ public class AnalyzeCommand {
     }
 
     private Path analyze(NamedRunLog runLog) {
-        LoadedPlan plan = planLoader.load(runLog.runLog().planName());
+        LoadedPlan plan = planLoader.load(planSelection(runLog));
         if (!runLog.runLog().planName().equals(plan.name())) {
             throw new AnalysisException("Run log " + runLog.filename()
                     + " does not match plan " + plan.filename() + ".");
         }
         AnalysisConfig config = analysisConfigMapper.map(plan);
         return analysisWriter.write(runLog.filename(), analyzer.analyze(runLog, config));
+    }
+
+    private String planSelection(NamedRunLog runLog) {
+        Path parent = Path.of(runLog.filename().replace('\\', '/')).getParent();
+        return parent == null
+                ? runLog.runLog().planName()
+                : parent.toString().replace('\\', '/') + "/" + runLog.runLog().planName();
     }
 
     private String optionValue(ApplicationArguments appArgs, String name) {

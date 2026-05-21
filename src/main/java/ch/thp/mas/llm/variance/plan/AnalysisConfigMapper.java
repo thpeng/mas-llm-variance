@@ -43,9 +43,18 @@ public class AnalysisConfigMapper {
     private static SwissRoundTripConfig swissRoundTrip(YamlAnalysisConfig yaml, AnalysisConfig defaults) {
         YamlAnalysisConfig.SwissRoundTrip swissRoundTrip = yaml.getSwissRoundTrip();
         if (swissRoundTrip == null) {
-            return defaults.swissRoundTrip();
+            throw new AnalysisException("Missing analysis.swissRoundTrip block for "
+                    + PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
         }
-        return new SwissRoundTripConfig(valueOrDefault(swissRoundTrip.getExpectedStationCount(), defaults.swissRoundTrip().expectedStationCount()));
+        if (swissRoundTrip.getLanguage() == null) {
+            throw new AnalysisException("Missing analysis.swissRoundTrip.language for "
+                    + PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
+        }
+        return new SwissRoundTripConfig(
+                valueOrDefault(swissRoundTrip.getExpectedStationCount(),
+                        defaults.swissRoundTrip().expectedStationCount()),
+                swissRoundTrip.getLanguage()
+        );
     }
 
     private static BernZurichConnectionConfig bernZurichConnection(YamlAnalysisConfig yaml, AnalysisConfig defaults) {

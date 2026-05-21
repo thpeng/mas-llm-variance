@@ -31,9 +31,16 @@ public class RunLogWriter {
     }
 
     public Path write(RunLog runLog) {
+        return write(runLog, "");
+    }
+
+    public Path write(RunLog runLog, String sourcePlanPath) {
         try {
             Files.createDirectories(runsDirectory);
-            Path target = runsDirectory.resolve(fileNameFactory.create(runLog.startedAt(), runLog.planName()));
+            Path targetDirectory = runsDirectory.resolve(relativeDirectory(sourcePlanPath)).normalize();
+            ensureInsideRunsDirectory(targetDirectory);
+            Files.createDirectories(targetDirectory);
+            Path target = targetDirectory.resolve(fileNameFactory.create(runLog.startedAt(), runLog.planName()));
             String json = objectMapper.writeValueAsString(runLog);
             return Files.writeString(
                     target,
@@ -44,6 +51,20 @@ public class RunLogWriter {
             );
         } catch (IOException e) {
             throw new RunLoggingException("Could not write run log for plan: " + runLog.planName(), e);
+        }
+    }
+
+    private Path relativeDirectory(String sourcePlanPath) {
+        if (sourcePlanPath == null || sourcePlanPath.isBlank()) {
+            return Path.of("");
+        }
+        Path parent = Path.of(sourcePlanPath.replace('\\', '/')).getParent();
+        return parent == null ? Path.of("") : parent;
+    }
+
+    private void ensureInsideRunsDirectory(Path targetDirectory) {
+        if (!targetDirectory.startsWith(runsDirectory.normalize())) {
+            throw new IllegalArgumentException("Run log target must stay under runs directory: " + targetDirectory);
         }
     }
 

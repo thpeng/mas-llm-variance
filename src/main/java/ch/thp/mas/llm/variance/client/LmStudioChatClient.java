@@ -83,18 +83,21 @@ public class LmStudioChatClient implements LlmClient {
     }
 
     private HttpJsonResponse post(String path, JsonNode body) throws Exception {
+        String requestBody = objectMapper.writeValueAsString(body);
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl + path))
                 .header("Content-Type", "application/json")
                 .timeout(Duration.ofMinutes(10))
                 .version(HttpClient.Version.HTTP_1_1)
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)));
+                .POST(HttpRequest.BodyPublishers.ofString(requestBody));
         addAuthorization(builder);
         HttpRequest request = builder.build();
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        RequestTrace requestTrace = RequestTrace.of(request, requestBody, response);
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IllegalStateException(path + " failed with HTTP " + response.statusCode() + ": " + response.body());
+            throw new ServingException(path + " failed with HTTP " + response.statusCode() + ": " + response.body(),
+                    response.statusCode(), response.body(), requestTrace);
         }
-        return new HttpJsonResponse(objectMapper.readTree(response.body()), RequestTrace.of(request));
+        return new HttpJsonResponse(objectMapper.readTree(response.body()), requestTrace);
     }
 
     private void addAuthorization(HttpRequest.Builder builder) {

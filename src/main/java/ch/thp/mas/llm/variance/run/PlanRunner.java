@@ -3,6 +3,8 @@ package ch.thp.mas.llm.variance.run;
 import ch.thp.mas.llm.variance.client.LlmClientFactory;
 import ch.thp.mas.llm.variance.client.LlmRequestConfig;
 import ch.thp.mas.llm.variance.client.LlmResponse;
+import ch.thp.mas.llm.variance.client.RequestTrace;
+import ch.thp.mas.llm.variance.client.ServingException;
 import ch.thp.mas.llm.variance.plan.ResolvedPlan;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -65,14 +67,44 @@ public class PlanRunner {
                         plan.reasoningProviderValue()
                 );
                 OffsetDateTime startedAt = runClock.now();
-                LlmResponse response = session.client().call(plan.prompt(), config);
-                OffsetDateTime endedAt = runClock.now();
-                repetitions.add(new RunLogEntry(i + 1, startedAt, endedAt, requestSeed,
-                        response.requestTrace() == null ? null : response.requestTrace().url(),
-                        response.requestTrace() == null ? null : response.requestTrace().headers(),
-                        response.text(),
-                        response.tokenUsage()));
-                System.out.println(response.text() + ", ");
+                try {
+                    LlmResponse response = session.client().call(plan.prompt(), config);
+                    OffsetDateTime endedAt = runClock.now();
+                    RequestTrace requestTrace = response.requestTrace();
+                    repetitions.add(new RunLogEntry(i + 1, startedAt, endedAt, requestSeed,
+                            requestTrace == null ? null : requestTrace.url(),
+                            requestTrace == null ? null : requestTrace.headers(),
+                            requestTrace == null ? null : requestTrace.body(),
+                            requestTrace == null ? null : requestTrace.responseStatusCode(),
+                            requestTrace == null ? null : requestTrace.responseHeaders(),
+                            requestTrace == null ? null : requestTrace.responseBody(),
+                            response.text(),
+                            response.tokenUsage()));
+                    System.out.println(response.text() + ", ");
+                } catch (ServingException e) {
+                    if (!e.isServingError()) {
+                        throw e;
+                    }
+                    OffsetDateTime endedAt = runClock.now();
+                    RequestTrace requestTrace = e.requestTrace();
+                    repetitions.add(RunLogEntry.servingError(
+                            i + 1,
+                            startedAt,
+                            endedAt,
+                            requestSeed,
+                            requestTrace == null ? null : requestTrace.url(),
+                            requestTrace == null ? null : requestTrace.headers(),
+                            requestTrace == null ? null : requestTrace.body(),
+                            requestTrace == null ? null : requestTrace.responseStatusCode(),
+                            requestTrace == null ? null : requestTrace.responseHeaders(),
+                            requestTrace == null ? null : requestTrace.responseBody(),
+                            e.statusCode(),
+                            e.getMessage(),
+                            e.responseBody()
+                    ));
+                    System.out.println("Serving error " + e.statusCode() + " in repetition " + (i + 1)
+                            + ", continuing run.");
+                }
             }
         } catch (Exception e) {
             closeAfterFailure(session, e);
@@ -94,7 +126,7 @@ public class PlanRunner {
                 plan.prompt(),
                 List.copyOf(repetitions)
         );
-        runLogWriter.write(runLog);
+        runLogWriter.write(runLog, plan.sourcePath());
         return runLog;
     }
 

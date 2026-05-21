@@ -81,7 +81,8 @@ public class PlanResolver {
                 sendReasoning,
                 blankToNull(reasoningProviderValue),
                 plan.getLoad(),
-                modelVersion
+                modelVersion,
+                loadedPlan.filename()
         );
     }
 

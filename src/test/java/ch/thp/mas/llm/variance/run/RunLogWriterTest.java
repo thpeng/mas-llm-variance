@@ -69,6 +69,16 @@ class RunLogWriterTest {
                 .isEqualTo(8192);
     }
 
+    @Test
+    void writesRunLogUnderSameRelativePathAsPlan() throws Exception {
+        RunLogWriter writer = new RunLogWriter(tempDir.resolve("runs"), new RunFileNameFactory(), objectMapper());
+
+        Path written = writer.write(runLog(), "test/0001-test.yml");
+
+        assertThat(written).isEqualTo(tempDir.resolve("runs/test/20260502-104530-123-run-0001-test.json"));
+        assertThat(written).exists();
+    }
+
     private static RunLog runLog() {
         return runLog(null);
     }

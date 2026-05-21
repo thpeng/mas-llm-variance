@@ -15,6 +15,29 @@ public record RunLog(
         int iterations,
         RunConfigLog config,
         String prompt,
-        List<RunLogEntry> repetitions
+        List<RunLogEntry> repetitions,
+        RunErrorSummary errors
 ) {
+
+    public RunLog(
+            String planName,
+            OffsetDateTime startedAt,
+            OffsetDateTime endedAt,
+            InferenceProvider inferenceProvider,
+            String model,
+            String modelVersion,
+            ModelInstanceLog modelInstance,
+            int iterations,
+            RunConfigLog config,
+            String prompt,
+            List<RunLogEntry> repetitions
+    ) {
+        this(planName, startedAt, endedAt, inferenceProvider, model, modelVersion, modelInstance, iterations, config,
+                prompt, repetitions, RunErrorSummary.from(repetitions));
+    }
+
+    public RunLog {
+        repetitions = List.copyOf(repetitions);
+        errors = errors == null ? RunErrorSummary.from(repetitions) : errors;
+    }
 }
