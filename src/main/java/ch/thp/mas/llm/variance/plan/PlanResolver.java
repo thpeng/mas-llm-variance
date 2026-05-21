@@ -52,8 +52,8 @@ public class PlanResolver {
                 : plan.getTopK();
         String seedSetting = optionValue(appArgs, "seed") != null
                 ? optionValue(appArgs, "seed")
-                : seedSetting(loadedPlan);
-        Long seed = parseSeed(seedSetting);
+                : ((YamlPlan) loadedPlan.plan()).getRun().getSeed();
+        Long seed = seedSetting == null || seedSetting.isBlank() ? null : parseSeed(seedSetting);
         String reasoningValue = optionValue(appArgs, "reasoning") != null
                 ? optionValue(appArgs, "reasoning")
                 : plan.getReasoning();
@@ -64,6 +64,9 @@ public class PlanResolver {
         String reasoningProviderValue = optionValue(appArgs, "reasoningProviderValue") != null
                 ? optionValue(appArgs, "reasoningProviderValue")
                 : plan.getReasoningProviderValue();
+        if (isQwenLmStudioReasoningOn(inferenceProvider, model, reasoningValue)) {
+            reasoningProviderValue = "on";
+        }
         String modelVersion = optionValue(appArgs, "modelVersion");
 
         return new ResolvedPlan(
@@ -76,7 +79,7 @@ public class PlanResolver {
                 topP,
                 topK,
                 seed,
-                normalizedSeedSetting(seedSetting),
+                seedSetting == null || seedSetting.isBlank() ? null : normalizedSeedSetting(seedSetting),
                 reasoning,
                 sendReasoning,
                 blankToNull(reasoningProviderValue),
@@ -96,17 +99,6 @@ public class PlanResolver {
         YamlRunConfig run = ((YamlPlan) loadedPlan.plan()).getRun();
         requirePresent(run.getPrompt(), "run.prompt", loadedPlan);
         requirePresent(run.getIterations(), "run.iterations", loadedPlan);
-        requirePresent(run.getTemperature(), "run.temperature", loadedPlan);
-        requirePresent(run.getTopP(), "run.topP", loadedPlan);
-        requirePresent(run.getTopK(), "run.topK", loadedPlan);
-        requirePresent(run.getSeed(), "run.seed", loadedPlan);
-        requirePresent(run.getReasoning(), "run.reasoning", loadedPlan);
-    }
-
-    private static String seedSetting(LoadedPlan loadedPlan) {
-        String seed = ((YamlPlan) loadedPlan.plan()).getRun().getSeed();
-        requirePresent(seed, "run.seed", loadedPlan);
-        return seed;
     }
 
     private static boolean sendReasoning(LoadedPlan loadedPlan) {
@@ -146,11 +138,32 @@ public class PlanResolver {
     }
 
     private static Reasoning parseReasoning(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        if ("on".equalsIgnoreCase(value.trim())) {
+            return null;
+        }
         try {
             return Reasoning.parse(value);
         } catch (IllegalArgumentException e) {
             throw new PlanException(e.getMessage(), e);
         }
+    }
+
+    private static boolean isQwenLmStudioReasoningOn(
+            InferenceProvider inferenceProvider,
+            String model,
+            String reasoningValue
+    ) {
+        if (!"on".equalsIgnoreCase(reasoningValue == null ? null : reasoningValue.trim())) {
+            return false;
+        }
+        if (inferenceProvider == InferenceProvider.LMSTUDIO && model != null
+                && model.toLowerCase(Locale.ROOT).contains("qwen")) {
+            return true;
+        }
+        throw new PlanException("Reasoning 'on' is only supported for Qwen via LM Studio.");
     }
 
     private static Double parseDouble(String value, String name) {

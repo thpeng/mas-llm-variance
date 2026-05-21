@@ -39,11 +39,18 @@ public class LmStudioChatClient implements LlmClient {
 
     @Override
     public LlmResponse call(String prompt, LlmRequestConfig config) throws Exception {
+        if (config.seed() != null) {
+            throw new IllegalArgumentException("LM Studio /api/v1/chat does not support seed; seed is applied during model load.");
+        }
         ObjectNode request = objectMapper.createObjectNode();
         request.put("model", config.model());
         request.put("input", prompt);
         request.put("store", false);
         if (config.sendReasoning()) {
+            if (config.reasoning() == null && (config.reasoningProviderValue() == null
+                    || config.reasoningProviderValue().isBlank())) {
+                throw new IllegalArgumentException("LM Studio reasoning requires reasoning or reasoningProviderValue.");
+            }
             request.put("reasoning", reasoningValue(config));
         }
         if (config.temperature() != null) {

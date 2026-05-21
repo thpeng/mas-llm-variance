@@ -46,6 +46,7 @@ public class OpenAiClient implements LlmClient {
     }
 
     private ObjectNode request(String prompt, LlmRequestConfig config) {
+        validateConfig(config);
         ObjectNode request = objectMapper.createObjectNode();
         request.put("model", config.model());
         request.put("input", prompt);
@@ -129,6 +130,19 @@ public class OpenAiClient implements LlmClient {
     static boolean sendsSamplingParameters(LlmRequestConfig config) {
         return !(config.sendReasoning() && supportsReasoning(config.model()) && config.reasoning() != null
                 && config.reasoning() != Reasoning.OFF);
+    }
+
+    private static void validateConfig(LlmRequestConfig config) {
+        if (config.topK() != null) {
+            throw new IllegalArgumentException("OpenAI Responses API does not support topK/top_k.");
+        }
+        if (config.seed() != null) {
+            throw new IllegalArgumentException("OpenAI Responses API does not support seed.");
+        }
+        if (!sendsSamplingParameters(config) && (config.temperature() != null || config.topP() != null)) {
+            throw new IllegalArgumentException("OpenAI reasoning requests do not support configured sampling "
+                    + "parameters temperature/topP. Remove them or set reasoning to off.");
+        }
     }
 
     private static String reasoningValue(LlmRequestConfig config) {

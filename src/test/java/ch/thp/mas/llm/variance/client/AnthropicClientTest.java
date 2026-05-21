@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,10 +48,10 @@ class AnthropicClientTest {
 
         LlmResponse response = client.call("prompt", new LlmRequestConfig(
                 "claude-sonnet-4-6",
-                0.0,
+                null,
                 1.0,
                 1,
-                123L,
+                null,
                 Reasoning.OFF
         ));
 
@@ -70,13 +71,60 @@ class AnthropicClientTest {
         assertThat(request.path("messages").get(0).path("content").asText()).isEqualTo("prompt");
         assertThat(request.path("top_p").asDouble()).isEqualTo(1.0);
         assertThat(request.path("top_k").asInt()).isEqualTo(1);
+        assertThat(request.path("thinking").path("type").asText()).isEqualTo("disabled");
         assertThat(request.has("temperature")).isFalse();
         assertThat(request.has("seed")).isFalse();
+        assertThat(request.has("output_config")).isFalse();
+    }
+
+    @Test
+    void sendsAdaptiveThinkingWithEffortAndLargerTokenLimit() throws Exception {
+        startServer(200, """
+                {
+                  "content": [
+                    {"type": "thinking", "thinking": "summary"},
+                    {"type": "text", "text": "Antwort"}
+                  ],
+                  "usage": {
+                    "input_tokens": 10,
+                    "output_tokens": 5
+                  }
+                }
+                """);
+        AnthropicClient client = new AnthropicClient("token", baseUrl(), HttpClient.newHttpClient(), objectMapper);
+
+        LlmResponse response = client.call("prompt", new LlmRequestConfig(
+                "claude-sonnet-4-6",
+                null,
+                1.0,
+                null,
+                null,
+                Reasoning.MEDIUM
+        ));
+
+        assertThat(response.text()).isEqualTo("Antwort");
+        JsonNode request = requests.getFirst();
+        assertThat(request.path("max_tokens").asInt()).isEqualTo(4096);
+        assertThat(request.path("thinking").path("type").asText()).isEqualTo("adaptive");
+        assertThat(request.path("output_config").path("effort").asText()).isEqualTo("medium");
+    }
+
+    @Test
+    void mapsAnthropicEffortValues() {
+        assertThat(Reasoning.LOW.anthropicEffort()).isEqualTo("low");
+        assertThat(Reasoning.MEDIUM.anthropicEffort()).isEqualTo("medium");
+        assertThat(Reasoning.HIGH.anthropicEffort()).isEqualTo("high");
+        assertThatThrownBy(Reasoning.OFF::anthropicEffort)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("disables Anthropic thinking");
+        assertThatThrownBy(Reasoning.XHIGH::anthropicEffort)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Anthropic");
     }
 
     @Test
     void usesTemperatureWhenItIsNonZero() {
-        LlmRequestConfig config = new LlmRequestConfig("claude", 0.2, 1.0, null, null, Reasoning.OFF);
+        LlmRequestConfig config = new LlmRequestConfig("claude", 0.2, null, null, null, Reasoning.OFF);
 
         assertThat(AnthropicClient.useTemperature(config)).isTrue();
         assertThat(AnthropicClient.useTopP(config)).isFalse();
@@ -84,7 +132,7 @@ class AnthropicClientTest {
 
     @Test
     void usesTopPWhenTemperatureIsZero() {
-        LlmRequestConfig config = new LlmRequestConfig("claude", 0.0, 1.0, null, null, Reasoning.OFF);
+        LlmRequestConfig config = new LlmRequestConfig("claude", null, 1.0, null, null, Reasoning.OFF);
 
         assertThat(AnthropicClient.useTemperature(config)).isFalse();
         assertThat(AnthropicClient.useTopP(config)).isTrue();
@@ -104,6 +152,20 @@ class AnthropicClientTest {
 
         assertThat(AnthropicClient.useTemperature(config)).isFalse();
         assertThat(AnthropicClient.useTopP(config)).isFalse();
+    }
+
+    @Test
+    void rejectsUnsupportedSeedReasoningAndCombinedSampling() {
+        AnthropicClient client = new AnthropicClient("token", "http://localhost:1", HttpClient.newHttpClient(), objectMapper);
+
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
+                "claude-sonnet-4-6", null, null, null, 1L, Reasoning.OFF)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("seed");
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
+                "claude-sonnet-4-6", 0.2, 1.0, null, null, Reasoning.OFF)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("temperature and topP");
     }
 
     private void startServer(int status, String responseBody) throws IOException {

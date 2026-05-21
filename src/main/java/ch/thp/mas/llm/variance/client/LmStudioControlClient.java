@@ -48,8 +48,12 @@ public class LmStudioControlClient {
         JsonNode models = get("/api/v1/models");
         JsonNode model = findModel(models, plan.model());
         String existingInstanceId = firstLoadedInstanceId(model);
-        LmStudioLoadConfigLog loadConfig = loadConfigLog(plan.getLoad());
+        LmStudioLoadConfigLog loadConfig = loadConfigLog(plan);
         if (existingInstanceId != null) {
+            if (plan.seed() != null) {
+                throw new IllegalStateException("LM Studio model is already loaded; configured seed cannot be applied "
+                        + "without loading a new model instance.");
+            }
             System.out.println("Reusing loaded LM Studio model instance: " + existingInstanceId);
             return new ModelInstanceLog(existingInstanceId, false, loadConfig, null);
         }
@@ -69,17 +73,20 @@ public class LmStudioControlClient {
         return new ModelInstanceLog(instanceId, true, loadConfig, loadResponse);
     }
 
-    public void unload(String instanceId) throws Exception {
+    public JsonNode unload(String instanceId) throws Exception {
         System.out.println("Unloading LM Studio model instance: " + instanceId);
         ObjectNode request = objectMapper.createObjectNode();
         request.put("instance_id", instanceId);
-        post("/api/v1/models/unload", request);
+        return post("/api/v1/models/unload", request);
     }
 
     private ObjectNode loadRequest(ResolvedPlan plan) {
         ObjectNode request = objectMapper.createObjectNode();
         request.put("model", plan.model());
         request.put("echo_load_config", true);
+        if (plan.seed() != null) {
+            request.put("seed", plan.seed());
+        }
         LmStudioLoadConfig load = plan.getLoad();
         if (load != null) {
             putIfNotNull(request, "context_length", load.getContextLength());
@@ -152,16 +159,18 @@ public class LmStudioControlClient {
         return null;
     }
 
-    private static LmStudioLoadConfigLog loadConfigLog(LmStudioLoadConfig load) {
+    private static LmStudioLoadConfigLog loadConfigLog(ResolvedPlan plan) {
+        LmStudioLoadConfig load = plan.getLoad();
         if (load == null) {
-            return new LmStudioLoadConfigLog(null, null, null, null, null);
+            return new LmStudioLoadConfigLog(null, null, null, null, null, plan.seed());
         }
         return new LmStudioLoadConfigLog(
                 load.getContextLength(),
                 load.getEvalBatchSize(),
                 load.getFlashAttention(),
                 load.getNumExperts(),
-                load.getOffloadKvCacheToGpu()
+                load.getOffloadKvCacheToGpu(),
+                plan.seed()
         );
     }
 

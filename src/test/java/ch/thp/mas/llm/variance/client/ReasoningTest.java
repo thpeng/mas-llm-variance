@@ -40,11 +40,15 @@ class ReasoningTest {
 
     @Test
     void mapsAnthropicValues() {
-        assertThat(Reasoning.OFF.anthropicThinkingLevel()).isEqualTo("low");
-        assertThat(Reasoning.LOW.anthropicThinkingLevel()).isEqualTo("medium");
-        assertThat(Reasoning.MEDIUM.anthropicThinkingLevel()).isEqualTo("high");
-        assertThat(Reasoning.HIGH.anthropicThinkingLevel()).isEqualTo("xhigh");
-        assertThat(Reasoning.XHIGH.anthropicThinkingLevel()).isEqualTo("max");
+        assertThatThrownBy(Reasoning.OFF::anthropicEffort)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("disables Anthropic thinking");
+        assertThat(Reasoning.LOW.anthropicEffort()).isEqualTo("low");
+        assertThat(Reasoning.MEDIUM.anthropicEffort()).isEqualTo("medium");
+        assertThat(Reasoning.HIGH.anthropicEffort()).isEqualTo("high");
+        assertThatThrownBy(Reasoning.XHIGH::anthropicEffort)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Anthropic");
     }
 
     @Test

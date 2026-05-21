@@ -5,6 +5,17 @@ public record LmStudioLoadConfigLog(
         Integer evalBatchSize,
         Boolean flashAttention,
         Integer numExperts,
-        Boolean offloadKvCacheToGpu
+        Boolean offloadKvCacheToGpu,
+        Long seed
 ) {
+
+    public LmStudioLoadConfigLog(
+            Integer contextLength,
+            Integer evalBatchSize,
+            Boolean flashAttention,
+            Integer numExperts,
+            Boolean offloadKvCacheToGpu
+    ) {
+        this(contextLength, evalBatchSize, flashAttention, numExperts, offloadKvCacheToGpu, null);
+    }
 }

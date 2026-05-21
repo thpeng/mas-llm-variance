@@ -1,6 +1,7 @@
 package ch.thp.mas.llm.variance.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,8 +53,8 @@ class OpenAiClientTest {
                 "gpt-4o-2024-08-06",
                 0.0,
                 1.0,
-                1,
-                123L,
+                null,
+                null,
                 Reasoning.OFF,
                 false
         ));
@@ -87,10 +88,10 @@ class OpenAiClientTest {
 
         client.call("prompt", new LlmRequestConfig(
                 "gpt-5.4-mini-2026-03-17",
-                0.7,
-                0.9,
-                1,
-                123L,
+                null,
+                null,
+                null,
+                null,
                 Reasoning.HIGH
         ));
 
@@ -99,6 +100,84 @@ class OpenAiClientTest {
         assertThat(request.has("temperature")).isFalse();
         assertThat(request.has("top_p")).isFalse();
     }
+
+    @Test
+    void rejectsConfiguredSamplingForReasoningRequest() {
+        OpenAiClient client = new OpenAiClient("token", "http://localhost:1", HttpClient.newHttpClient(), objectMapper);
+
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
+                "gpt-5.4-mini-2026-03-17",
+                0.7,
+                null,
+                null,
+                null,
+                Reasoning.HIGH
+        )))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("sampling");
+    }
+
+    @Test
+    void rejectsUnsupportedTopKAndSeed() {
+        OpenAiClient client = new OpenAiClient("token", "http://localhost:1", HttpClient.newHttpClient(), objectMapper);
+
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
+                "gpt-4o-2024-08-06", null, null, 1, null, Reasoning.OFF)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("topK");
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
+                "gpt-4o-2024-08-06", null, null, null, 1L, Reasoning.OFF)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("seed");
+    }
+
+    @Test
+    void sendsNoneReasoningForReasoningModelAndKeepsSamplingParameters() throws Exception {
+        startServer(200, """
+                {
+                  "output": [{"type": "message", "content": [{"type": "output_text", "text": "Antwort"}]}],
+                  "usage": {}
+                }
+                """);
+        OpenAiClient client = new OpenAiClient("token", baseUrl(), HttpClient.newHttpClient(), objectMapper);
+
+        client.call("prompt", new LlmRequestConfig(
+                "gpt-5.4-mini-2026-03-17",
+                0.7,
+                1.0,
+                null,
+                null,
+                Reasoning.OFF
+        ));
+
+        JsonNode request = requests.getFirst();
+        assertThat(request.path("reasoning").path("effort").asText()).isEqualTo("none");
+        assertThat(request.path("temperature").asDouble()).isEqualTo(0.7);
+        assertThat(request.path("top_p").asDouble()).isEqualTo(1.0);
+    }
+
+    @Test
+    void omitsNoneReasoningForNonReasoningModel() throws Exception {
+        startServer(200, """
+                {
+                  "output": [{"type": "message", "content": [{"type": "output_text", "text": "Antwort"}]}],
+                  "usage": {}
+                }
+                """);
+        OpenAiClient client = new OpenAiClient("token", baseUrl(), HttpClient.newHttpClient(), objectMapper);
+
+        client.call("prompt", new LlmRequestConfig(
+                "gpt-4o-2024-08-06",
+                0.7,
+                1.0,
+                null,
+                null,
+                Reasoning.OFF
+        ));
+
+        assertThat(requests.getFirst().has("reasoning")).isFalse();
+    }
+
 
     @Test
     void detectsOpenAiModelsWithReasoningSupport() {
@@ -130,14 +209,14 @@ class OpenAiClientTest {
         assertThat(OpenAiClient.sendsSamplingParameters(
                 config("gpt-5.4-mini-2026-03-17", Reasoning.OFF))).isTrue();
         assertThat(OpenAiClient.sendsSamplingParameters(
-                new LlmRequestConfig("gpt-5.4-mini-2026-03-17", 0.0, 1.0, 1, 1L, Reasoning.HIGH, false)))
+                new LlmRequestConfig("gpt-5.4-mini-2026-03-17", 0.0, 1.0, null, null, Reasoning.HIGH, false)))
                 .isTrue();
         assertThat(OpenAiClient.sendsSamplingParameters(
                 config("gpt-4o-2024-11-20", Reasoning.LOW))).isTrue();
     }
 
     private static LlmRequestConfig config(String model, Reasoning reasoning) {
-        return new LlmRequestConfig(model, 0.0, 1.0, 1, 1L, reasoning);
+        return new LlmRequestConfig(model, 0.0, 1.0, null, null, reasoning);
     }
 
     private void startServer(int status, String responseBody) throws IOException {

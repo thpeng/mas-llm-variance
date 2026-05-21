@@ -5,6 +5,7 @@ import ch.thp.mas.llm.variance.client.LlmRequestConfig;
 import ch.thp.mas.llm.variance.client.LlmResponse;
 import ch.thp.mas.llm.variance.client.RequestTrace;
 import ch.thp.mas.llm.variance.client.ServingException;
+import ch.thp.mas.llm.variance.client.InferenceProvider;
 import ch.thp.mas.llm.variance.plan.ResolvedPlan;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -46,29 +47,29 @@ public class PlanRunner {
     }
 
     public RunLog run(ResolvedPlan plan) throws Exception {
-        System.out.println("=== Running plan: " + plan.name() + " ===");
+        ResolvedPlan runtimePlan = runtimePlan(plan);
+        System.out.println("=== Running plan: " + runtimePlan.name() + " ===");
 
         OffsetDateTime runStartedAt = runClock.now();
 
         List<RunLogEntry> repetitions = new ArrayList<>();
-        InferenceSession session = sessionFactory.open(plan);
-        ModelInstanceLog modelInstance = session.modelInstance();
+        InferenceSession session = sessionFactory.open(runtimePlan);
         try {
-            for (int i = 0; i < plan.iterations(); i++) {
-                Long requestSeed = seedForRepetition(plan);
+            for (int i = 0; i < runtimePlan.iterations(); i++) {
+                Long requestSeed = seedForRepetition(runtimePlan);
                 LlmRequestConfig config = new LlmRequestConfig(
-                        plan.model(),
-                        plan.temperature(),
-                        plan.topP(),
-                        plan.topK(),
-                        requestSeed,
-                        plan.reasoning(),
-                        plan.sendReasoning(),
-                        plan.reasoningProviderValue()
+                        runtimePlan.model(),
+                        runtimePlan.temperature(),
+                        runtimePlan.topP(),
+                        runtimePlan.topK(),
+                        runtimePlan.inferenceProvider() == InferenceProvider.LMSTUDIO ? null : requestSeed,
+                        runtimePlan.reasoning(),
+                        runtimePlan.sendReasoning(),
+                        runtimePlan.reasoningProviderValue()
                 );
                 OffsetDateTime startedAt = runClock.now();
                 try {
-                    LlmResponse response = session.client().call(plan.prompt(), config);
+                    LlmResponse response = session.client().call(runtimePlan.prompt(), config);
                     OffsetDateTime endedAt = runClock.now();
                     RequestTrace requestTrace = response.requestTrace();
                     repetitions.add(new RunLogEntry(i + 1, startedAt, endedAt, requestSeed,
@@ -111,23 +112,31 @@ public class PlanRunner {
             throw e;
         }
         session.close();
+        ModelInstanceLog modelInstance = session.modelInstance();
 
         RunLog runLog = new RunLog(
-                plan.name(),
+                runtimePlan.name(),
                 runStartedAt,
                 runClock.now(),
-                plan.inferenceProvider(),
-                plan.model(),
-                plan.modelVersion(),
+                runtimePlan.inferenceProvider(),
+                runtimePlan.model(),
+                runtimePlan.modelVersion(),
                 modelInstance,
-                plan.iterations(),
-                new RunConfigLog(plan.temperature(), plan.topP(), plan.topK(), plan.seed(), plan.seedSetting(),
-                        plan.reasoning(), plan.sendReasoning(), plan.reasoningProviderValue()),
-                plan.prompt(),
+                runtimePlan.iterations(),
+                new RunConfigLog(runtimePlan.temperature(), runtimePlan.topP(), runtimePlan.topK(), runtimePlan.seed(), runtimePlan.seedSetting(),
+                        runtimePlan.reasoning(), runtimePlan.sendReasoning(), runtimePlan.reasoningProviderValue()),
+                runtimePlan.prompt(),
                 List.copyOf(repetitions)
         );
-        runLogWriter.write(runLog, plan.sourcePath());
+        runLogWriter.write(runLog, runtimePlan.sourcePath());
         return runLog;
+    }
+
+    private ResolvedPlan runtimePlan(ResolvedPlan plan) {
+        if (plan.inferenceProvider() == InferenceProvider.LMSTUDIO && "RANDOM".equals(plan.seedSetting())) {
+            throw new IllegalArgumentException("LM Studio does not support seed: RANDOM because seed is applied at model load.");
+        }
+        return plan;
     }
 
     private static void closeAfterFailure(InferenceSession session, Exception failure) {
@@ -139,6 +148,12 @@ public class PlanRunner {
     }
 
     private Long seedForRepetition(ResolvedPlan plan) {
+        if (plan.seedSetting() == null) {
+            return null;
+        }
+        if (plan.inferenceProvider() == InferenceProvider.LMSTUDIO) {
+            return plan.seed();
+        }
         if (!"RANDOM".equals(plan.seedSetting())) {
             return plan.seed();
         }

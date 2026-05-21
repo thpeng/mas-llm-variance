@@ -75,15 +75,16 @@ public enum Reasoning {
     }
 
     /**
-     * Anthropic mapping: off->low, low->medium, medium->high, high->xhigh, xhigh->max.
+     * Anthropic effort mapping with adaptive thinking:
+     * low->low, medium->medium, high->high. off disables thinking and xhigh is not supported.
      */
-    public String anthropicThinkingLevel() {
+    public String anthropicEffort() {
         return switch (this) {
-            case OFF -> "low";
-            case LOW -> "medium";
-            case MEDIUM -> "high";
-            case HIGH -> "xhigh";
-            case XHIGH -> "max";
+            case OFF -> throw new IllegalArgumentException("Reasoning 'off' disables Anthropic thinking and has no effort value.");
+            case LOW -> "low";
+            case MEDIUM -> "medium";
+            case HIGH -> "high";
+            case XHIGH -> throw unsupported("Anthropic");
         };
     }
 

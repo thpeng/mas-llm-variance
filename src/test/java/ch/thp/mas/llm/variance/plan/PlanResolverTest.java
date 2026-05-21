@@ -100,10 +100,24 @@ class PlanResolverTest {
     }
 
     @Test
-    void rejectsLmStudioOnReasoningAlias() {
+    void rejectsOnReasoningAliasExceptQwenLmStudio() {
         assertThatThrownBy(() -> resolver.resolve(loadedPlan(), args("--reasoning=on")))
                 .isInstanceOf(PlanException.class)
-                .hasMessageContaining("Unknown reasoning");
+                .hasMessageContaining("only supported for Qwen via LM Studio");
+    }
+
+    @Test
+    void acceptsOnReasoningForQwenViaLmStudio() {
+        YamlPlan plan = new YamlPlan();
+        plan.setInferenceProvider(InferenceProvider.LMSTUDIO);
+        plan.setModel("qwen/qwen3.5-9b");
+        plan.setRun(run("test prompt", 3, null, null, null, null, "on"));
+
+        ResolvedPlan resolved = resolver.resolve(new LoadedPlan("0004-qwen", "0004-qwen.yml", plan), args());
+
+        assertThat(resolved.reasoning()).isNull();
+        assertThat(resolved.sendReasoning()).isTrue();
+        assertThat(resolved.reasoningProviderValue()).isEqualTo("on");
     }
 
     @Test
@@ -138,13 +152,13 @@ class PlanResolverTest {
     }
 
     @Test
-    void rejectsMissingRequiredRunParameter() {
+    void acceptsMissingProviderSpecificRunParameter() {
         YamlPlan plan = new YamlPlan();
         plan.setRun(run("test prompt", 3, 0.2, null, 1, "RANDOM", "off"));
 
-        assertThatThrownBy(() -> resolver.resolve(new LoadedPlan("0003-bad", "0003-bad.yml", plan), args()))
-                .isInstanceOf(PlanException.class)
-                .hasMessageContaining("Missing run.topP");
+        ResolvedPlan resolved = resolver.resolve(new LoadedPlan("0003-ok", "0003-ok.yml", plan), args());
+
+        assertThat(resolved.topP()).isNull();
     }
 
     @Test

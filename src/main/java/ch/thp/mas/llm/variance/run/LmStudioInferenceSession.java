@@ -4,12 +4,13 @@ import ch.thp.mas.llm.variance.client.LmStudioChatClient;
 import ch.thp.mas.llm.variance.client.LmStudioControlClient;
 import ch.thp.mas.llm.variance.client.LlmClient;
 import ch.thp.mas.llm.variance.plan.ResolvedPlan;
+import com.fasterxml.jackson.databind.JsonNode;
 
 class LmStudioInferenceSession implements InferenceSession {
 
     private final LmStudioControlClient controlClient;
     private final LlmClient client;
-    private final ModelInstanceLog modelInstance;
+    private ModelInstanceLog modelInstance;
 
     private LmStudioInferenceSession(
             LmStudioControlClient controlClient,
@@ -41,7 +42,8 @@ class LmStudioInferenceSession implements InferenceSession {
     @Override
     public void close() throws Exception {
         if (modelInstance.loadedByRun()) {
-            controlClient.unload(modelInstance.id());
+            JsonNode unloadResponse = controlClient.unload(modelInstance.id());
+            modelInstance = modelInstance.withUnloadResponse(unloadResponse);
         }
     }
 

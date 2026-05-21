@@ -119,6 +119,72 @@ class PlanRunnerTest {
     }
 
     @Test
+    void rejectsRandomSeedForLmStudio() {
+        RecordingRunLogWriter writer = new RecordingRunLogWriter();
+        PlanRunner runner = new PlanRunner(
+                (InferenceSessionFactory) plan -> new RecordingSession(new RecordingClient()),
+                new FixedRunClock(),
+                writer,
+                new FixedRandomGenerator(41L)
+        );
+
+        assertThatThrownBy(() -> runner.run(new ResolvedPlan(
+                "0001-test",
+                InferenceProvider.LMSTUDIO,
+                "model-a",
+                "hello",
+                1,
+                null,
+                null,
+                null,
+                null,
+                "RANDOM",
+                Reasoning.OFF,
+                true,
+                null,
+                null,
+                null,
+                null
+        )))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("seed: RANDOM");
+        assertThat(writer.logs).isEmpty();
+    }
+
+    @Test
+    void logsFixedSeedForLmStudioButDoesNotSendItToChatRequest() throws Exception {
+        RecordingClient client = new RecordingClient();
+        RecordingRunLogWriter writer = new RecordingRunLogWriter();
+        PlanRunner runner = new PlanRunner(
+                (InferenceSessionFactory) plan -> new RecordingSession(client),
+                new FixedRunClock(),
+                writer
+        );
+
+        RunLog runLog = runner.run(new ResolvedPlan(
+                "0001-test",
+                InferenceProvider.LMSTUDIO,
+                "model-a",
+                "hello",
+                1,
+                null,
+                null,
+                null,
+                123L,
+                "123",
+                Reasoning.OFF,
+                true,
+                null,
+                null,
+                null,
+                null
+        ));
+
+        assertThat(runLog.repetitions()).extracting(RunLogEntry::seed).containsExactly(123L);
+        assertThat(client.configs).extracting(LlmRequestConfig::seed).containsExactly((Long) null);
+    }
+
+    @Test
     void doesNotWriteLogWhenClientCallFails() {
         RecordingRunLogWriter writer = new RecordingRunLogWriter();
         PlanRunner runner = new PlanRunner(
@@ -135,7 +201,10 @@ class PlanRunnerTest {
                 null,
                 null,
                 null,
+                null,
                 Reasoning.OFF,
+                true,
+                null,
                 null,
                 null
         );
@@ -272,7 +341,10 @@ class PlanRunnerTest {
                 null,
                 null,
                 null,
+                null,
                 Reasoning.OFF,
+                true,
+                null,
                 null,
                 null
         );

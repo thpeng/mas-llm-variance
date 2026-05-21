@@ -128,12 +128,46 @@ class LmStudioChatClientTest {
     }
 
     @Test
+    void sendsProviderReasoningValueWithoutGenericReasoning() throws Exception {
+        startServer(200, """
+                {
+                  "output": [{"type": "message", "content": "Antwort"}],
+                  "stats": {}
+                }
+                """);
+        LmStudioChatClient client = new LmStudioChatClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
+
+        client.call("prompt", new LlmRequestConfig("qwen/qwen3.5-9b", null, null, null, null, null, true, "on"));
+
+        assertThat(requests.getFirst().path("reasoning").asText()).isEqualTo("on");
+    }
+
+    @Test
+    void rejectsMissingReasoningValueWhenSendingReasoning() {
+        LmStudioChatClient client = new LmStudioChatClient("http://localhost:1", null, HttpClient.newHttpClient(), objectMapper);
+
+        assertThatThrownBy(() -> client.call("prompt",
+                new LlmRequestConfig("model-a", null, null, null, null, null, true, null)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("reasoning requires");
+    }
+
+    @Test
     void rejectsXhighReasoningForLmStudio() {
         LmStudioChatClient client = new LmStudioChatClient("http://localhost:1", null, HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.XHIGH)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("not supported for LM Studio");
+    }
+
+    @Test
+    void rejectsSeedBecauseItMustBeAppliedAtModelLoad() {
+        LmStudioChatClient client = new LmStudioChatClient("http://localhost:1", null, HttpClient.newHttpClient(), objectMapper);
+
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, 1L, Reasoning.OFF)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("model load");
     }
 
     @Test

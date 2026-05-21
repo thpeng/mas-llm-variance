@@ -47,9 +47,10 @@ public class AnthropicClient implements LlmClient {
     }
 
     private ObjectNode request(String prompt, LlmRequestConfig config) {
+        validateConfig(config);
         ObjectNode request = objectMapper.createObjectNode();
         request.put("model", config.model());
-        request.put("max_tokens", 1024);
+        request.put("max_tokens", useAdaptiveThinking(config) ? 4096 : 1024);
         request.putArray("messages").add(objectMapper.createObjectNode()
                 .put("role", "user")
                 .put("content", prompt));
@@ -61,6 +62,15 @@ public class AnthropicClient implements LlmClient {
         }
         if (config.topK() != null) {
             request.put("top_k", config.topK());
+        }
+        if (config.sendReasoning() && config.reasoning() != null) {
+            if (config.reasoning() == Reasoning.OFF) {
+                request.set("thinking", objectMapper.createObjectNode().put("type", "disabled"));
+            } else {
+                request.set("thinking", objectMapper.createObjectNode().put("type", "adaptive"));
+                request.set("output_config", objectMapper.createObjectNode()
+                        .put("effort", config.reasoning().anthropicEffort()));
+            }
         }
         return request;
     }
@@ -118,6 +128,22 @@ public class AnthropicClient implements LlmClient {
 
     static boolean useTopP(LlmRequestConfig config) {
         return !useTemperature(config) && config.topP() != null;
+    }
+
+    static boolean useAdaptiveThinking(LlmRequestConfig config) {
+        return config.sendReasoning() && config.reasoning() != null && config.reasoning() != Reasoning.OFF;
+    }
+
+    private static void validateConfig(LlmRequestConfig config) {
+        if (config.seed() != null) {
+            throw new IllegalArgumentException("Anthropic Messages API does not support seed.");
+        }
+        if (config.reasoningProviderValue() != null && !config.reasoningProviderValue().isBlank()) {
+            throw new IllegalArgumentException("Anthropic reasoningProviderValue is not supported by this client.");
+        }
+        if (config.temperature() != null && config.topP() != null) {
+            throw new IllegalArgumentException("Anthropic Messages API does not allow temperature and topP together.");
+        }
     }
 
     private static String stripTrailingSlash(String value) {

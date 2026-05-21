@@ -56,7 +56,8 @@ class RunLogWriterTest {
                 new LmStudioLoadConfigLog(8192, 512, true, null, true),
                 JsonNodeFactory.instance.objectNode()
                         .put("status", "loaded")
-                        .set("load_config", JsonNodeFactory.instance.objectNode().put("context_length", 8192))
+                        .set("load_config", JsonNodeFactory.instance.objectNode().put("context_length", 8192)),
+                JsonNodeFactory.instance.objectNode().put("status", "unloaded")
         ));
 
         Path written = writer.write(runLog);
@@ -67,6 +68,7 @@ class RunLogWriterTest {
         assertThat(json.path("modelInstance").path("loadResponse").path("status").asText()).isEqualTo("loaded");
         assertThat(json.path("modelInstance").path("loadResponse").path("load_config").path("context_length").asInt())
                 .isEqualTo(8192);
+        assertThat(json.path("modelInstance").path("unloadResponse").path("status").asText()).isEqualTo("unloaded");
     }
 
     @Test
