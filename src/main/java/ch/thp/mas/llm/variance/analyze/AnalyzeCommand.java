@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class AnalyzeCommand {
 
-    private static final String ALL = "ALL";
-
     private final RunLogReader runLogReader;
     private final PlanLoader planLoader;
     private final AnalysisConfigMapper analysisConfigMapper;
@@ -34,13 +32,11 @@ public class AnalyzeCommand {
     }
 
     public List<Path> run(ApplicationArguments appArgs) {
-        if (appArgs.containsOption("plan") || appArgs.containsOption("plans")) {
-            throw new AnalysisException("Analyze mode derives the plan from each run log planName; do not pass --plan or --plans.");
+        if (appArgs.containsOption("run") || appArgs.containsOption("plan") || appArgs.containsOption("plans")) {
+            throw new AnalysisException("Analyze mode derives the plan from each run log planName; use only --analyze=<runs|runs/subfolder|run-log>.");
         }
         String selection = optionValue(appArgs, "analyze");
-        List<NamedRunLog> runLogs = ALL.equalsIgnoreCase(selection)
-                ? runLogReader.readAll()
-                : List.of(runLogReader.read(selection));
+        List<NamedRunLog> runLogs = runLogReader.readSelection(selection);
         return runLogs.stream()
                 .map(this::analyze)
                 .toList();

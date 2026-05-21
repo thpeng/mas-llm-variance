@@ -34,6 +34,10 @@ public class AnalysisWriter {
         try {
             Files.createDirectories(analysisDirectory);
             Path target = analysisDirectory.resolve(fileNameFactory.create(sourceRunFilename, result.analyzedAt()));
+            Path parent = target.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
             return Files.writeString(
                     target,
                     objectMapper.writeValueAsString(result),

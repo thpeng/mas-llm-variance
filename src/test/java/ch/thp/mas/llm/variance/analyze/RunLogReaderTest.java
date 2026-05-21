@@ -48,12 +48,56 @@ class RunLogReaderTest {
     }
 
     @Test
+    void readSelectionReturnsRunLogsInSubfolder() throws Exception {
+        ObjectMapper objectMapper = objectMapper();
+        Files.createDirectories(tempDir.resolve("gpt/nested"));
+        Files.createDirectories(tempDir.resolve("anthropic"));
+        Files.writeString(tempDir.resolve("gpt/nested/a.json"), objectMapper.writeValueAsString(runLog()));
+        Files.writeString(tempDir.resolve("gpt/b.json"), objectMapper.writeValueAsString(runLog()));
+        Files.writeString(tempDir.resolve("anthropic/c.json"), objectMapper.writeValueAsString(runLog()));
+        RunLogReader reader = new RunLogReader(tempDir, objectMapper);
+
+        List<NamedRunLog> runLogs = reader.readSelection("runs/gpt");
+
+        assertThat(runLogs).extracting(NamedRunLog::filename)
+                .containsExactly("gpt/b.json", "gpt/nested/a.json");
+    }
+
+    @Test
+    void rejectsAmbiguousRunLogSelection() throws Exception {
+        ObjectMapper objectMapper = objectMapper();
+        Files.createDirectories(tempDir.resolve("gpt"));
+        Files.createDirectories(tempDir.resolve("google"));
+        Files.writeString(tempDir.resolve("gpt/run.json"), objectMapper.writeValueAsString(runLog()));
+        Files.writeString(tempDir.resolve("google/run.json"), objectMapper.writeValueAsString(runLog()));
+        RunLogReader reader = new RunLogReader(tempDir, objectMapper);
+
+        assertThatThrownBy(() -> reader.readSelection("run"))
+                .isInstanceOf(AnalysisException.class)
+                .hasMessageContaining("Ambiguous run selection");
+    }
+
+    @Test
+    void rejectsAmbiguousRunFolderSelection() throws Exception {
+        ObjectMapper objectMapper = objectMapper();
+        Files.createDirectories(tempDir.resolve("provider/gpt"));
+        Files.createDirectories(tempDir.resolve("archive/gpt"));
+        Files.writeString(tempDir.resolve("provider/gpt/a.json"), objectMapper.writeValueAsString(runLog()));
+        Files.writeString(tempDir.resolve("archive/gpt/b.json"), objectMapper.writeValueAsString(runLog()));
+        RunLogReader reader = new RunLogReader(tempDir, objectMapper);
+
+        assertThatThrownBy(() -> reader.readSelection("gpt"))
+                .isInstanceOf(AnalysisException.class)
+                .hasMessageContaining("Ambiguous run folder selection");
+    }
+
+    @Test
     void rejectsPathTraversal() {
         RunLogReader reader = new RunLogReader(tempDir, objectMapper());
 
         assertThatThrownBy(() -> reader.read("../run"))
                 .isInstanceOf(AnalysisException.class)
-                .hasMessageContaining("Invalid run log filename");
+                .hasMessageContaining("Invalid run selection");
     }
 
     private static RunLog runLog() {

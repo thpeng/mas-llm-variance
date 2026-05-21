@@ -41,6 +41,9 @@ public class LlmVarianceApplication implements CommandLineRunner {
             analyzeCommand.run(appArgs);
             return;
         }
+        if (!appArgs.containsOption("run")) {
+            throw new AnalysisException("Missing command. Use --run=<plans|plans/subfolder|plan> or --analyze=<runs|runs/subfolder|run-log>.");
+        }
 
         List<ResolvedPlan> plans = planBatchResolver.resolve(appArgs);
         for (ResolvedPlan plan : plans) {

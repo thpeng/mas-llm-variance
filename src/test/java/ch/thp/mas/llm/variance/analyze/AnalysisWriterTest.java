@@ -30,6 +30,16 @@ class AnalysisWriterTest {
     }
 
     @Test
+    void writesAnalysisJsonForRunLogInSubfolder() throws Exception {
+        AnalysisWriter writer = new AnalysisWriter(tempDir, new AnalysisFileNameFactory(), objectMapper());
+
+        Path written = writer.write("test/run.json", result());
+
+        assertThat(written).isEqualTo(tempDir.resolve("test/run-analyze-20260502-110000-000.json"));
+        assertThat(Files.readString(written)).contains("\"sourceRun\":\"run.json\"");
+    }
+
+    @Test
     void omitsUnrelatedPromptConfigurationFromAnalysisJson() throws Exception {
         AnalysisWriter writer = new AnalysisWriter(tempDir, new AnalysisFileNameFactory(), objectMapper());
 

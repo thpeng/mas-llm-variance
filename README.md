@@ -78,10 +78,13 @@ Operative plans are YAML files under `src/main/resources/plans` named with a fou
 The prefix gives plans a natural execution order. The CLI supports:
 
 ```bash
-./gradlew bootRun --args="--plan=0001-<scenario-name>"
-./gradlew bootRun --args="--plans=0001-<scenario-name>,0002-<scenario-name>"
-./gradlew bootRun --args="--plans=ALL"
+./gradlew bootRun --args="--run=plans"
+./gradlew bootRun --args="--run=plans/<subfolder>"
+./gradlew bootRun --args="--run=0001-<scenario-name>"
+./gradlew bootRun --args="--run=plans/<subfolder>/0001-<scenario-name>.yml"
 ```
+
+`run` is the command that turns plan YAML files into run logs. Folder selections are recursive. A single plan can be selected by file path or by basename. If a basename or folder name matches multiple files or folders, the command fails instead of guessing.
 
 A plan defines top-level scenario metadata plus explicit `run` and `analysis` blocks. The `run` block contains the prompt, iteration count, temperature, top-p, top-k, seed, and reasoning setting. `seed` may be numeric or `RANDOM`, where `RANDOM` lets the provider/model choose the seed.
 
@@ -123,9 +126,13 @@ The analyzer reads JSON run logs, derives the matching plan YAML from each run l
 CLI:
 
 ```bash
+./gradlew bootRun --args="--analyze=runs"
+./gradlew bootRun --args="--analyze=runs/<subfolder>"
 ./gradlew bootRun --args="--analyze=<run-log-file-name>"
-./gradlew bootRun --args="--analyze=ALL"
+./gradlew bootRun --args="--analyze=runs/<subfolder>/<run-log-file-name>.json"
 ```
+
+`analyze` is the command that turns run logs into analysis files. Folder selections are recursive. A single run log can be selected by file path or by basename. If a basename or folder name matches multiple files or folders, the command fails instead of guessing.
 
 Run mode and analyze mode are mutually exclusive in behavior: run mode executes plans; analyze mode evaluates existing run logs against the plan YAML named in the run log.
 

@@ -42,7 +42,7 @@ class AnalyzeCommandTest {
         NamedRunLog runLog = new NamedRunLog("run.json", runLog("0001-test"));
         LoadedPlan plan = loadedPlan("0001-test", PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP);
         AnalysisResult result = mock(AnalysisResult.class);
-        when(runLogReader.read("run.json")).thenReturn(runLog);
+        when(runLogReader.readSelection("run.json")).thenReturn(List.of(runLog));
         when(planLoader.load("0001-test")).thenReturn(plan);
         ArgumentCaptor<AnalysisConfig> configCaptor = ArgumentCaptor.forClass(AnalysisConfig.class);
         when(analyzer.analyze(eq(runLog), configCaptor.capture())).thenReturn(result);
@@ -57,7 +57,7 @@ class AnalyzeCommandTest {
 
     @Test
     void loadsPlanByRunLogPlanName() {
-        when(runLogReader.read("run.json")).thenReturn(new NamedRunLog("run.json", runLog("0001-test")));
+        when(runLogReader.readSelection("run.json")).thenReturn(List.of(new NamedRunLog("run.json", runLog("0001-test"))));
         when(planLoader.load("0001-test")).thenReturn(loadedPlan("0001-test", PromptEvaluation.CREATIVE_GENERATIVE_LUCERNE_MARKETING));
         AnalysisResult result = mock(AnalysisResult.class);
         when(analyzer.analyze(eq(new NamedRunLog("run.json", runLog("0001-test"))), org.mockito.ArgumentMatchers.any()))
@@ -70,7 +70,7 @@ class AnalyzeCommandTest {
 
     @Test
     void rejectsPlanWithoutAnalysisBlock() {
-        when(runLogReader.read("run.json")).thenReturn(new NamedRunLog("run.json", runLog("0001-test")));
+        when(runLogReader.readSelection("run.json")).thenReturn(List.of(new NamedRunLog("run.json", runLog("0001-test"))));
         when(planLoader.load("0001-test")).thenReturn(new LoadedPlan("0001-test", "0001-test.yml", new YamlPlan()));
 
         assertThatThrownBy(() -> command.run(args("--analyze=run.json")))
@@ -80,7 +80,7 @@ class AnalyzeCommandTest {
 
     @Test
     void rejectsExplicitPlanSelectionInAnalyzeMode() {
-        assertThatThrownBy(() -> command.run(args("--analyze=run.json", "--plan=0001-test")))
+        assertThatThrownBy(() -> command.run(args("--analyze=run.json", "--run=0001-test")))
                 .isInstanceOf(AnalysisException.class)
                 .hasMessageContaining("derives the plan");
     }
