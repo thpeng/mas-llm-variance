@@ -42,6 +42,20 @@ class SwissRoundTripStationExtractorTest {
     }
 
     @Test
+    void extractsPlainNumberedStationsUntilEmDash() {
+        String response = """
+                1. Zurich — a convenient international gateway with easy onward travel.
+                2. Lucerne — a scenic lakeside city with classic Swiss charm.
+                3. Interlaken — ideal for alpine views and mountain excursions.
+                4. Zermatt — famous for Matterhorn scenery and car-free mountain atmosphere.
+                5. Geneva — a polished lakeside finale with excellent transport links.
+                """;
+
+        assertThat(extractor.extract(response))
+                .containsExactly("Zurich", "Lucerne", "Interlaken", "Zermatt", "Geneva");
+    }
+
+    @Test
     void extractsBoldNumberedLineStations() {
         String response = """
                 # Circuit en Suisse - 5 etapes

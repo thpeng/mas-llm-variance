@@ -50,6 +50,7 @@ public class SwissRoundTripStationExtractor {
                         item.indexOf(':'),
                         item.indexOf('-'),
                         item.indexOf('\u2013'),
+                        item.indexOf('\u2014'),
                         item.indexOf('(')
                 )
                 .filter(index -> index >= 0)
