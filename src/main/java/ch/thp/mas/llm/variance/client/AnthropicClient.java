@@ -144,6 +144,9 @@ public class AnthropicClient implements LlmClient {
         if (config.temperature() != null && config.topP() != null) {
             throw new IllegalArgumentException("Anthropic Messages API does not allow temperature and topP together.");
         }
+        if (useAdaptiveThinking(config) && config.topK() != null) {
+            throw new IllegalArgumentException("Anthropic Messages API does not allow topK when thinking is enabled.");
+        }
     }
 
     private static String stripTrailingSlash(String value) {

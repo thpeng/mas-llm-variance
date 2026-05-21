@@ -155,7 +155,7 @@ class AnthropicClientTest {
     }
 
     @Test
-    void rejectsUnsupportedSeedReasoningAndCombinedSampling() {
+    void rejectsUnsupportedSeedCombinedSamplingAndThinkingTopK() {
         AnthropicClient client = new AnthropicClient("token", "http://localhost:1", HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
@@ -166,6 +166,10 @@ class AnthropicClientTest {
                 "claude-sonnet-4-6", 0.2, 1.0, null, null, Reasoning.OFF)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("temperature and topP");
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
+                "claude-sonnet-4-6", null, null, 1, null, Reasoning.LOW)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("topK when thinking is enabled");
     }
 
     private void startServer(int status, String responseBody) throws IOException {

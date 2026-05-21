@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 public record RequestTrace(
         String url,
@@ -23,6 +24,26 @@ public record RequestTrace(
             "x-goog-api-key",
             "api-key",
             "anthropic-api-key"
+    );
+    private static final List<String> SENSITIVE_HEADER_NAMES = List.of(
+            "cookie",
+            "set-cookie",
+            "openai-organization",
+            "openai-project",
+            "x-request-id",
+            "request-id",
+            "cf-ray",
+            "traceparent",
+            "tracestate",
+            "traceresponse",
+            "anthropic-organization-id",
+            "x-trace-id",
+            "x-correlation-id"
+    );
+    private static final List<String> REDACTED_VALUE = List.of("<redacted>");
+    private static final Pattern SENSITIVE_JSON_STRING_FIELDS = Pattern.compile(
+            "(\"(?:signature|thoughtSignature|responseId|id)\"\\s*:\\s*\")((?:\\\\.|[^\"\\\\])*)(\")",
+            Pattern.CASE_INSENSITIVE
     );
 
     public RequestTrace {
@@ -41,7 +62,7 @@ public record RequestTrace(
                 requestBody,
                 response == null ? null : response.statusCode(),
                 response == null ? null : sanitizeHeaders(response.headers().map()),
-                response == null ? null : response.body()
+                response == null ? null : sanitizeResponseBody(response.body())
         );
     }
 
@@ -63,7 +84,7 @@ public record RequestTrace(
                 body,
                 responseStatusCode,
                 sanitizeHeaders(responseHeaders),
-                responseBody
+                sanitizeResponseBody(responseBody)
         );
     }
 
@@ -77,7 +98,7 @@ public record RequestTrace(
             if (isAuthenticationHeader(name)) {
                 continue;
             }
-            sanitized.put(name, List.copyOf(entry.getValue()));
+            sanitized.put(name, isSensitiveHeader(name) ? REDACTED_VALUE : List.copyOf(entry.getValue()));
         }
         return Map.copyOf(sanitized);
     }
@@ -87,6 +108,13 @@ public record RequestTrace(
             return false;
         }
         return AUTHENTICATION_HEADER_NAMES.contains(name.toLowerCase(Locale.ROOT));
+    }
+
+    private static boolean isSensitiveHeader(String name) {
+        if (name == null) {
+            return false;
+        }
+        return SENSITIVE_HEADER_NAMES.contains(name.toLowerCase(Locale.ROOT));
     }
 
     private static String sanitizeUrl(URI uri) {
@@ -131,5 +159,12 @@ public record RequestTrace(
                 || "apikey".equals(normalized)
                 || "access_token".equals(normalized)
                 || "token".equals(normalized);
+    }
+
+    private static String sanitizeResponseBody(String responseBody) {
+        if (responseBody == null || responseBody.isBlank()) {
+            return responseBody;
+        }
+        return SENSITIVE_JSON_STRING_FIELDS.matcher(responseBody).replaceAll("$1<redacted>$3");
     }
 }
