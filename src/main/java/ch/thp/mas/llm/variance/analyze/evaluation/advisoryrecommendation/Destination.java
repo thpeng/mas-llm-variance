@@ -15,9 +15,9 @@ public enum Destination {
     INTERLAKEN(Set.of("interlaken")),
     MONTREUX(Set.of("montreux")),
     LUGANO(Set.of("lugano")),
-    ST_MORITZ(Set.of("st. moritz", "saint moritz", "sankt moritz")),
+    ST_MORITZ(Set.of("st. moritz", "st moritz", "st-moritz", "saint moritz", "saint-moritz", "sankt moritz")),
     BERN(Set.of("bern", "berne", "berna")),
-    BASEL(Set.of("basel", "bâle", "basle", "basilia")),
+    BASEL(Set.of("basel", "bâle", "basle", "basilea")),
     CHUR(Set.of("chur", "coire", "coira", "cuira")),
     LAUSANNE(Set.of("lausanne", "lausana", "losanna")),
     LOCARNO(Set.of("locarno")),
@@ -32,11 +32,11 @@ public enum Destination {
     VERBIER(Set.of("verbier")),
     ANDERMATT(Set.of("andermatt")),
     ASCONA(Set.of("ascona")),
-    BELLINZONA(Set.of("bellinzona", "bellenz", "bellinzone")),
+    BELLINZONA(Set.of("bellinzona", "bellinzone")),
     SCHAFFHAUSEN(Set.of("schaffhausen", "schaffhouse", "sciaffusa")),
-    ST_GALLEN(Set.of("st. gallen", "saint gallen", "sankt gallen", "san gallo")),
+    ST_GALLEN(Set.of("st. gallen", "st.gallen", "st gallen", "saint gallen", "sankt gallen", "san gallo")),
     APPENZELL(Set.of("appenzell")),
-    THUN(Set.of("thun", "thoune", "tuna")),
+    THUN(Set.of("thun", "thoune")),
     BRIENZ(Set.of("brienz")),
     GRUYERES(Set.of("gruyères", "gruyeres", "greyerz", "gruieres")),
     FRIBOURG(Set.of("fribourg", "freiburg", "friburgo")),
@@ -44,7 +44,21 @@ public enum Destination {
     SION(Set.of("sion", "sitten")),
     VEVEY(Set.of("vevey")),
     SOLOTHURN(Set.of("solothurn", "soleure", "soletta")),
-    ZUG(Set.of("zug", "zoug", "zugo"));
+    ZUG(Set.of("zug", "zoug", "zugo")),
+    RAPPERSWIL(Set.of("rapperswil")),
+    BADEN(Set.of("baden", "baden bei zürich", "baden bei zuerich")),
+    SAANEN(Set.of("saanen")),
+    BIEL_BIENNE(Set.of("biel/bienne", "biel", "bienne")),
+    STALDEN(Set.of("stalden")),
+    BEVER(Set.of("bever")),
+    ENGELBERG(Set.of("engelberg")),
+    BRIG(Set.of("brig", "brigue")),
+    SAINTE_CROIX(Set.of("sainte-croix", "sainte croix")),
+    LE_LOCLE(Set.of("le locle")),
+    BERGUEN(Set.of("bergün", "berguen", "bergun")),
+    BULLE(Set.of("bulle")),
+    GLARUS(Set.of("glarus")),
+    BURGDORF(Set.of("burgdorf", "berthoud"));
 
     private static final Pattern DIACRITICS = Pattern.compile("\\p{M}+");
     private static final Pattern EDGE_PUNCTUATION = Pattern.compile("^[\\p{Punct}\\s]+|[\\p{Punct}\\s]+$");
@@ -57,7 +71,24 @@ public enum Destination {
     }
 
     public static Optional<Destination> fromRawName(String rawName) {
-        String normalized = normalize(rawName);
+        Optional<Destination> directMatch = findByNormalizedName(normalize(rawName));
+        if (directMatch.isPresent()) {
+            return directMatch;
+        }
+
+        ParentheticalName parentheticalName = parentheticalName(rawName);
+        if (parentheticalName == null) {
+            return Optional.empty();
+        }
+        Optional<Destination> leadingMatch = findByNormalizedName(normalize(parentheticalName.leadingName()));
+        Optional<Destination> parentheticalMatch = findByNormalizedName(normalize(parentheticalName.parentheticalName()));
+        if (leadingMatch.isPresent() && leadingMatch.equals(parentheticalMatch)) {
+            return leadingMatch;
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<Destination> findByNormalizedName(String normalized) {
         return Arrays.stream(values())
                 .filter(destination -> destination.variants.stream()
                         .map(Destination::normalize)
@@ -72,5 +103,20 @@ public enum Destination {
         String withoutMarkdown = withoutDiacritics.replace("*", "");
         String withoutDots = withoutMarkdown.replace(".", "");
         return WHITESPACE.matcher(withoutDots.toLowerCase(Locale.ROOT).trim()).replaceAll(" ");
+    }
+
+    private static ParentheticalName parentheticalName(String value) {
+        if (value == null) {
+            return null;
+        }
+        int parenthesis = value.indexOf('(');
+        int closeParenthesis = value.indexOf(')', parenthesis + 1);
+        if (parenthesis < 0 || closeParenthesis < 0) {
+            return null;
+        }
+        return new ParentheticalName(value.substring(0, parenthesis), value.substring(parenthesis + 1, closeParenthesis));
+    }
+
+    private record ParentheticalName(String leadingName, String parentheticalName) {
     }
 }
