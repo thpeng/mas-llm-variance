@@ -23,6 +23,6 @@ class LlmVarianceApplicationTest {
     void wiresCommandLinePlanToRunner() throws Exception {
         verify(planRunner).run(ArgumentMatchers.argThat((ResolvedPlan plan) ->
                 plan.name().equals("0000-openai-gpt4o-20240513-roundtrip-de") && plan.iterations() == 1
-        ));
+        ), ArgumentMatchers.any());
     }
 }

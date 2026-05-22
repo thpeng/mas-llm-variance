@@ -4,6 +4,8 @@ import ch.thp.mas.llm.variance.analyze.AnalyzeCommand;
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
 import ch.thp.mas.llm.variance.plan.PlanBatchResolver;
 import ch.thp.mas.llm.variance.plan.ResolvedPlan;
+import ch.thp.mas.llm.variance.run.ExecutionEnvironmentCollector;
+import ch.thp.mas.llm.variance.run.ExecutionEnvironmentLog;
 import ch.thp.mas.llm.variance.run.PlanRunner;
 import java.util.List;
 import org.springframework.boot.ApplicationArguments;
@@ -18,17 +20,20 @@ public class LlmVarianceApplication implements CommandLineRunner {
     private final AnalyzeCommand analyzeCommand;
     private final PlanBatchResolver planBatchResolver;
     private final PlanRunner planRunner;
+    private final ExecutionEnvironmentCollector environmentCollector;
 
     public LlmVarianceApplication(
             ApplicationArguments appArgs,
             AnalyzeCommand analyzeCommand,
             PlanBatchResolver planBatchResolver,
-            PlanRunner planRunner
+            PlanRunner planRunner,
+            ExecutionEnvironmentCollector environmentCollector
     ) {
         this.appArgs = appArgs;
         this.analyzeCommand = analyzeCommand;
         this.planBatchResolver = planBatchResolver;
         this.planRunner = planRunner;
+        this.environmentCollector = environmentCollector;
     }
 
     public static void main(String[] args) {
@@ -37,8 +42,9 @@ public class LlmVarianceApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        ExecutionEnvironmentLog environment = environmentCollector.snapshot();
         if (appArgs.containsOption("analyze")) {
-            analyzeCommand.run(appArgs);
+            analyzeCommand.run(appArgs, environment);
             return;
         }
         if (!appArgs.containsOption("run")) {
@@ -47,7 +53,7 @@ public class LlmVarianceApplication implements CommandLineRunner {
 
         List<ResolvedPlan> plans = planBatchResolver.resolve(appArgs);
         for (ResolvedPlan plan : plans) {
-            planRunner.run(plan);
+            planRunner.run(plan, environment);
         }
     }
 }

@@ -86,7 +86,7 @@ The prefix gives plans a natural execution order. The CLI supports:
 
 `run` is the command that turns plan YAML files into run logs. Folder selections are recursive. A single plan can be selected by file path or by basename. If a basename or folder name matches multiple files or folders, the command fails instead of guessing.
 
-A plan defines top-level scenario metadata plus explicit `run` and `analysis` blocks. The `run` block contains the prompt, iteration count, temperature, top-p, top-k, seed, and reasoning setting. `seed` may be numeric or `RANDOM`, where `RANDOM` lets the provider/model choose the seed.
+A plan defines top-level scenario metadata plus explicit `run` and `analysis` blocks. The `run` block contains the prompt, iteration count, temperature, top-p, top-k, seed, and reasoning setting. `seed` may be numeric or `RANDOM`, where `RANDOM` generates and logs a fresh request seed for every repetition. LM Studio does not support seed configuration in this tool; configuring a seed for LM Studio plans fails fast.
 
 - Inference provider
 - Model
@@ -104,10 +104,10 @@ For each resolved plan, the runner:
 2. Loads the LM Studio model when the selected provider requires an explicit lifecycle.
 3. Executes the prompt for the configured number of iterations.
 4. Captures start/end timestamps for every repetition.
-5. Captures the sanitized request URL and request headers, excluding authentication.
-6. Captures the full answer and token usage.
+5. Captures sanitized request URL, request headers, request body, response status, response headers, and response body.
+6. Captures the full parsed answer and token usage.
 7. Unloads LM Studio models loaded by the run.
-8. Writes one JSON run log if and only if the full plan succeeds.
+8. Writes one JSON run log.
 
 Run log files are timestamped:
 
@@ -115,13 +115,15 @@ Run log files are timestamped:
 yyyyMMdd-HHmmss-SSS-run-<plan-name>.json
 ```
 
-The run logger is intentionally all-or-nothing. If one repetition fails, no partial log is written.
+Provider errors with HTTP 5xx status are treated as serving errors. They are written as failed repetitions and counted in the run log, while the run continues with the next repetition. Non-5xx request errors still fail the run because they usually indicate invalid configuration.
+
+Each run log also contains an execution environment snapshot with Git commit, branch, dirty state, Java/OS runtime information, and GPU information where available. For batch execution, this environment snapshot is captured once at command start and reused for all run logs produced by that command.
 
 ### `analyze`
 
 Analysis of completed run logs.
 
-The analyzer reads JSON run logs, derives the matching plan YAML from each run log's `planName`, and produces JSON analysis files. It is deliberately separated from execution so experiments can be run first and analyzed later. The plan YAML is required because it contains the `analysis` configuration used for semantic clustering and metric parameters.
+The analyzer reads JSON run logs, derives the matching plan YAML from each run log's `planName`, and produces JSON analysis files. It is deliberately separated from execution so experiments can be run first and analyzed later. The plan YAML is required because it contains the `analysis` configuration used for the prompt-specific evaluation and metric parameters.
 
 CLI:
 
@@ -136,51 +138,110 @@ CLI:
 
 Run mode and analyze mode are mutually exclusive in behavior: run mode executes plans; analyze mode evaluates existing run logs against the plan YAML named in the run log.
 
-## Main Analysis Algorithm
+## Main Analysis Approach
 
-The analysis has three layers: semantic analysis, syntactic analysis, and literal analysis.
-
-### 1. Semantic Analysis
-
-The semantic analysis follows this pipeline:
-
-1. Read all responses from a run log.
-2. Transform each response into an embedding.
-3. Compute pairwise cosine distances between embeddings.
-4. Select the medoid: the response with the lowest total distance to all other responses.
-5. Build an inclusive scan range for the selected clustering algorithm.
-6. Cluster responses once per scan value with hierarchical clustering by default, or DBSCAN when explicitly configured.
-7. Report one semantic and syntactic result per scan value, including the cluster count, plus one literal result for the whole run.
-
-The medoid is the typical answer in the run. It is not a correctness reference.
-
-Hierarchical clustering is the default because it avoids DBSCAN-style chaining effects in longer generated texts. It is configured with complete linkage by default, so two clusters are merged only when the most distant response pair still stays below the configured threshold. DBSCAN remains available for epsilon scans and explicit outlier detection when that behavior is desired.
-
-The scan does not choose the best threshold automatically. It makes cluster stability visible across nearby parameter values; interpreting plateaus or selecting an operational value is a downstream analysis step.
-
-Example analysis configuration:
+The analysis no longer uses a generic embedding clustering algorithm. It evaluates responses through prompt-specific evaluation paths derived from the four prompt archetypes used in the research design. These evaluations are configured with:
 
 ```yaml
 analysis:
-  clusteringAlgorithm: HIERARCHICAL
-  scanIncrement: 0.01
-  dbscan:
-    epsilon:
-      from: 0.05
-      to: 0.15
-    minPts: 2
-  hierarchical:
-    threshold:
-      from: 0.03
-      to: 0.12
-    linkage: COMPLETE
+  promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
 ```
 
-Current note: the executable implementation integrates with a WSL-hosted FastAPI service for `intfloat/multilingual-e5-large` on `http://localhost:8000`. A deterministic local hashing embedding service remains available for development and tests via `LLM_VARIANCE_EMBEDDING_PROVIDER=local-hashing`, but it is not a real semantic model.
+Supported values:
 
-### 2. Syntactic Analysis
+- `ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP`
+- `FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION`
+- `LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE`
+- `CREATIVE_GENERATIVE_LUCERNE_MARKETING`
 
-After semantic clustering, syntactic variance is measured inside each semantic cluster.
+The analysis result contains the selected archetype evaluation, plus generic literal stability. Syntactic BLEU/ROUGE analysis is computed for those archetype evaluations where it is meaningful.
+
+### 1. Advisory Recommendation: Swiss Round Trip
+
+This path evaluates the advisory/recommendation archetype for Swiss round trips. It extracts five numbered station names from each response, normalizes them to a curated Swiss destination enum, and treats the ordered route as the central semantic content.
+
+It reports:
+
+- successful, partial, and failed extractions
+- unknown destination names
+- unique route count and top route share
+- route clusters by exact normalized route key
+- station frequencies
+- position distributions
+- pairwise Jaccard statistics over route destination sets
+- syntactic BLEU/ROUGE distances inside each route cluster
+
+Example:
+
+```yaml
+analysis:
+  promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
+  swissRoundTrip:
+    expectedStationCount: 5
+    language: DE
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+```
+
+### 2. Factual Critical: Bern-Zurich Connection
+
+This path evaluates the factual-critical archetype. It checks whether each response contains the expected departure time from Bern, expected arrival time at Zurich HB, and zero changes.
+
+It normalizes time formats such as `8:02`, `08.02`, and `09.15` to `HH:mm`, detects extra distractor times, and recognizes German expressions for a direct/no-change connection. Responses that do not satisfy all factual conditions are reported as outliers with failure reasons.
+
+Example:
+
+```yaml
+analysis:
+  promptEvaluation: FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION
+  bernZurichConnection:
+    departureFromBern: "08:02"
+    arrivalAtZurich: "09:15"
+    changes: 0
+```
+
+### 3. Literal Format Critical: Traveler Guidance
+
+This path evaluates the literal-format-critical archetype. It compares each answer against a configured reference sentence.
+
+It reports exact matches, whitespace-normalized exact matches, and non-matches. Whitespace normalization only collapses whitespace; it does not normalize case, punctuation, spelling, or wording. Non-matches include diagnostic flags for missing target terms, leaked template content, and additional sentence candidates.
+
+Example:
+
+```yaml
+analysis:
+  promptEvaluation: LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE
+  travelerGuidanceFormat:
+    reference: "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3."
+```
+
+### 4. Creative Generative: Lucerne Marketing Text
+
+This path evaluates the creative-generative archetype with deliberately lightweight semantic constraints. It checks whether the response contains the required term and has the expected number of sentences. Responses that satisfy both conditions are accepted for syntactic comparison; other responses are reported as outliers.
+
+Example:
+
+```yaml
+analysis:
+  promptEvaluation: CREATIVE_GENERATIVE_LUCERNE_MARKETING
+  lucerneMarketingText:
+    expectedSentenceCount: 3
+    requiredTerm: Luzern
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+```
+
+### 5. Syntactic Analysis
+
+Where applicable, syntactic variance is measured inside the successful semantic group or route clusters produced by the prompt-specific evaluator.
 
 For every pair of responses in a cluster:
 
@@ -197,6 +258,10 @@ Then aggregate per cluster:
 
 This pairwise approach avoids the need for a reference answer. It supports relative variance comparison inside one run, but it does not measure factual correctness or human preference.
 
+### 6. Literal Analysis
+
+Generic literal analysis is always computed over all successful raw responses, independently of the selected prompt evaluation. It reports whether all responses are identical, how many distinct responses occurred, and the exact-match rate inside the run.
+
 ## Configuration And Environment
 
 Provider environment variables:
@@ -210,15 +275,6 @@ LM_API_TOKEN
 ```
 
 `LMSTUDIO_BASE_URL` is optional and defaults to `http://127.0.0.1:10022`. LM Studio uses `/api/v1/models`, `/api/v1/models/load`, `/api/v1/chat`, and `/api/v1/models/unload`. `LM_API_TOKEN` is optional.
-
-Embedding environment variables:
-
-```text
-LLM_VARIANCE_EMBEDDING_PROVIDER=e5-http
-LLM_VARIANCE_EMBEDDING_BASE_URL=http://localhost:8000
-```
-
-The E5 model is served by `src/main/python/server.py` inside WSL. Java calls `/load`, `/embed`, and `/unload` during analysis. Use `LLM_VARIANCE_EMBEDDING_PROVIDER=local-hashing` only when the WSL model server is unavailable for development or tests.
 
 ## Testing
 

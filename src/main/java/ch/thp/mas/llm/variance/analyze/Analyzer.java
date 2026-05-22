@@ -18,6 +18,7 @@ import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticCluster;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
 import ch.thp.mas.llm.variance.run.ExecutionEnvironmentCollector;
+import ch.thp.mas.llm.variance.run.ExecutionEnvironmentLog;
 import ch.thp.mas.llm.variance.run.SystemRunClock;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,6 +101,10 @@ public class Analyzer {
     }
 
     public AnalysisResult analyze(NamedRunLog namedRunLog, AnalysisConfig config) {
+        return analyze(namedRunLog, config, environmentCollector.snapshot());
+    }
+
+    public AnalysisResult analyze(NamedRunLog namedRunLog, AnalysisConfig config, ExecutionEnvironmentLog environment) {
         RunLog runLog = namedRunLog.runLog();
         List<String> responses = runLog.repetitions().stream()
                 .filter(entry -> entry.status() == ch.thp.mas.llm.variance.run.RunLogEntryStatus.SUCCESS)
@@ -112,11 +117,13 @@ public class Analyzer {
         LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses);
         return switch (config.promptEvaluation()) {
             case ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP ->
-                    swissRoundTripResult(namedRunLog, runLog, responses, config, literalAnalysis);
-            case FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION -> factualResult(namedRunLog, runLog, responses, config, literalAnalysis);
+                    swissRoundTripResult(namedRunLog, runLog, responses, config, literalAnalysis, environment);
+            case FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION -> factualResult(namedRunLog, runLog, responses, config,
+                    literalAnalysis, environment);
             case LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE -> literalFormatResult(
-                    namedRunLog, runLog, responses, config, literalAnalysis);
-            case CREATIVE_GENERATIVE_LUCERNE_MARKETING -> creativeResult(namedRunLog, runLog, responses, config, literalAnalysis);
+                    namedRunLog, runLog, responses, config, literalAnalysis, environment);
+            case CREATIVE_GENERATIVE_LUCERNE_MARKETING -> creativeResult(namedRunLog, runLog, responses, config,
+                    literalAnalysis, environment);
         };
     }
 
@@ -125,14 +132,16 @@ public class Analyzer {
             RunLog runLog,
             List<String> responses,
             AnalysisConfig config,
-            LiteralAnalysis literalAnalysis
+            LiteralAnalysis literalAnalysis,
+            ExecutionEnvironmentLog environment
     ) {
         SwissRoundTripEvaluation swissRoundTripEvaluation = swissRoundTripEvaluator.analyze(
                 responses,
                 config.swissRoundTrip(),
                 clusters -> new SyntacticAnalysis(swissRoundTripSyntacticClusters(clusters, responses, config))
         );
-        return result(namedRunLog, runLog, config, swissRoundTripEvaluation, null, null, null, literalAnalysis);
+        return result(namedRunLog, runLog, environment, config, swissRoundTripEvaluation, null, null, null,
+                literalAnalysis);
     }
 
     private AnalysisResult factualResult(
@@ -140,14 +149,16 @@ public class Analyzer {
             RunLog runLog,
             List<String> responses,
             AnalysisConfig config,
-            LiteralAnalysis literalAnalysis
+            LiteralAnalysis literalAnalysis,
+            ExecutionEnvironmentLog environment
     ) {
         BernZurichConnectionEvaluation bernZurichConnectionEvaluation = bernZurichConnectionEvaluator.analyze(
                 responses,
                 config.bernZurichConnection(),
                 successIndices -> new SyntacticAnalysis(syntacticClusters(0, successIndices, responses, config))
         );
-        return result(namedRunLog, runLog, config, null, bernZurichConnectionEvaluation, null, null, literalAnalysis);
+        return result(namedRunLog, runLog, environment, config, null, bernZurichConnectionEvaluation, null, null,
+                literalAnalysis);
     }
 
     private AnalysisResult literalFormatResult(
@@ -155,11 +166,12 @@ public class Analyzer {
             RunLog runLog,
             List<String> responses,
             AnalysisConfig config,
-            LiteralAnalysis literalAnalysis
+            LiteralAnalysis literalAnalysis,
+            ExecutionEnvironmentLog environment
     ) {
         TravelerGuidanceFormatEvaluation travelerGuidanceFormatEvaluation =
                 travelerGuidanceFormatEvaluator.analyze(responses, config.travelerGuidanceFormat());
-        return result(namedRunLog, runLog, config, null, null, travelerGuidanceFormatEvaluation, null,
+        return result(namedRunLog, runLog, environment, config, null, null, travelerGuidanceFormatEvaluation, null,
                 literalAnalysis);
     }
 
@@ -168,19 +180,22 @@ public class Analyzer {
             RunLog runLog,
             List<String> responses,
             AnalysisConfig config,
-            LiteralAnalysis literalAnalysis
+            LiteralAnalysis literalAnalysis,
+            ExecutionEnvironmentLog environment
     ) {
         LucerneMarketingTextEvaluation lucerneMarketingTextEvaluation = lucerneMarketingTextEvaluator.analyze(
                 responses,
                 config.lucerneMarketingText(),
                 successIndices -> new SyntacticAnalysis(syntacticClusters(0, successIndices, responses, config))
         );
-        return result(namedRunLog, runLog, config, null, null, null, lucerneMarketingTextEvaluation, literalAnalysis);
+        return result(namedRunLog, runLog, environment, config, null, null, null, lucerneMarketingTextEvaluation,
+                literalAnalysis);
     }
 
     private AnalysisResult result(
             NamedRunLog namedRunLog,
             RunLog runLog,
+            ExecutionEnvironmentLog environment,
             AnalysisConfig config,
             SwissRoundTripEvaluation swissRoundTrip,
             BernZurichConnectionEvaluation bernZurichConnection,
@@ -191,7 +206,7 @@ public class Analyzer {
         return new AnalysisResult(
                 namedRunLog.filename(),
                 runClock.now(),
-                environmentCollector.snapshot(),
+                environment,
                 config.visibleForResult(),
                 runInfo(runLog),
                 swissRoundTrip,

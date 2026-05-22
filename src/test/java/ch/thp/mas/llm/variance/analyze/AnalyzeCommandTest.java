@@ -2,6 +2,7 @@ package ch.thp.mas.llm.variance.analyze;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,7 +47,7 @@ class AnalyzeCommandTest {
         when(runLogReader.readSelection("run.json")).thenReturn(List.of(runLog));
         when(planLoader.load("0001-test")).thenReturn(plan);
         ArgumentCaptor<AnalysisConfig> configCaptor = ArgumentCaptor.forClass(AnalysisConfig.class);
-        when(analyzer.analyze(eq(runLog), configCaptor.capture())).thenReturn(result);
+        when(analyzer.analyze(eq(runLog), configCaptor.capture(), isNull())).thenReturn(result);
         when(analysisWriter.write("run.json", result)).thenReturn(Path.of("analysis.json"));
 
         command.run(args("--analyze=run.json"));
@@ -61,7 +62,11 @@ class AnalyzeCommandTest {
         when(runLogReader.readSelection("run.json")).thenReturn(List.of(new NamedRunLog("run.json", runLog("0001-test"))));
         when(planLoader.load("0001-test")).thenReturn(loadedPlan("0001-test", PromptEvaluation.CREATIVE_GENERATIVE_LUCERNE_MARKETING));
         AnalysisResult result = mock(AnalysisResult.class);
-        when(analyzer.analyze(eq(new NamedRunLog("run.json", runLog("0001-test"))), org.mockito.ArgumentMatchers.any()))
+        when(analyzer.analyze(
+                eq(new NamedRunLog("run.json", runLog("0001-test"))),
+                org.mockito.ArgumentMatchers.any(),
+                isNull()
+        ))
                 .thenReturn(result);
 
         command.run(args("--analyze=run.json"));
@@ -75,7 +80,7 @@ class AnalyzeCommandTest {
         when(runLogReader.readSelection("runs/test")).thenReturn(List.of(runLog));
         when(planLoader.load("test/0001-test")).thenReturn(loadedPlan("0001-test", PromptEvaluation.CREATIVE_GENERATIVE_LUCERNE_MARKETING));
         AnalysisResult result = mock(AnalysisResult.class);
-        when(analyzer.analyze(eq(runLog), org.mockito.ArgumentMatchers.any())).thenReturn(result);
+        when(analyzer.analyze(eq(runLog), org.mockito.ArgumentMatchers.any(), isNull())).thenReturn(result);
 
         command.run(args("--analyze=runs/test"));
 

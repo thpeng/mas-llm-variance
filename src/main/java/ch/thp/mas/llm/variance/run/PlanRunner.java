@@ -69,6 +69,10 @@ public class PlanRunner {
     }
 
     public RunLog run(ResolvedPlan plan) throws Exception {
+        return run(plan, environmentCollector.snapshot());
+    }
+
+    public RunLog run(ResolvedPlan plan, ExecutionEnvironmentLog environment) throws Exception {
         ResolvedPlan runtimePlan = runtimePlan(plan);
         System.out.println("=== Running plan: " + runtimePlan.name() + " ===");
 
@@ -143,7 +147,7 @@ public class PlanRunner {
                 runtimePlan.inferenceProvider(),
                 runtimePlan.model(),
                 runtimePlan.modelVersion(),
-                environmentCollector.snapshot(),
+                environment,
                 modelInstance,
                 runtimePlan.iterations(),
                 new RunConfigLog(runtimePlan.temperature(), runtimePlan.topP(), runtimePlan.topK(), runtimePlan.seed(), runtimePlan.seedSetting(),
