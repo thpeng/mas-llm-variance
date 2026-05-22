@@ -37,7 +37,7 @@ public record ResolvedPlan(
             String modelVersion
     ) {
         this(name, inferenceProvider, model, prompt, iterations, temperature, topP, topK, seed,
-                seed == null ? "RANDOM" : seed.toString(), reasoning, true, null, load, modelVersion, "");
+                seed == null ? null : seed.toString(), reasoning, true, null, load, modelVersion, "");
     }
 
     public ResolvedPlan(

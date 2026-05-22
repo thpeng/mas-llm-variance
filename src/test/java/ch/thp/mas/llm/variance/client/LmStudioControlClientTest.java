@@ -48,13 +48,14 @@ class LmStudioControlClientTest {
         assertThat(modelInstance.id()).isEqualTo("instance-a");
         assertThat(modelInstance.loadedByRun()).isTrue();
         assertThat(modelInstance.loadConfig().contextLength()).isEqualTo(8192);
+        assertThat(modelInstance.modelInfoResponse().path("key").asText()).isEqualTo("model-a");
         assertThat(modelInstance.loadResponse().path("status").asText()).isEqualTo("loaded");
         assertThat(unloadResponse.path("status").asText()).isEqualTo("unloaded");
-        assertThat(paths).containsExactly("/api/v1/models", "/api/v1/models/load", "/api/v1/models/unload");
-        assertThat(authorizationHeaders).containsExactly("Bearer token", "Bearer token", "Bearer token");
+        assertThat(paths).containsExactly("/api/v1/models", "/api/v1/models/load", "/api/v1/models", "/api/v1/models/unload");
+        assertThat(authorizationHeaders).containsExactly("Bearer token", "Bearer token", "Bearer token", "Bearer token");
         JsonNode loadRequest = requests.getFirst();
         assertThat(loadRequest.path("model").asText()).isEqualTo("model-a");
-        assertThat(loadRequest.path("seed").asLong()).isEqualTo(123L);
+        assertThat(loadRequest.has("seed")).isFalse();
         assertThat(loadRequest.path("context_length").asInt()).isEqualTo(8192);
         assertThat(loadRequest.path("eval_batch_size").asInt()).isEqualTo(512);
         assertThat(loadRequest.path("flash_attention").asBoolean()).isTrue();
@@ -76,23 +77,25 @@ class LmStudioControlClientTest {
 
         assertThat(modelInstance.id()).isEqualTo("existing");
         assertThat(modelInstance.loadedByRun()).isFalse();
+        assertThat(modelInstance.modelInfoResponse().path("key").asText()).isEqualTo("model-a");
         assertThat(modelInstance.loadResponse()).isNull();
         assertThat(paths).containsExactly("/api/v1/models");
         assertThat(requests).isEmpty();
     }
 
     @Test
-    void rejectsSeedWhenModelIsAlreadyLoaded() throws Exception {
+    void rejectsConfiguredSeed() throws Exception {
         startServer("""
-                {"models":[{"key":"model-a","loaded_instances":[{"id":"existing"}]}]}
+                {"models":[{"key":"model-a","loaded_instances":[]}]}
                 """, """
                 {"status":"loaded"}
                 """);
         LmStudioControlClient client = new LmStudioControlClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.ensureLoaded(plan(null, 123L)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("seed cannot be applied");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("does not support seed");
+        assertThat(paths).isEmpty();
     }
 
     @Test
@@ -145,7 +148,7 @@ class LmStudioControlClientTest {
     }
 
     private ResolvedPlan plan(LmStudioLoadConfig loadConfig) {
-        return plan(loadConfig, 123L);
+        return plan(loadConfig, null);
     }
 
     private ResolvedPlan plan(LmStudioLoadConfig loadConfig, Long seed) {

@@ -31,6 +31,7 @@ final class TestAnalyzerFactory {
                 new LiteralAnalyzer(),
                 new SummaryStatistics(),
                 clock,
+                ch.thp.mas.llm.variance.run.ExecutionEnvironmentCollector.noop(),
                 () -> config
         );
     }

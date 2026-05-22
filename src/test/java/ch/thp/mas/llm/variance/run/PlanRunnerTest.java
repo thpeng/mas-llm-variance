@@ -147,12 +147,12 @@ class PlanRunnerTest {
                 null
         )))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("seed: RANDOM");
+                .hasMessageContaining("does not support seed");
         assertThat(writer.logs).isEmpty();
     }
 
     @Test
-    void logsFixedSeedForLmStudioButDoesNotSendItToChatRequest() throws Exception {
+    void rejectsFixedSeedForLmStudio() {
         RecordingClient client = new RecordingClient();
         RecordingRunLogWriter writer = new RecordingRunLogWriter();
         PlanRunner runner = new PlanRunner(
@@ -161,7 +161,7 @@ class PlanRunnerTest {
                 writer
         );
 
-        RunLog runLog = runner.run(new ResolvedPlan(
+        assertThatThrownBy(() -> runner.run(new ResolvedPlan(
                 "0001-test",
                 InferenceProvider.LMSTUDIO,
                 "model-a",
@@ -178,10 +178,11 @@ class PlanRunnerTest {
                 null,
                 null,
                 null
-        ));
-
-        assertThat(runLog.repetitions()).extracting(RunLogEntry::seed).containsExactly(123L);
-        assertThat(client.configs).extracting(LlmRequestConfig::seed).containsExactly((Long) null);
+        )))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("does not support seed");
+        assertThat(writer.logs).isEmpty();
+        assertThat(client.configs).isEmpty();
     }
 
     @Test

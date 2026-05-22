@@ -44,33 +44,32 @@ public class LmStudioControlClient {
     }
 
     public ModelInstanceLog ensureLoaded(ResolvedPlan plan) throws Exception {
+        if (plan.seedSetting() != null || plan.seed() != null) {
+            throw new IllegalArgumentException("LM Studio does not support seed configuration.");
+        }
         System.out.println("Checking LM Studio models at " + baseUrl + "/api/v1/models");
         JsonNode models = get("/api/v1/models");
         JsonNode model = findModel(models, plan.model());
         String existingInstanceId = firstLoadedInstanceId(model);
         LmStudioLoadConfigLog loadConfig = loadConfigLog(plan);
         if (existingInstanceId != null) {
-            if (plan.seed() != null) {
-                throw new IllegalStateException("LM Studio model is already loaded; configured seed cannot be applied "
-                        + "without loading a new model instance.");
-            }
             System.out.println("Reusing loaded LM Studio model instance: " + existingInstanceId);
-            return new ModelInstanceLog(existingInstanceId, false, loadConfig, null);
+            return new ModelInstanceLog(existingInstanceId, false, loadConfig, model, null, null);
         }
 
         System.out.println("Loading LM Studio model: " + plan.model());
         JsonNode loadResponse = post("/api/v1/models/load", loadRequest(plan));
         String instanceId = firstText(loadResponse, "instance_id", "id", "model_instance_id");
+        System.out.println("Resolving loaded LM Studio model info after load.");
+        JsonNode loadedModel = findModel(get("/api/v1/models"), plan.model());
         if (instanceId == null) {
-            System.out.println("Resolving loaded LM Studio model instance after load.");
-            JsonNode reloadedModels = get("/api/v1/models");
-            instanceId = firstLoadedInstanceId(findModel(reloadedModels, plan.model()));
+            instanceId = firstLoadedInstanceId(loadedModel);
         }
         if (instanceId == null) {
             throw new IllegalStateException("LM Studio did not report a loaded instance for model: " + plan.model());
         }
         System.out.println("Loaded LM Studio model instance: " + instanceId);
-        return new ModelInstanceLog(instanceId, true, loadConfig, loadResponse);
+        return new ModelInstanceLog(instanceId, true, loadConfig, loadedModel, loadResponse, null);
     }
 
     public JsonNode unload(String instanceId) throws Exception {
@@ -84,9 +83,6 @@ public class LmStudioControlClient {
         ObjectNode request = objectMapper.createObjectNode();
         request.put("model", plan.model());
         request.put("echo_load_config", true);
-        if (plan.seed() != null) {
-            request.put("seed", plan.seed());
-        }
         LmStudioLoadConfig load = plan.getLoad();
         if (load != null) {
             putIfNotNull(request, "context_length", load.getContextLength());
@@ -162,15 +158,14 @@ public class LmStudioControlClient {
     private static LmStudioLoadConfigLog loadConfigLog(ResolvedPlan plan) {
         LmStudioLoadConfig load = plan.getLoad();
         if (load == null) {
-            return new LmStudioLoadConfigLog(null, null, null, null, null, plan.seed());
+            return new LmStudioLoadConfigLog(null, null, null, null, null);
         }
         return new LmStudioLoadConfigLog(
                 load.getContextLength(),
                 load.getEvalBatchSize(),
                 load.getFlashAttention(),
                 load.getNumExperts(),
-                load.getOffloadKvCacheToGpu(),
-                plan.seed()
+                load.getOffloadKvCacheToGpu()
         );
     }
 

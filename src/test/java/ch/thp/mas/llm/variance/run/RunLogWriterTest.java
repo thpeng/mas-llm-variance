@@ -55,6 +55,9 @@ class RunLogWriterTest {
                 true,
                 new LmStudioLoadConfigLog(8192, 512, true, null, true),
                 JsonNodeFactory.instance.objectNode()
+                        .put("key", "model-a")
+                        .put("architecture", "llama"),
+                JsonNodeFactory.instance.objectNode()
                         .put("status", "loaded")
                         .set("load_config", JsonNodeFactory.instance.objectNode().put("context_length", 8192)),
                 JsonNodeFactory.instance.objectNode().put("status", "unloaded")
@@ -65,10 +68,50 @@ class RunLogWriterTest {
         JsonNode json = objectMapper().readTree(Files.readString(written));
         assertThat(json.path("modelInstance").path("id").asText()).isEqualTo("instance-a");
         assertThat(json.path("modelInstance").path("loadedByRun").asBoolean()).isTrue();
+        assertThat(json.path("modelInstance").path("modelInfoResponse").path("key").asText()).isEqualTo("model-a");
         assertThat(json.path("modelInstance").path("loadResponse").path("status").asText()).isEqualTo("loaded");
         assertThat(json.path("modelInstance").path("loadResponse").path("load_config").path("context_length").asInt())
                 .isEqualTo(8192);
         assertThat(json.path("modelInstance").path("unloadResponse").path("status").asText()).isEqualTo("unloaded");
+    }
+
+    @Test
+    void writesExecutionEnvironment() throws Exception {
+        RunLogWriter writer = new RunLogWriter(tempDir.resolve("runs"), new RunFileNameFactory(), objectMapper());
+        OffsetDateTime startedAt = OffsetDateTime.parse("2026-05-02T10:45:30.123+02:00");
+        RunLog runLog = new RunLog(
+                "0001-test",
+                startedAt,
+                OffsetDateTime.parse("2026-05-02T10:45:31.123+02:00"),
+                InferenceProvider.OPENAI,
+                "gpt-test",
+                null,
+                new ExecutionEnvironmentLog(
+                        new GitInfoLog("abc123", "main", true, null),
+                        new RuntimeInfoLog("21", "vendor", "Windows", "11", "amd64"),
+                        new GpuEnvironmentLog(List.of(new GpuInfoLog("RTX", "555.55", 24576)), "12.8", null)
+                ),
+                null,
+                1,
+                new RunConfigLog(0.1, 0.9, 4, 123L, Reasoning.OFF),
+                "Prompt",
+                List.of(new RunLogEntry(
+                        1,
+                        OffsetDateTime.parse("2026-05-02T10:45:30.200+02:00"),
+                        OffsetDateTime.parse("2026-05-02T10:45:31.000+02:00"),
+                        "Antwort",
+                        null
+                ))
+        );
+
+        Path written = writer.write(runLog);
+
+        JsonNode json = objectMapper().readTree(Files.readString(written));
+        assertThat(json.path("environment").path("git").path("commitSha").asText()).isEqualTo("abc123");
+        assertThat(json.path("environment").path("git").path("dirty").asBoolean()).isTrue();
+        assertThat(json.path("environment").path("gpu").path("nvidiaGpus").get(0).path("memoryTotalMiB").asInt())
+                .isEqualTo(24576);
+        assertThat(json.path("environment").path("gpu").path("cudaVersion").asText()).isEqualTo("12.8");
     }
 
     @Test

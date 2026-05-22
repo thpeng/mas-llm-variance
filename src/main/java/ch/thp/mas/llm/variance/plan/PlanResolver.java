@@ -53,6 +53,9 @@ public class PlanResolver {
         String seedSetting = optionValue(appArgs, "seed") != null
                 ? optionValue(appArgs, "seed")
                 : ((YamlPlan) loadedPlan.plan()).getRun().getSeed();
+        if (inferenceProvider == InferenceProvider.LMSTUDIO && seedSetting != null && !seedSetting.isBlank()) {
+            throw new PlanException("LM Studio does not support seed configuration in plan: " + loadedPlan.filename());
+        }
         Long seed = seedSetting == null || seedSetting.isBlank() ? null : parseSeed(seedSetting);
         String reasoningValue = optionValue(appArgs, "reasoning") != null
                 ? optionValue(appArgs, "reasoning")

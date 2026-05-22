@@ -17,6 +17,7 @@ import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticAnalysis;
 import ch.thp.mas.llm.variance.analyze.syntactic.SyntacticCluster;
 import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
+import ch.thp.mas.llm.variance.run.ExecutionEnvironmentCollector;
 import ch.thp.mas.llm.variance.run.SystemRunClock;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,7 @@ public class Analyzer {
     private final LiteralAnalyzer literalAnalyzer;
     private final SummaryStatistics summaryStatistics;
     private final SystemRunClock runClock;
+    private final ExecutionEnvironmentCollector environmentCollector;
     private final Supplier<AnalysisConfig> configSupplier;
 
     @Autowired
@@ -48,7 +50,8 @@ public class Analyzer {
             BleuMetric bleuMetric,
             LiteralAnalyzer literalAnalyzer,
             SummaryStatistics summaryStatistics,
-            SystemRunClock runClock
+            SystemRunClock runClock,
+            ExecutionEnvironmentCollector environmentCollector
     ) {
         this(
                 swissRoundTripEvaluator,
@@ -60,6 +63,7 @@ public class Analyzer {
                 literalAnalyzer,
                 summaryStatistics,
                 runClock,
+                environmentCollector,
                 AnalysisConfig::defaults
         );
     }
@@ -74,6 +78,7 @@ public class Analyzer {
             LiteralAnalyzer literalAnalyzer,
             SummaryStatistics summaryStatistics,
             SystemRunClock runClock,
+            ExecutionEnvironmentCollector environmentCollector,
             Supplier<AnalysisConfig> configSupplier
     ) {
         this.swissRoundTripEvaluator = swissRoundTripEvaluator;
@@ -85,6 +90,7 @@ public class Analyzer {
         this.literalAnalyzer = literalAnalyzer;
         this.summaryStatistics = summaryStatistics;
         this.runClock = runClock;
+        this.environmentCollector = environmentCollector;
         this.configSupplier = configSupplier;
     }
 
@@ -185,6 +191,7 @@ public class Analyzer {
         return new AnalysisResult(
                 namedRunLog.filename(),
                 runClock.now(),
+                environmentCollector.snapshot(),
                 config.visibleForResult(),
                 runInfo(runLog),
                 swissRoundTrip,

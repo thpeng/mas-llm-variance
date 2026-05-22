@@ -162,12 +162,12 @@ class LmStudioChatClientTest {
     }
 
     @Test
-    void rejectsSeedBecauseItMustBeAppliedAtModelLoad() {
+    void rejectsSeed() {
         LmStudioChatClient client = new LmStudioChatClient("http://localhost:1", null, HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, 1L, Reasoning.OFF)))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("model load");
+                .hasMessageContaining("does not support seed");
     }
 
     @Test

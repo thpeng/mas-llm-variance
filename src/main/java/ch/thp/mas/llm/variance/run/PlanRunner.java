@@ -21,17 +21,28 @@ public class PlanRunner {
     private final RunClock runClock;
     private final RunLogWriter runLogWriter;
     private final RandomGenerator randomGenerator;
+    private final ExecutionEnvironmentCollector environmentCollector;
 
     @Autowired
-    public PlanRunner(InferenceSessionFactory sessionFactory, RunClock runClock, RunLogWriter runLogWriter) {
-        this(sessionFactory, runClock, runLogWriter, RandomGenerator.getDefault());
+    public PlanRunner(
+            InferenceSessionFactory sessionFactory,
+            RunClock runClock,
+            RunLogWriter runLogWriter,
+            ExecutionEnvironmentCollector environmentCollector
+    ) {
+        this(sessionFactory, runClock, runLogWriter, RandomGenerator.getDefault(), environmentCollector);
     }
 
     PlanRunner(LlmClientFactory clientFactory, RunClock runClock, RunLogWriter runLogWriter) {
         this((InferenceSessionFactory) plan -> new NoopInferenceSession(clientFactory.create(plan.inferenceProvider())),
                 runClock,
                 runLogWriter,
-                RandomGenerator.getDefault());
+                RandomGenerator.getDefault(),
+                ExecutionEnvironmentCollector.noop());
+    }
+
+    PlanRunner(InferenceSessionFactory sessionFactory, RunClock runClock, RunLogWriter runLogWriter) {
+        this(sessionFactory, runClock, runLogWriter, RandomGenerator.getDefault(), ExecutionEnvironmentCollector.noop());
     }
 
     PlanRunner(
@@ -40,10 +51,21 @@ public class PlanRunner {
             RunLogWriter runLogWriter,
             RandomGenerator randomGenerator
     ) {
+        this(sessionFactory, runClock, runLogWriter, randomGenerator, ExecutionEnvironmentCollector.noop());
+    }
+
+    PlanRunner(
+            InferenceSessionFactory sessionFactory,
+            RunClock runClock,
+            RunLogWriter runLogWriter,
+            RandomGenerator randomGenerator,
+            ExecutionEnvironmentCollector environmentCollector
+    ) {
         this.sessionFactory = sessionFactory;
         this.runClock = runClock;
         this.runLogWriter = runLogWriter;
         this.randomGenerator = randomGenerator;
+        this.environmentCollector = environmentCollector;
     }
 
     public RunLog run(ResolvedPlan plan) throws Exception {
@@ -121,6 +143,7 @@ public class PlanRunner {
                 runtimePlan.inferenceProvider(),
                 runtimePlan.model(),
                 runtimePlan.modelVersion(),
+                environmentCollector.snapshot(),
                 modelInstance,
                 runtimePlan.iterations(),
                 new RunConfigLog(runtimePlan.temperature(), runtimePlan.topP(), runtimePlan.topK(), runtimePlan.seed(), runtimePlan.seedSetting(),
@@ -133,8 +156,8 @@ public class PlanRunner {
     }
 
     private ResolvedPlan runtimePlan(ResolvedPlan plan) {
-        if (plan.inferenceProvider() == InferenceProvider.LMSTUDIO && "RANDOM".equals(plan.seedSetting())) {
-            throw new IllegalArgumentException("LM Studio does not support seed: RANDOM because seed is applied at model load.");
+        if (plan.inferenceProvider() == InferenceProvider.LMSTUDIO && plan.seedSetting() != null) {
+            throw new IllegalArgumentException("LM Studio does not support seed configuration.");
         }
         return plan;
     }
@@ -152,7 +175,7 @@ public class PlanRunner {
             return null;
         }
         if (plan.inferenceProvider() == InferenceProvider.LMSTUDIO) {
-            return plan.seed();
+            return null;
         }
         if (!"RANDOM".equals(plan.seedSetting())) {
             return plan.seed();

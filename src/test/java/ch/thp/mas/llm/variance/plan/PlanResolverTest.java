@@ -124,12 +124,37 @@ class PlanResolverTest {
     void fallsBackToInferenceProviderDefaultModel() {
         YamlPlan plan = new YamlPlan();
         plan.setInferenceProvider(InferenceProvider.LMSTUDIO);
-        plan.setRun(run("test prompt", 3, 0.2, 1.0, 1, "RANDOM", "off"));
+        plan.setRun(run("test prompt", 3, 0.2, 1.0, 1, null, "off"));
 
         ResolvedPlan resolved = resolver.resolve(new LoadedPlan("0003-no-model", "0003-no-model.yml", plan), args());
 
         assertThat(resolved.model()).isEqualTo(InferenceProvider.LMSTUDIO.defaultModel());
         assertThat(resolved.seed()).isNull();
+    }
+
+    @Test
+    void rejectsSeedForLmStudio() {
+        YamlPlan plan = new YamlPlan();
+        plan.setInferenceProvider(InferenceProvider.LMSTUDIO);
+        plan.setRun(run("test prompt", 3, 0.2, 1.0, 1, "123", "off"));
+
+        assertThatThrownBy(() -> resolver.resolve(new LoadedPlan("0003-lmstudio", "0003-lmstudio.yml", plan), args()))
+                .isInstanceOf(PlanException.class)
+                .hasMessageContaining("does not support seed");
+    }
+
+    @Test
+    void rejectsCommandLineSeedForLmStudio() {
+        YamlPlan plan = new YamlPlan();
+        plan.setInferenceProvider(InferenceProvider.LMSTUDIO);
+        plan.setRun(run("test prompt", 3, 0.2, 1.0, 1, null, "off"));
+
+        assertThatThrownBy(() -> resolver.resolve(
+                new LoadedPlan("0003-lmstudio", "0003-lmstudio.yml", plan),
+                args("--seed=random")
+        ))
+                .isInstanceOf(PlanException.class)
+                .hasMessageContaining("does not support seed");
     }
 
     @Test

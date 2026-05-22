@@ -28,8 +28,6 @@ class DestinationTest {
         assertThat(Destination.fromRawName("Locarno")).contains(Destination.LOCARNO);
         assertThat(Destination.fromRawName("Grindelwald")).contains(Destination.GRINDELWALD);
         assertThat(Destination.fromRawName("Lauterbrunnen")).contains(Destination.LAUTERBRUNNEN);
-        assertThat(Destination.fromRawName("Muerren")).contains(Destination.MUERREN);
-        assertThat(Destination.fromRawName("Mürren")).contains(Destination.MUERREN);
         assertThat(Destination.fromRawName("Saas Fee")).contains(Destination.SAAS_FEE);
         assertThat(Destination.fromRawName("Saas-Fee")).contains(Destination.SAAS_FEE);
         assertThat(Destination.fromRawName("Schaffhouse")).contains(Destination.SCHAFFHAUSEN);
@@ -47,21 +45,23 @@ class DestinationTest {
         assertThat(Destination.fromRawName("St Gallen")).contains(Destination.ST_GALLEN);
         assertThat(Destination.fromRawName("St-Moritz")).contains(Destination.ST_MORITZ);
         assertThat(Destination.fromRawName("Saint-Moritz")).contains(Destination.ST_MORITZ);
-        assertThat(Destination.fromRawName("Rapperswil")).contains(Destination.RAPPERSWIL);
+        assertThat(Destination.fromRawName("Rapperswil")).contains(Destination.RAPPERSWIL_JONA);
         assertThat(Destination.fromRawName("Baden")).contains(Destination.BADEN);
         assertThat(Destination.fromRawName("Baden bei Zürich")).contains(Destination.BADEN);
         assertThat(Destination.fromRawName("Saanen")).contains(Destination.SAANEN);
         assertThat(Destination.fromRawName("Biel/Bienne")).contains(Destination.BIEL_BIENNE);
-        assertThat(Destination.fromRawName("Stalden")).contains(Destination.STALDEN);
-        assertThat(Destination.fromRawName("Bever")).contains(Destination.BEVER);
         assertThat(Destination.fromRawName("Engelberg")).contains(Destination.ENGELBERG);
-        assertThat(Destination.fromRawName("Brig")).contains(Destination.BRIG);
-        assertThat(Destination.fromRawName("Sainte-Croix")).contains(Destination.SAINTE_CROIX);
-        assertThat(Destination.fromRawName("Le Locle")).contains(Destination.LE_LOCLE);
-        assertThat(Destination.fromRawName("Bergün")).contains(Destination.BERGUEN);
+        assertThat(Destination.fromRawName("Brig")).contains(Destination.BRIG_GLIS);
         assertThat(Destination.fromRawName("Bulle")).contains(Destination.BULLE);
-        assertThat(Destination.fromRawName("Glarus")).contains(Destination.GLARUS);
         assertThat(Destination.fromRawName("Burgdorf")).contains(Destination.BURGDORF);
+        assertThat(Destination.fromRawName("Yverdon-les-Bains")).contains(Destination.YVERDON_LES_BAINS);
+        assertThat(Destination.fromRawName("Küssnacht (SZ)")).contains(Destination.KUESSNACHT_SZ);
+        assertThat(Destination.fromRawName("Brienz (BE)")).contains(Destination.BRIENZ);
+        assertThat(Destination.fromRawName("Glarus Süd")).contains(Destination.GLARUS_SUED);
+        assertThat(Destination.fromRawName("Glarus Nord")).contains(Destination.GLARUS_NORD);
+        assertThat(Destination.fromRawName("Buchs (SG)")).contains(Destination.BUCHS_SG);
+        assertThat(Destination.fromRawName("Wil (SG)")).contains(Destination.WIL_SG);
+        assertThat(Destination.fromRawName("Gossau (SG)")).contains(Destination.GOSSAU_SG);
     }
 
     @Test
@@ -95,5 +95,12 @@ class DestinationTest {
         assertThat(Destination.fromRawName("Basilia")).isEmpty();
         assertThat(Destination.fromRawName("Bellenz")).isEmpty();
         assertThat(Destination.fromRawName("Tuna")).isEmpty();
+        assertThat(Destination.fromRawName("Muerren")).isEmpty();
+        assertThat(Destination.fromRawName("Stalden")).isEmpty();
+        assertThat(Destination.fromRawName("Bever")).isEmpty();
+        assertThat(Destination.fromRawName("Sainte-Croix")).isEmpty();
+        assertThat(Destination.fromRawName("Le Locle")).isEmpty();
+        assertThat(Destination.fromRawName("Bergün")).isEmpty();
+        assertThat(Destination.fromRawName("Glarus")).isEmpty();
     }
 }

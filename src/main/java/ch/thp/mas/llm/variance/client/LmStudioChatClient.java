@@ -40,7 +40,7 @@ public class LmStudioChatClient implements LlmClient {
     @Override
     public LlmResponse call(String prompt, LlmRequestConfig config) throws Exception {
         if (config.seed() != null) {
-            throw new IllegalArgumentException("LM Studio /api/v1/chat does not support seed; seed is applied during model load.");
+            throw new IllegalArgumentException("LM Studio does not support seed configuration.");
         }
         ObjectNode request = objectMapper.createObjectNode();
         request.put("model", config.model());
