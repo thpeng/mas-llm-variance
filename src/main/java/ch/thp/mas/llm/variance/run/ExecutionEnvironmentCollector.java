@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class ExecutionEnvironmentCollector {
 
     private static final Duration COMMAND_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration GPU_COMMAND_TIMEOUT = Duration.ofSeconds(15);
 
     private final Path workingDirectory;
 
@@ -73,7 +74,7 @@ public class ExecutionEnvironmentCollector {
     }
 
     private GpuEnvironmentLog gpuInfo() {
-        CommandResult gpuResult = runCommand(
+        CommandResult gpuResult = runCommand(GPU_COMMAND_TIMEOUT,
                 "nvidia-smi",
                 "--query-gpu=name,driver_version,memory.total",
                 "--format=csv,noheader,nounits"
@@ -89,7 +90,7 @@ public class ExecutionEnvironmentCollector {
 
         String cudaVersion = null;
         String probeError = null;
-        CommandResult cudaResult = runCommand("nvidia-smi");
+        CommandResult cudaResult = runCommand(GPU_COMMAND_TIMEOUT, "nvidia-smi");
         if (cudaResult.success()) {
             cudaVersion = extractCudaVersion(cudaResult.stdout());
         } else {
@@ -114,13 +115,17 @@ public class ExecutionEnvironmentCollector {
     }
 
     private CommandResult runCommand(String... command) {
+        return runCommand(COMMAND_TIMEOUT, command);
+    }
+
+    private CommandResult runCommand(Duration timeout, String... command) {
         Process process = null;
         try {
             process = new ProcessBuilder(command)
                     .directory(workingDirectory.toFile())
                     .redirectErrorStream(false)
                     .start();
-            if (!process.waitFor(COMMAND_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS)) {
+            if (!process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS)) {
                 process.destroyForcibly();
                 return CommandResult.failure("timeout");
             }

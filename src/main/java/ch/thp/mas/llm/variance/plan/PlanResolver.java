@@ -61,15 +61,15 @@ public class PlanResolver {
                 ? optionValue(appArgs, "reasoning")
                 : plan.getReasoning();
         Reasoning reasoning = parseReasoning(reasoningValue);
-        boolean sendReasoning = optionValue(appArgs, "sendReasoning") != null
-                ? parseBoolean(optionValue(appArgs, "sendReasoning"), "sendReasoning")
-                : sendReasoning(loadedPlan);
         String reasoningProviderValue = optionValue(appArgs, "reasoningProviderValue") != null
                 ? optionValue(appArgs, "reasoningProviderValue")
                 : plan.getReasoningProviderValue();
         if (isQwenLmStudioReasoningOn(inferenceProvider, model, reasoningValue)) {
             reasoningProviderValue = "on";
         }
+        boolean sendReasoning = optionValue(appArgs, "sendReasoning") != null
+                ? parseBoolean(optionValue(appArgs, "sendReasoning"), "sendReasoning")
+                : sendReasoning(plan, reasoningValue, reasoningProviderValue);
         String modelVersion = optionValue(appArgs, "modelVersion");
 
         return new ResolvedPlan(
@@ -104,9 +104,12 @@ public class PlanResolver {
         requirePresent(run.getIterations(), "run.iterations", loadedPlan);
     }
 
-    private static boolean sendReasoning(LoadedPlan loadedPlan) {
-        Boolean sendReasoning = ((YamlPlan) loadedPlan.plan()).getRun().getSendReasoning();
-        return sendReasoning == null || sendReasoning;
+    private static boolean sendReasoning(Plan plan, String reasoningValue, String reasoningProviderValue) {
+        Boolean sendReasoning = plan.getSendReasoning();
+        if (sendReasoning != null) {
+            return sendReasoning;
+        }
+        return !isBlank(reasoningValue) || !isBlank(reasoningProviderValue);
     }
 
     private static Long parseSeed(String value) {
@@ -202,6 +205,10 @@ public class PlanResolver {
 
     private static String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private static String optionValue(ApplicationArguments appArgs, String name) {

@@ -46,7 +46,8 @@ class GeminiClientTest {
                     "promptTokenCount": 10,
                     "candidatesTokenCount": 5,
                     "totalTokenCount": 15
-                  }
+                  },
+                  "modelVersion": "gemini-3.1-flash-lite"
                 }
                 """);
         GeminiClient client = new GeminiClient("key-1", baseUrl(), HttpClient.newHttpClient(), objectMapper);
@@ -62,6 +63,7 @@ class GeminiClientTest {
 
         assertThat(response.text()).isEqualTo("Antwort eins\nAntwort zwei");
         assertThat(response.tokenUsage()).isEqualTo(new TokenUsage(10L, 5L, 15L));
+        assertThat(response.modelVersion()).isEqualTo("gemini-3.1-flash-lite");
         assertThat(response.requestTrace().url())
                 .isEqualTo(baseUrl() + "/models/gemini-3-flash:generateContent?key=%3Credacted%3E");
         assertThat(response.requestTrace().headers())

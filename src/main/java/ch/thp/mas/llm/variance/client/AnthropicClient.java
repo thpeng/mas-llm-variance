@@ -43,7 +43,8 @@ public class AnthropicClient implements LlmClient {
         if (text.isBlank()) {
             text = response.toString();
         }
-        return new LlmResponse(text.trim(), tokenUsage(response), null, httpResponse.requestTrace());
+        return new LlmResponse(text.trim(), tokenUsage(response), null, httpResponse.requestTrace(),
+                textValue(response, "model"));
     }
 
     private ObjectNode request(String prompt, LlmRequestConfig config) {
@@ -120,6 +121,11 @@ public class AnthropicClient implements LlmClient {
     private static Long longValue(JsonNode node, String field) {
         JsonNode value = node.path(field);
         return value.isNumber() ? value.asLong() : null;
+    }
+
+    private static String textValue(JsonNode node, String field) {
+        JsonNode value = node.path(field);
+        return value.isTextual() && !value.asText().isBlank() ? value.asText() : null;
     }
 
     static boolean useTemperature(LlmRequestConfig config) {

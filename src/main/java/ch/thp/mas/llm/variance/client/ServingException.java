@@ -26,6 +26,6 @@ public class ServingException extends Exception {
     }
 
     public boolean isServingError() {
-        return statusCode >= 500 && statusCode <= 599;
+        return statusCode == 200 || statusCode >= 500 && statusCode <= 599;
     }
 }

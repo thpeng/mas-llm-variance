@@ -119,6 +119,50 @@ class PlanRunnerTest {
     }
 
     @Test
+    void usesProviderReturnedModelVersionWhenPlanHasNone() throws Exception {
+        RecordingClient client = new RecordingClient();
+        client.modelVersion = "provider-model-version";
+        RecordingRunLogWriter writer = new RecordingRunLogWriter();
+        PlanRunner runner = new PlanRunner((InferenceSessionFactory) plan -> new RecordingSession(client),
+                new FixedRunClock(),
+                writer);
+
+        RunLog runLog = runner.run(plan(1));
+
+        assertThat(runLog.modelVersion()).isEqualTo("provider-model-version");
+    }
+
+    @Test
+    void keepsConfiguredModelVersionOverProviderReturnedModelVersion() throws Exception {
+        RecordingClient client = new RecordingClient();
+        client.modelVersion = "provider-model-version";
+        RecordingRunLogWriter writer = new RecordingRunLogWriter();
+        PlanRunner runner = new PlanRunner((InferenceSessionFactory) plan -> new RecordingSession(client),
+                new FixedRunClock(),
+                writer);
+
+        RunLog runLog = runner.run(new ResolvedPlan(
+                "0001-test",
+                InferenceProvider.OPENAI,
+                "gpt-test",
+                "hello",
+                1,
+                null,
+                null,
+                null,
+                null,
+                null,
+                Reasoning.OFF,
+                true,
+                null,
+                null,
+                "configured-model-version"
+        ));
+
+        assertThat(runLog.modelVersion()).isEqualTo("configured-model-version");
+    }
+
+    @Test
     void rejectsRandomSeedForLmStudio() {
         RecordingRunLogWriter writer = new RecordingRunLogWriter();
         PlanRunner runner = new PlanRunner(
@@ -287,6 +331,7 @@ class PlanRunnerTest {
 
         protected final List<String> prompts = new ArrayList<>();
         protected final List<LlmRequestConfig> configs = new ArrayList<>();
+        private String modelVersion;
 
         @Override
         public LlmResponse call(String prompt, LlmRequestConfig config) throws Exception {
@@ -300,7 +345,8 @@ class PlanRunnerTest {
                             "Authorization", List.of("Bearer secret"),
                             "Content-Type", List.of("application/json")
                     ), "{\"input\":\"prompt\"}", 200, Map.of("Content-Type", List.of("application/json")),
-                            "{\"output\":\"raw-provider-response\"}")
+                            "{\"output\":\"raw-provider-response\"}"),
+                    modelVersion
             );
         }
     }

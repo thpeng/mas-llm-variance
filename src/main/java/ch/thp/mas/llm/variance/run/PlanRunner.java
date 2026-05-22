@@ -79,6 +79,7 @@ public class PlanRunner {
         OffsetDateTime runStartedAt = runClock.now();
 
         List<RunLogEntry> repetitions = new ArrayList<>();
+        String resolvedModelVersion = runtimePlan.modelVersion();
         InferenceSession session = sessionFactory.open(runtimePlan);
         try {
             for (int i = 0; i < runtimePlan.iterations(); i++) {
@@ -97,6 +98,9 @@ public class PlanRunner {
                 try {
                     LlmResponse response = session.client().call(runtimePlan.prompt(), config);
                     OffsetDateTime endedAt = runClock.now();
+                    if (isBlank(resolvedModelVersion) && !isBlank(response.modelVersion())) {
+                        resolvedModelVersion = response.modelVersion();
+                    }
                     RequestTrace requestTrace = response.requestTrace();
                     repetitions.add(new RunLogEntry(i + 1, startedAt, endedAt, requestSeed,
                             requestTrace == null ? null : requestTrace.url(),
@@ -146,7 +150,7 @@ public class PlanRunner {
                 runClock.now(),
                 runtimePlan.inferenceProvider(),
                 runtimePlan.model(),
-                runtimePlan.modelVersion(),
+                resolvedModelVersion,
                 environment,
                 modelInstance,
                 runtimePlan.iterations(),
@@ -185,5 +189,9 @@ public class PlanRunner {
             return plan.seed();
         }
         return randomGenerator.nextLong(0, Long.MAX_VALUE);
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 }

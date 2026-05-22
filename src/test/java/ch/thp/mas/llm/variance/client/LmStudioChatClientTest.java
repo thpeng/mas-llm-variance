@@ -181,8 +181,15 @@ class LmStudioChatClientTest {
         LmStudioChatClient client = new LmStudioChatClient(baseUrl(), null, HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig("model-a", null, null, null, null, Reasoning.LOW)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("did not contain a message output");
+                .isInstanceOf(ServingException.class)
+                .hasMessageContaining("did not contain a message output")
+                .satisfies(error -> {
+                    ServingException servingException = (ServingException) error;
+                    assertThat(servingException.statusCode()).isEqualTo(200);
+                    assertThat(servingException.isServingError()).isTrue();
+                    assertThat(servingException.requestTrace().responseStatusCode()).isEqualTo(200);
+                    assertThat(servingException.requestTrace().responseBody()).contains("nur reasoning");
+                });
     }
 
     private void startServer(int status, String responseBody) throws IOException {

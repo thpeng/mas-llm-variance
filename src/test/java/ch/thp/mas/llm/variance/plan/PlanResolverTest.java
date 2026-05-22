@@ -70,6 +70,21 @@ class PlanResolverTest {
     }
 
     @Test
+    void doesNotSendReasoningWhenItIsNotConfigured() {
+        YamlPlan plan = new YamlPlan();
+        plan.setInferenceProvider(InferenceProvider.LMSTUDIO);
+        plan.setModel("model-a");
+        plan.setRun(run("test prompt", 3, 0.2, 1.0, 1, null, null));
+
+        ResolvedPlan resolved = resolver.resolve(new LoadedPlan("0003-no-reasoning", "0003-no-reasoning.yml", plan),
+                args());
+
+        assertThat(resolved.reasoning()).isNull();
+        assertThat(resolved.sendReasoning()).isFalse();
+        assertThat(resolved.reasoningProviderValue()).isNull();
+    }
+
+    @Test
     void acceptsXhighReasoning() {
         ResolvedPlan resolved = resolver.resolve(loadedPlan(), args("--reasoning=xhigh"));
 

@@ -75,7 +75,12 @@ public class LmStudioChatClient implements LlmClient {
             }
         }
         if (messages.isEmpty()) {
-            throw new IllegalStateException("LM Studio chat response did not contain a message output.");
+            throw new ServingException(
+                    "LM Studio chat response did not contain a message output.",
+                    200,
+                    httpResponse.requestTrace().responseBody(),
+                    httpResponse.requestTrace()
+            );
         }
 
         JsonNode stats = response.path("stats");
@@ -85,7 +90,8 @@ public class LmStudioChatClient implements LlmClient {
                 String.join("\n", messages).trim(),
                 TokenUsage.of(inputTokens, outputTokens),
                 textValue(response, "model_instance_id"),
-                httpResponse.requestTrace()
+                httpResponse.requestTrace(),
+                textValue(response, "model")
         );
     }
 
