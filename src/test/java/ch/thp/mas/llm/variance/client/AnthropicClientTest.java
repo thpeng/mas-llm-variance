@@ -48,8 +48,8 @@ class AnthropicClientTest {
 
         LlmResponse response = client.call("prompt", new LlmRequestConfig(
                 "claude-sonnet-4-6",
+                0.0,
                 null,
-                1.0,
                 1,
                 null,
                 Reasoning.OFF
@@ -69,10 +69,10 @@ class AnthropicClientTest {
         assertThat(request.path("max_tokens").asInt()).isEqualTo(1024);
         assertThat(request.path("messages").get(0).path("role").asText()).isEqualTo("user");
         assertThat(request.path("messages").get(0).path("content").asText()).isEqualTo("prompt");
-        assertThat(request.path("top_p").asDouble()).isEqualTo(1.0);
+        assertThat(request.path("temperature").asDouble()).isEqualTo(0.0);
         assertThat(request.path("top_k").asInt()).isEqualTo(1);
         assertThat(request.path("thinking").path("type").asText()).isEqualTo("disabled");
-        assertThat(request.has("temperature")).isFalse();
+        assertThat(request.has("top_p")).isFalse();
         assertThat(request.has("seed")).isFalse();
         assertThat(request.has("output_config")).isFalse();
     }
@@ -131,11 +131,11 @@ class AnthropicClientTest {
     }
 
     @Test
-    void usesTopPWhenTemperatureIsZero() {
-        LlmRequestConfig config = new LlmRequestConfig("claude", null, 1.0, null, null, Reasoning.OFF);
+    void usesTemperatureWhenItIsZero() {
+        LlmRequestConfig config = new LlmRequestConfig("claude", 0.0, null, null, null, Reasoning.OFF);
 
-        assertThat(AnthropicClient.useTemperature(config)).isFalse();
-        assertThat(AnthropicClient.useTopP(config)).isTrue();
+        assertThat(AnthropicClient.useTemperature(config)).isTrue();
+        assertThat(AnthropicClient.useTopP(config)).isFalse();
     }
 
     @Test
@@ -147,8 +147,8 @@ class AnthropicClientTest {
     }
 
     @Test
-    void omitsBothWhenTemperatureIsZeroAndTopPIsUnset() {
-        LlmRequestConfig config = new LlmRequestConfig("claude", 0.0, null, null, null, Reasoning.OFF);
+    void omitsBothWhenSamplingIsUnset() {
+        LlmRequestConfig config = new LlmRequestConfig("claude", null, null, null, null, Reasoning.OFF);
 
         assertThat(AnthropicClient.useTemperature(config)).isFalse();
         assertThat(AnthropicClient.useTopP(config)).isFalse();

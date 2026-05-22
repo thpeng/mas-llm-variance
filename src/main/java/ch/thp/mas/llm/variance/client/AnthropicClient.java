@@ -129,7 +129,7 @@ public class AnthropicClient implements LlmClient {
     }
 
     static boolean useTemperature(LlmRequestConfig config) {
-        return config.temperature() != null && Double.compare(config.temperature(), 0.0) != 0;
+        return config.temperature() != null;
     }
 
     static boolean useTopP(LlmRequestConfig config) {
