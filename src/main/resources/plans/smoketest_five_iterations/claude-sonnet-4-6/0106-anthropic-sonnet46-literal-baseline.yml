@@ -1,7 +1,7 @@
-inferenceProvider: GOOGLE
-model: "gemini-3.5-flash"
+inferenceProvider: ANTHROPIC
+model: "claude-sonnet-4-6"
 description: |
-  Smoketest mit genau einer Wiederholung für Google Gemini / gemini-3.5-flash. Archetyp: literal-formatkritische Reisendenlenkung. Parameter: temperature=0, topP=1, topK=1, reasoning=off.
+  Smoketest mit genau fünf Wiederholungen für Anthropic / claude-sonnet-4-6. Archetyp: literal-formatkritische Reisendenlenkung. Parameter: temperature=0, topK=1, reasoning=off.
 analysis:
   promptEvaluation: LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE
   travelerGuidanceFormat:
@@ -25,8 +25,7 @@ run:
     Ziel: Zürich
     Abschnitt: Bern bis Bern Wankdorf
     Linie: S3
-  iterations: 1
+  iterations: 5
   temperature: 0
-  topP: 1
   topK: 1
   reasoning: "off"

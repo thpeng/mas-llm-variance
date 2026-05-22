@@ -1,0 +1,308 @@
+{
+  "sourceRun": "smoketest_five_iterations/gemini-3.5-flash/20260522-181807-078-run-0202-google-gemini35flash-roundtrip-de-seed-random.json",
+  "analyzedAt": "2026-05-22T19:26:22.799977+02:00",
+  "environment": {
+    "git": {
+      "commitSha": "f6a9df1e79aca3722c5457fecfc27053ef760e20",
+      "branch": "master",
+      "dirty": true,
+      "probeError": null
+    },
+    "runtime": {
+      "javaVersion": "21.0.1",
+      "javaVendor": "Oracle Corporation",
+      "osName": "Windows 11",
+      "osVersion": "10.0",
+      "osArch": "amd64"
+    },
+    "gpu": {
+      "nvidiaGpus": [
+        {
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "driverVersion": "591.55",
+          "memoryTotalMiB": 12288
+        }
+      ],
+      "cudaVersion": "13.1",
+      "probeError": null
+    }
+  },
+  "config": {
+    "promptEvaluation": "ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP",
+    "swissRoundTrip": {
+      "expectedStationCount": 5,
+      "language": "DE"
+    },
+    "bleu": {
+      "maxN": 4,
+      "smoothingEpsilon": 0.1
+    },
+    "rouge": {
+      "variant": "ROUGE_L",
+      "aggregation": "F1"
+    }
+  },
+  "run": {
+    "planName": "0202-google-gemini35flash-roundtrip-de-seed-random",
+    "inferenceProvider": "GOOGLE",
+    "model": "gemini-3.5-flash",
+    "modelVersion": "gemini-3.5-flash",
+    "iterations": 5,
+    "temperature": 0.0,
+    "topP": 1.0,
+    "topK": 1,
+    "seed": null,
+    "seedSetting": "RANDOM",
+    "reasoning": "off",
+    "sendReasoning": true,
+    "reasoningProviderValue": null,
+    "servingErrorCount": 0
+  },
+  "swissRoundTrip": {
+    "responseCount": 5,
+    "successfulExtractionCount": 5,
+    "partialExtractionCount": 0,
+    "failedExtractionCount": 0,
+    "unknownNameCount": 0,
+    "uniqueRoundTripCount": 1,
+    "topRoundTripShare": 1.0,
+    "extractions": [
+      {
+        "responseIndex": 1,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die Natur, Kultur und spektakuläre Landschaften verbindet:\n\n1. **Zürich**\n   * **Grund:** Der ideale Ausgangspunkt mit internationalem Flughafen, einer lebendigen Altstadt direkt am See und hervorragenden Zugverbindungen.\n\n2. **Luzern**\n   * **Grund:** Das historische Herz der Schweiz mit der berühmten Kapellbrücke und der perfekten Lage am Vierwaldstättersee, umgeben von den Bergen Rigi und Pilatus.\n\n3. **Interlaken**\n   * **Grund:** Das ultimative Abenteuer- und Naturzentrum im Berner Oberland, eingebettet zwischen zwei Seen und mit direktem Zugang zur weltberühmten Jungfrau-Region.\n\n4. **Zermatt**\n   * **Grund:** Der autofreie, idyllische Bergort im Wallis, der den besten Blick auf das weltberühmte Matterhorn und spektakuläre Alpengletscher bietet.\n\n5. **Lugano**\n   * **Grund:** Der perfekte Abschluss im Tessin, um das mediterrane Flair, Palmen, italienische Kulinarik und den malerischen Luganersee zu genießen.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Lugano"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "LUGANO"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 2,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die Natur, Kultur und spektakuläre Landschaften verbindet:\n\n1. **Zürich**\n   * **Grund:** Der ideale Ausgangspunkt mit internationalem Flughafen, einer lebendigen Altstadt direkt am See und hervorragenden Zugverbindungen.\n\n2. **Luzern**\n   * **Grund:** Das historische Herz der Schweiz mit der berühmten Kapellbrücke und der perfekten Lage am Vierwaldstättersee, umgeben von den Bergen Rigi und Pilatus.\n\n3. **Interlaken**\n   * **Grund:** Das ultimative Abenteuer- und Naturzentrum im Berner Oberland, eingebettet zwischen zwei Seen und mit direktem Zugang zur weltberühmten Jungfrau-Region.\n\n4. **Zermatt**\n   * **Grund:** Der autofreie, idyllische Bergort im Wallis, der den besten Blick auf das weltberühmte Matterhorn und spektakuläre Alpengletscher bietet.\n\n5. **Lugano**\n   * **Grund:** Der perfekte Abschluss im Tessin, um das mediterrane Flair, Palmen, italienische Kulinarik und den malerischen Luganersee zu genießen.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Lugano"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "LUGANO"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 3,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die Natur, Kultur und spektakuläre Landschaften verbindet:\n\n1. **Zürich**\n   * **Grund:** Der ideale Ausgangspunkt mit internationalem Flughafen, einer lebendigen Altstadt direkt am See und hervorragenden Zugverbindungen.\n\n2. **Luzern**\n   * **Grund:** Das historische Herz der Schweiz mit der berühmten Kapellbrücke und der perfekten Lage am Vierwaldstättersee, umgeben von den Bergen Rigi und Pilatus.\n\n3. **Interlaken**\n   * **Grund:** Das ultimative Abenteuer- und Naturzentrum im Berner Oberland, eingebettet zwischen zwei Seen und mit direktem Zugang zur weltberühmten Jungfrau-Region.\n\n4. **Zermatt**\n   * **Grund:** Der autofreie, idyllische Bergort im Wallis, der den besten Blick auf das weltberühmte Matterhorn und spektakuläre Alpengletscher bietet.\n\n5. **Lugano**\n   * **Grund:** Der perfekte Abschluss im Tessin, um das mediterrane Flair, Palmen, italienische Kulinarik und den malerischen Luganersee zu genießen.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Lugano"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "LUGANO"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 4,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die Natur, Kultur und spektakuläre Landschaften verbindet:\n\n1. **Zürich**\n   * **Grund:** Der ideale Ausgangspunkt mit internationalem Flughafen, einer lebendigen Altstadt direkt am See und hervorragenden Zugverbindungen.\n\n2. **Luzern**\n   * **Grund:** Das historische Herz der Schweiz mit der berühmten Kapellbrücke und der perfekten Lage am Vierwaldstättersee, umgeben von den Bergen Rigi und Pilatus.\n\n3. **Interlaken**\n   * **Grund:** Das ultimative Abenteuer- und Naturzentrum im Berner Oberland, eingebettet zwischen zwei Seen und mit direktem Zugang zur weltberühmten Jungfrau-Region.\n\n4. **Zermatt**\n   * **Grund:** Der autofreie, idyllische Bergort im Wallis, der den besten Blick auf das weltberühmte Matterhorn und spektakuläre Alpengletscher bietet.\n\n5. **Lugano**\n   * **Grund:** Der perfekte Abschluss im Tessin, um das mediterrane Flair, Palmen, italienische Kulinarik und den malerischen Luganersee zu genießen.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Lugano"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "LUGANO"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 5,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die Natur, Kultur und spektakuläre Landschaften verbindet:\n\n1. **Zürich**\n   * **Grund:** Der ideale Ausgangspunkt mit internationalem Flughafen, einer lebendigen Altstadt direkt am See und hervorragenden Zugverbindungen.\n\n2. **Luzern**\n   * **Grund:** Das historische Herz der Schweiz mit der berühmten Kapellbrücke und der perfekten Lage am Vierwaldstättersee, umgeben von den Bergen Rigi und Pilatus.\n\n3. **Interlaken**\n   * **Grund:** Das ultimative Abenteuer- und Naturzentrum im Berner Oberland, eingebettet zwischen zwei Seen und mit direktem Zugang zur weltberühmten Jungfrau-Region.\n\n4. **Zermatt**\n   * **Grund:** Der autofreie, idyllische Bergort im Wallis, der den besten Blick auf das weltberühmte Matterhorn und spektakuläre Alpengletscher bietet.\n\n5. **Lugano**\n   * **Grund:** Der perfekte Abschluss im Tessin, um das mediterrane Flair, Palmen, italienische Kulinarik und den malerischen Luganersee zu genießen.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Lugano"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "LUGANO"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      }
+    ],
+    "clusters": [
+      {
+        "clusterId": 0,
+        "roundTripKey": "ZURICH|LUCERNE|INTERLAKEN|ZERMATT|LUGANO",
+        "swissRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "LUGANO"
+        ],
+        "size": 5,
+        "repetitionIndices": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "shareOfSuccessfulExtractions": 1.0
+      }
+    ],
+    "outliers": [],
+    "stationFrequencies": [
+      {
+        "destination": "ZERMATT",
+        "count": 5,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "INTERLAKEN",
+        "count": 5,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "LUCERNE",
+        "count": 5,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "ZURICH",
+        "count": 5,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "LUGANO",
+        "count": 5,
+        "shareOfSuccessfulExtractions": 1.0
+      }
+    ],
+    "positionDistributions": [
+      {
+        "position": 1,
+        "frequencies": [
+          {
+            "destination": "ZURICH",
+            "count": 5
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "frequencies": [
+          {
+            "destination": "LUCERNE",
+            "count": 5
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "frequencies": [
+          {
+            "destination": "INTERLAKEN",
+            "count": 5
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "frequencies": [
+          {
+            "destination": "ZERMATT",
+            "count": 5
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "frequencies": [
+          {
+            "destination": "LUGANO",
+            "count": 5
+          }
+        ]
+      }
+    ],
+    "pairwiseJaccard": {
+      "count": 10,
+      "min": 1.0,
+      "p10": 1.0,
+      "median": 1.0,
+      "p90": 1.0,
+      "max": 1.0,
+      "mean": 1.0
+    },
+    "syntactic": {
+      "clusters": [
+        {
+          "clusterId": 0,
+          "pairCount": 10,
+          "rougeLDistance": {
+            "count": 10,
+            "min": 0.0,
+            "median": 0.0,
+            "p90": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          },
+          "bleuDistance": {
+            "count": 10,
+            "min": 0.0,
+            "median": 0.0,
+            "p90": 0.0,
+            "max": 0.0,
+            "mean": 0.0
+          }
+        }
+      ]
+    }
+  },
+  "literal": {
+    "allResponsesIdentical": true,
+    "responseCount": 5,
+    "distinctResponseCount": 1,
+    "exactMatchRate": 1.0
+  }
+}

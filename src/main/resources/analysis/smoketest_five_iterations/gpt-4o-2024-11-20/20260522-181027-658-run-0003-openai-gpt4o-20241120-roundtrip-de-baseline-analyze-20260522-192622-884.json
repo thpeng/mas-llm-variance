@@ -1,0 +1,287 @@
+{
+  "sourceRun": "smoketest_five_iterations/gpt-4o-2024-11-20/20260522-181027-658-run-0003-openai-gpt4o-20241120-roundtrip-de-baseline.json",
+  "analyzedAt": "2026-05-22T19:26:22.8847575+02:00",
+  "environment": {
+    "git": {
+      "commitSha": "f6a9df1e79aca3722c5457fecfc27053ef760e20",
+      "branch": "master",
+      "dirty": true,
+      "probeError": null
+    },
+    "runtime": {
+      "javaVersion": "21.0.1",
+      "javaVendor": "Oracle Corporation",
+      "osName": "Windows 11",
+      "osVersion": "10.0",
+      "osArch": "amd64"
+    },
+    "gpu": {
+      "nvidiaGpus": [
+        {
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "driverVersion": "591.55",
+          "memoryTotalMiB": 12288
+        }
+      ],
+      "cudaVersion": "13.1",
+      "probeError": null
+    }
+  },
+  "config": {
+    "promptEvaluation": "ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP",
+    "swissRoundTrip": {
+      "expectedStationCount": 5,
+      "language": "DE"
+    },
+    "bleu": {
+      "maxN": 4,
+      "smoothingEpsilon": 0.1
+    },
+    "rouge": {
+      "variant": "ROUGE_L",
+      "aggregation": "F1"
+    }
+  },
+  "run": {
+    "planName": "0003-openai-gpt4o-20241120-roundtrip-de-baseline",
+    "inferenceProvider": "OPENAI",
+    "model": "gpt-4o-2024-11-20",
+    "modelVersion": "gpt-4o-2024-11-20",
+    "iterations": 5,
+    "temperature": 0.0,
+    "topP": 1.0,
+    "topK": null,
+    "seed": null,
+    "seedSetting": null,
+    "reasoning": "off",
+    "sendReasoning": true,
+    "reasoningProviderValue": null,
+    "servingErrorCount": 1
+  },
+  "swissRoundTrip": {
+    "responseCount": 4,
+    "successfulExtractionCount": 4,
+    "partialExtractionCount": 0,
+    "failedExtractionCount": 0,
+    "unknownNameCount": 0,
+    "uniqueRoundTripCount": 1,
+    "topRoundTripShare": 1.0,
+    "extractions": [
+      {
+        "responseIndex": 1,
+        "rawResponse": "1. **Zürich** – Startpunkt mit internationaler Anbindung und kulturellem Angebot.  \n2. **Luzern** – Malerische Altstadt und der Vierwaldstättersee.  \n3. **Interlaken** – Zugang zu den Alpen und spektakuläre Berglandschaften.  \n4. **Zermatt** – Heimat des Matterhorns und autofreie Idylle.  \n5. **Genf** – Kosmopolitische Stadt am Genfersee mit internationalem Flair.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Genf"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "GENEVE"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 2,
+        "rawResponse": "1. **Zürich** – Startpunkt mit internationalem Flughafen und kulturellem Angebot.  \n2. **Luzern** – Malerische Altstadt und der Vierwaldstättersee.  \n3. **Interlaken** – Zugang zu den Alpen und spektakuläre Berglandschaften.  \n4. **Zermatt** – Heimat des Matterhorns und autofreie Idylle.  \n5. **Genf** – Kosmopolitische Stadt am Genfersee mit internationalem Flair.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Genf"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "GENEVE"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 3,
+        "rawResponse": "1. **Zürich** – Startpunkt mit internationalem Flughafen und kulturellem Angebot.  \n2. **Luzern** – Malerische Altstadt und der Vierwaldstättersee.  \n3. **Interlaken** – Perfekter Zugang zu den Alpen und Outdoor-Aktivitäten.  \n4. **Zermatt** – Heimat des Matterhorns und autofreie Bergidylle.  \n5. **Genf** – Kosmopolitische Stadt am Genfersee mit internationalem Flair.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Genf"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "GENEVE"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 4,
+        "rawResponse": "1. **Zürich** – Startpunkt mit internationalem Flughafen und kulturellem Angebot.  \n2. **Luzern** – Malerische Altstadt und der Vierwaldstättersee.  \n3. **Interlaken** – Zugang zu den Alpen und spektakuläre Berglandschaften.  \n4. **Zermatt** – Heimat des Matterhorns und autofreie Idylle.  \n5. **Genf** – Kosmopolitische Stadt am Genfersee mit internationalem Flair.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Genf"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "GENEVE"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      }
+    ],
+    "clusters": [
+      {
+        "clusterId": 0,
+        "roundTripKey": "ZURICH|LUCERNE|INTERLAKEN|ZERMATT|GENEVE",
+        "swissRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "GENEVE"
+        ],
+        "size": 4,
+        "repetitionIndices": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "shareOfSuccessfulExtractions": 1.0
+      }
+    ],
+    "outliers": [],
+    "stationFrequencies": [
+      {
+        "destination": "ZERMATT",
+        "count": 4,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "INTERLAKEN",
+        "count": 4,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "LUCERNE",
+        "count": 4,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "GENEVE",
+        "count": 4,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "ZURICH",
+        "count": 4,
+        "shareOfSuccessfulExtractions": 1.0
+      }
+    ],
+    "positionDistributions": [
+      {
+        "position": 1,
+        "frequencies": [
+          {
+            "destination": "ZURICH",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "frequencies": [
+          {
+            "destination": "LUCERNE",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "frequencies": [
+          {
+            "destination": "INTERLAKEN",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "frequencies": [
+          {
+            "destination": "ZERMATT",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "frequencies": [
+          {
+            "destination": "GENEVE",
+            "count": 4
+          }
+        ]
+      }
+    ],
+    "pairwiseJaccard": {
+      "count": 6,
+      "min": 1.0,
+      "p10": 1.0,
+      "median": 1.0,
+      "p90": 1.0,
+      "max": 1.0,
+      "mean": 1.0
+    },
+    "syntactic": {
+      "clusters": [
+        {
+          "clusterId": 0,
+          "pairCount": 6,
+          "rougeLDistance": {
+            "count": 6,
+            "min": 0.0,
+            "median": 0.06498599439775915,
+            "p90": 0.12941176470588234,
+            "max": 0.12941176470588234,
+            "mean": 0.06489262371615316
+          },
+          "bleuDistance": {
+            "count": 6,
+            "min": 0.0,
+            "median": 0.14959190663989613,
+            "p90": 0.3015187447856825,
+            "max": 0.3015187447856825,
+            "mean": 0.1500599065310052
+          }
+        }
+      ]
+    }
+  },
+  "literal": {
+    "allResponsesIdentical": false,
+    "responseCount": 4,
+    "distinctResponseCount": 3,
+    "exactMatchRate": 0.16666666666666666
+  }
+}

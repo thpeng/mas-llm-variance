@@ -1,0 +1,332 @@
+{
+  "planName": "0400-lmstudio-qwen35-9b-roundtrip-de-baseline",
+  "startedAt": "2026-05-22T18:20:53.2741131+02:00",
+  "endedAt": "2026-05-22T18:21:06.0931673+02:00",
+  "inferenceProvider": "LMSTUDIO",
+  "model": "qwen/qwen3.5-9b",
+  "modelVersion": null,
+  "environment": {
+    "git": {
+      "commitSha": "f6a9df1e79aca3722c5457fecfc27053ef760e20",
+      "branch": "master",
+      "dirty": true,
+      "probeError": null
+    },
+    "runtime": {
+      "javaVersion": "21.0.1",
+      "javaVendor": "Oracle Corporation",
+      "osName": "Windows 11",
+      "osVersion": "10.0",
+      "osArch": "amd64"
+    },
+    "gpu": {
+      "nvidiaGpus": [
+        {
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "driverVersion": "591.55",
+          "memoryTotalMiB": 12288
+        }
+      ],
+      "cudaVersion": "13.1",
+      "probeError": null
+    }
+  },
+  "modelInstance": {
+    "id": "qwen/qwen3.5-9b",
+    "loadedByRun": true,
+    "loadConfig": {
+      "contextLength": null,
+      "evalBatchSize": null,
+      "flashAttention": null,
+      "numExperts": null,
+      "offloadKvCacheToGpu": null
+    },
+    "modelInfoResponse": {
+      "type": "llm",
+      "publisher": "qwen",
+      "key": "qwen/qwen3.5-9b",
+      "display_name": "Qwen3.5 9B",
+      "architecture": "qwen35",
+      "quantization": {
+        "name": "Q4_K_M",
+        "bits_per_weight": 4
+      },
+      "size_bytes": 6548927017,
+      "params_string": "9B",
+      "loaded_instances": [
+        {
+          "id": "qwen/qwen3.5-9b",
+          "config": {
+            "context_length": 4096,
+            "eval_batch_size": 512,
+            "flash_attention": true,
+            "offload_kv_cache_to_gpu": true
+          }
+        }
+      ],
+      "max_context_length": 262144,
+      "format": "gguf",
+      "capabilities": {
+        "vision": true,
+        "trained_for_tool_use": true
+      },
+      "description": null,
+      "variants": [
+        "qwen/qwen3.5-9b@q4_k_m"
+      ],
+      "selected_variant": "qwen/qwen3.5-9b@q4_k_m"
+    },
+    "loadResponse": {
+      "type": "llm",
+      "instance_id": "qwen/qwen3.5-9b",
+      "load_time_seconds": 4.103,
+      "status": "loaded",
+      "load_config": {
+        "context_length": 4096,
+        "eval_batch_size": 512,
+        "flash_attention": true,
+        "offload_kv_cache_to_gpu": true
+      }
+    },
+    "unloadResponse": {
+      "instance_id": "qwen/qwen3.5-9b"
+    }
+  },
+  "iterations": 5,
+  "config": {
+    "temperature": 0.0,
+    "topP": 1.0,
+    "topK": 1,
+    "seed": null,
+    "seedSetting": null,
+    "reasoning": "off",
+    "sendReasoning": true,
+    "reasoningProviderValue": null
+  },
+  "prompt": "Erstelle eine kurze Planung für eine Rundreise durch die Schweiz mit 5 Stationen. Jede Station muss genau ein einzelner Ortsname sein, keine Region und keine Kombination mehrerer Orte. Nenne nur die 5 Stationen in sinnvoller Reihenfolge und je einen kurzen Grund für die Auswahl.\n",
+  "repetitions": [
+    {
+      "index": 1,
+      "startedAt": "2026-05-22T18:20:57.375801+02:00",
+      "endedAt": "2026-05-22T18:20:59.2007334+02:00",
+      "status": "SUCCESS",
+      "requestUrl": "http://127.0.0.1:10022/api/v1/chat",
+      "requestHeaders": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "requestBody": "{\"model\":\"qwen/qwen3.5-9b\",\"input\":\"Erstelle eine kurze Planung für eine Rundreise durch die Schweiz mit 5 Stationen. Jede Station muss genau ein einzelner Ortsname sein, keine Region und keine Kombination mehrerer Orte. Nenne nur die 5 Stationen in sinnvoller Reihenfolge und je einen kurzen Grund für die Auswahl.\\n\",\"store\":false,\"reasoning\":\"off\",\"temperature\":0.0,\"top_p\":1.0,\"top_k\":1}",
+      "responseStatusCode": 200,
+      "responseHeaders": {
+        "etag": [
+          "W/\"427-f/Bd5S/pDXZqNiNdQDv7rDAZNZs\""
+        ],
+        "x-powered-by": [
+          "Express"
+        ],
+        "content-length": [
+          "1063"
+        ],
+        "connection": [
+          "keep-alive"
+        ],
+        "content-type": [
+          "application/json; charset=utf-8"
+        ],
+        "keep-alive": [
+          "timeout=5"
+        ],
+        "date": [
+          "Fri, 22 May 2026 16:20:59 GMT"
+        ]
+      },
+      "responseBody": "{\n  \"model_instance_id\": \"qwen/qwen3.5-9b\",\n  \"output\": [\n    {\n      \"type\": \"message\",\n      \"content\": \"Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\\n\\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.\"\n    }\n  ],\n  \"stats\": {\n    \"input_tokens\": 72,\n    \"total_output_tokens\": 173,\n    \"reasoning_output_tokens\": 0,\n    \"tokens_per_second\": 103.56403969196583,\n    \"time_to_first_token_seconds\": 0.102\n  }\n}",
+      "response": "Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\n\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.",
+      "tokenUsage": {
+        "inputTokens": 72,
+        "outputTokens": 173,
+        "totalTokens": 245
+      }
+    },
+    {
+      "index": 2,
+      "startedAt": "2026-05-22T18:20:59.2007334+02:00",
+      "endedAt": "2026-05-22T18:21:00.9434712+02:00",
+      "status": "SUCCESS",
+      "requestUrl": "http://127.0.0.1:10022/api/v1/chat",
+      "requestHeaders": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "requestBody": "{\"model\":\"qwen/qwen3.5-9b\",\"input\":\"Erstelle eine kurze Planung für eine Rundreise durch die Schweiz mit 5 Stationen. Jede Station muss genau ein einzelner Ortsname sein, keine Region und keine Kombination mehrerer Orte. Nenne nur die 5 Stationen in sinnvoller Reihenfolge und je einen kurzen Grund für die Auswahl.\\n\",\"store\":false,\"reasoning\":\"off\",\"temperature\":0.0,\"top_p\":1.0,\"top_k\":1}",
+      "responseStatusCode": 200,
+      "responseHeaders": {
+        "etag": [
+          "W/\"427-VGDqQK1iV0Nf6onr3ZhdjacMe9s\""
+        ],
+        "x-powered-by": [
+          "Express"
+        ],
+        "content-length": [
+          "1063"
+        ],
+        "connection": [
+          "keep-alive"
+        ],
+        "content-type": [
+          "application/json; charset=utf-8"
+        ],
+        "keep-alive": [
+          "timeout=5"
+        ],
+        "date": [
+          "Fri, 22 May 2026 16:21:00 GMT"
+        ]
+      },
+      "responseBody": "{\n  \"model_instance_id\": \"qwen/qwen3.5-9b\",\n  \"output\": [\n    {\n      \"type\": \"message\",\n      \"content\": \"Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\\n\\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.\"\n    }\n  ],\n  \"stats\": {\n    \"input_tokens\": 72,\n    \"total_output_tokens\": 173,\n    \"reasoning_output_tokens\": 0,\n    \"tokens_per_second\": 103.49310155664395,\n    \"time_to_first_token_seconds\": 0.075\n  }\n}",
+      "response": "Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\n\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.",
+      "tokenUsage": {
+        "inputTokens": 72,
+        "outputTokens": 173,
+        "totalTokens": 245
+      }
+    },
+    {
+      "index": 3,
+      "startedAt": "2026-05-22T18:21:00.9434712+02:00",
+      "endedAt": "2026-05-22T18:21:02.6682302+02:00",
+      "status": "SUCCESS",
+      "requestUrl": "http://127.0.0.1:10022/api/v1/chat",
+      "requestHeaders": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "requestBody": "{\"model\":\"qwen/qwen3.5-9b\",\"input\":\"Erstelle eine kurze Planung für eine Rundreise durch die Schweiz mit 5 Stationen. Jede Station muss genau ein einzelner Ortsname sein, keine Region und keine Kombination mehrerer Orte. Nenne nur die 5 Stationen in sinnvoller Reihenfolge und je einen kurzen Grund für die Auswahl.\\n\",\"store\":false,\"reasoning\":\"off\",\"temperature\":0.0,\"top_p\":1.0,\"top_k\":1}",
+      "responseStatusCode": 200,
+      "responseHeaders": {
+        "etag": [
+          "W/\"427-xHTJmc6mRaSp3Pe0WA9PtTLfT9I\""
+        ],
+        "x-powered-by": [
+          "Express"
+        ],
+        "content-length": [
+          "1063"
+        ],
+        "connection": [
+          "keep-alive"
+        ],
+        "content-type": [
+          "application/json; charset=utf-8"
+        ],
+        "keep-alive": [
+          "timeout=5"
+        ],
+        "date": [
+          "Fri, 22 May 2026 16:21:02 GMT"
+        ]
+      },
+      "responseBody": "{\n  \"model_instance_id\": \"qwen/qwen3.5-9b\",\n  \"output\": [\n    {\n      \"type\": \"message\",\n      \"content\": \"Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\\n\\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.\"\n    }\n  ],\n  \"stats\": {\n    \"input_tokens\": 72,\n    \"total_output_tokens\": 173,\n    \"reasoning_output_tokens\": 0,\n    \"tokens_per_second\": 103.70962743065694,\n    \"time_to_first_token_seconds\": 0.043\n  }\n}",
+      "response": "Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\n\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.",
+      "tokenUsage": {
+        "inputTokens": 72,
+        "outputTokens": 173,
+        "totalTokens": 245
+      }
+    },
+    {
+      "index": 4,
+      "startedAt": "2026-05-22T18:21:02.6682302+02:00",
+      "endedAt": "2026-05-22T18:21:04.379105+02:00",
+      "status": "SUCCESS",
+      "requestUrl": "http://127.0.0.1:10022/api/v1/chat",
+      "requestHeaders": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "requestBody": "{\"model\":\"qwen/qwen3.5-9b\",\"input\":\"Erstelle eine kurze Planung für eine Rundreise durch die Schweiz mit 5 Stationen. Jede Station muss genau ein einzelner Ortsname sein, keine Region und keine Kombination mehrerer Orte. Nenne nur die 5 Stationen in sinnvoller Reihenfolge und je einen kurzen Grund für die Auswahl.\\n\",\"store\":false,\"reasoning\":\"off\",\"temperature\":0.0,\"top_p\":1.0,\"top_k\":1}",
+      "responseStatusCode": 200,
+      "responseHeaders": {
+        "etag": [
+          "W/\"427-/LLgxCjcrjcTeTQatum5BxIV0uU\""
+        ],
+        "x-powered-by": [
+          "Express"
+        ],
+        "content-length": [
+          "1063"
+        ],
+        "connection": [
+          "keep-alive"
+        ],
+        "content-type": [
+          "application/json; charset=utf-8"
+        ],
+        "keep-alive": [
+          "timeout=5"
+        ],
+        "date": [
+          "Fri, 22 May 2026 16:21:04 GMT"
+        ]
+      },
+      "responseBody": "{\n  \"model_instance_id\": \"qwen/qwen3.5-9b\",\n  \"output\": [\n    {\n      \"type\": \"message\",\n      \"content\": \"Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\\n\\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.\"\n    }\n  ],\n  \"stats\": {\n    \"input_tokens\": 72,\n    \"total_output_tokens\": 173,\n    \"reasoning_output_tokens\": 0,\n    \"tokens_per_second\": 103.76044651778743,\n    \"time_to_first_token_seconds\": 0.049\n  }\n}",
+      "response": "Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\n\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.",
+      "tokenUsage": {
+        "inputTokens": 72,
+        "outputTokens": 173,
+        "totalTokens": 245
+      }
+    },
+    {
+      "index": 5,
+      "startedAt": "2026-05-22T18:21:04.379105+02:00",
+      "endedAt": "2026-05-22T18:21:06.0931673+02:00",
+      "status": "SUCCESS",
+      "requestUrl": "http://127.0.0.1:10022/api/v1/chat",
+      "requestHeaders": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "requestBody": "{\"model\":\"qwen/qwen3.5-9b\",\"input\":\"Erstelle eine kurze Planung für eine Rundreise durch die Schweiz mit 5 Stationen. Jede Station muss genau ein einzelner Ortsname sein, keine Region und keine Kombination mehrerer Orte. Nenne nur die 5 Stationen in sinnvoller Reihenfolge und je einen kurzen Grund für die Auswahl.\\n\",\"store\":false,\"reasoning\":\"off\",\"temperature\":0.0,\"top_p\":1.0,\"top_k\":1}",
+      "responseStatusCode": 200,
+      "responseHeaders": {
+        "etag": [
+          "W/\"427-kzgW1J4X/rVvaNK6t7iF94WZR6c\""
+        ],
+        "x-powered-by": [
+          "Express"
+        ],
+        "content-length": [
+          "1063"
+        ],
+        "connection": [
+          "keep-alive"
+        ],
+        "content-type": [
+          "application/json; charset=utf-8"
+        ],
+        "keep-alive": [
+          "timeout=5"
+        ],
+        "date": [
+          "Fri, 22 May 2026 16:21:06 GMT"
+        ]
+      },
+      "responseBody": "{\n  \"model_instance_id\": \"qwen/qwen3.5-9b\",\n  \"output\": [\n    {\n      \"type\": \"message\",\n      \"content\": \"Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\\n\\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.\"\n    }\n  ],\n  \"stats\": {\n    \"input_tokens\": 72,\n    \"total_output_tokens\": 173,\n    \"reasoning_output_tokens\": 0,\n    \"tokens_per_second\": 103.45287422582268,\n    \"time_to_first_token_seconds\": 0.051\n  }\n}",
+      "response": "Hier ist eine kurze Planung für eine klassische Rundreise durch die Schweiz:\n\n1. **Zürich** – Als Startpunkt bietet die Stadt den besten Zugang zum öffentlichen Verkehrssystem und beeindruckende Architektur am Seeufer.\n2. **Interlaken** – Das Tor zu den Jungfrau-Bergen ermöglicht einen perfekten Übergang von der Ebene in die Hochalpenlandschaft.\n3. **Lucerne** – Hier kann man die historische Altstadt bestaunen und direkt vom Boot aus den Vierwaldstättersee genießen.\n4. **Zermatt** – Der autofreie Ort führt direkt zum Matterhorn, dem ikonischen Symbol der Schweizer Alpen.\n5. **Genf** – Als Endpunkt rundet die Reise mit dem Genfer See und der internationalen Atmosphäre die Tour ab, bevor es zurück nach Zürich geht.",
+      "tokenUsage": {
+        "inputTokens": 72,
+        "outputTokens": 173,
+        "totalTokens": 245
+      }
+    }
+  ],
+  "errors": {
+    "servingErrorCount": 0
+  }
+}

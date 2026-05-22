@@ -1,0 +1,159 @@
+{
+  "sourceRun": "smoketest_five_iterations/gpt-5.4-mini-2026-03-17/20260522-181420-826-run-0023-openai-gpt54mini-creative-mittel.json",
+  "analyzedAt": "2026-05-22T19:26:22.9647638+02:00",
+  "environment": {
+    "git": {
+      "commitSha": "f6a9df1e79aca3722c5457fecfc27053ef760e20",
+      "branch": "master",
+      "dirty": true,
+      "probeError": null
+    },
+    "runtime": {
+      "javaVersion": "21.0.1",
+      "javaVendor": "Oracle Corporation",
+      "osName": "Windows 11",
+      "osVersion": "10.0",
+      "osArch": "amd64"
+    },
+    "gpu": {
+      "nvidiaGpus": [
+        {
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "driverVersion": "591.55",
+          "memoryTotalMiB": 12288
+        }
+      ],
+      "cudaVersion": "13.1",
+      "probeError": null
+    }
+  },
+  "config": {
+    "promptEvaluation": "CREATIVE_GENERATIVE_LUCERNE_MARKETING",
+    "lucerneMarketingText": {
+      "expectedSentenceCount": 3,
+      "requiredTerm": "Luzern"
+    },
+    "bleu": {
+      "maxN": 4,
+      "smoothingEpsilon": 0.1
+    },
+    "rouge": {
+      "variant": "ROUGE_L",
+      "aggregation": "F1"
+    }
+  },
+  "run": {
+    "planName": "0023-openai-gpt54mini-creative-mittel",
+    "inferenceProvider": "OPENAI",
+    "model": "gpt-5.4-mini-2026-03-17",
+    "modelVersion": "gpt-5.4-mini-2026-03-17",
+    "iterations": 5,
+    "temperature": 0.7,
+    "topP": 0.4,
+    "topK": null,
+    "seed": null,
+    "seedSetting": null,
+    "reasoning": "off",
+    "sendReasoning": true,
+    "reasoningProviderValue": null,
+    "servingErrorCount": 0
+  },
+  "lucerneMarketingText": {
+    "responseCount": 5,
+    "successCount": 5,
+    "outlierCount": 0,
+    "successShare": 1.0,
+    "outliers": [],
+    "expectedSentenceCount": 3,
+    "requiredTerm": "Luzern",
+    "sentenceCountMismatchCount": 0,
+    "requiredTermMissingCount": 0,
+    "extractions": [
+      {
+        "responseIndex": 1,
+        "rawResponse": "Luzern begeistert mit seiner malerischen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Alpen. Die charmante Altstadt, die berühmte Kapellbrücke und die lebendige Kultur machen die Stadt zu einem unvergesslichen Reiseziel. Ob für einen entspannten Spaziergang am See oder spannende Ausflüge in die Natur – Luzern verbindet Erholung, Geschichte und Erlebnis auf einzigartige Weise.",
+        "rawTrimmed": "Luzern begeistert mit seiner malerischen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Alpen. Die charmante Altstadt, die berühmte Kapellbrücke und die lebendige Kultur machen die Stadt zu einem unvergesslichen Reiseziel. Ob für einen entspannten Spaziergang am See oder spannende Ausflüge in die Natur – Luzern verbindet Erholung, Geschichte und Erlebnis auf einzigartige Weise.",
+        "sentenceCount": 3,
+        "expectedSentenceCount": 3,
+        "containsRequiredTerm": true,
+        "requiredTerm": "Luzern",
+        "status": "SUCCESS",
+        "failureReasons": []
+      },
+      {
+        "responseIndex": 2,
+        "rawResponse": "Luzern begeistert mit seiner einzigartigen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Schweizer Alpen. Die charmante Altstadt, die berühmte Kapellbrücke und die lebendige Uferpromenade machen die Stadt zu einem unvergesslichen Reiseziel. Ob Kultur, Natur oder Genuss – Luzern bietet für jeden Geschmack das passende Erlebnis.",
+        "rawTrimmed": "Luzern begeistert mit seiner einzigartigen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Schweizer Alpen. Die charmante Altstadt, die berühmte Kapellbrücke und die lebendige Uferpromenade machen die Stadt zu einem unvergesslichen Reiseziel. Ob Kultur, Natur oder Genuss – Luzern bietet für jeden Geschmack das passende Erlebnis.",
+        "sentenceCount": 3,
+        "expectedSentenceCount": 3,
+        "containsRequiredTerm": true,
+        "requiredTerm": "Luzern",
+        "status": "SUCCESS",
+        "failureReasons": []
+      },
+      {
+        "responseIndex": 3,
+        "rawResponse": "Luzern begeistert mit seiner malerischen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Schweizer Alpen. Die charmante Altstadt mit ihren historischen Gassen, der Kapellbrücke und gemütlichen Cafés lädt zum Bummeln und Verweilen ein. Ob Kultur, Natur oder Genuss – Luzern ist ein vielseitiges Reiseziel, das unvergessliche Eindrücke verspricht.",
+        "rawTrimmed": "Luzern begeistert mit seiner malerischen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Schweizer Alpen. Die charmante Altstadt mit ihren historischen Gassen, der Kapellbrücke und gemütlichen Cafés lädt zum Bummeln und Verweilen ein. Ob Kultur, Natur oder Genuss – Luzern ist ein vielseitiges Reiseziel, das unvergessliche Eindrücke verspricht.",
+        "sentenceCount": 3,
+        "expectedSentenceCount": 3,
+        "containsRequiredTerm": true,
+        "requiredTerm": "Luzern",
+        "status": "SUCCESS",
+        "failureReasons": []
+      },
+      {
+        "responseIndex": 4,
+        "rawResponse": "Luzern begeistert mit seiner malerischen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Schweizer Alpen. Die charmante Altstadt, die berühmte Kapellbrücke und die lebendige Uferpromenade laden zum Entdecken und Verweilen ein. Ob Kultur, Natur oder Genuss – Luzern ist ein Reiseziel, das unvergessliche Eindrücke schenkt.",
+        "rawTrimmed": "Luzern begeistert mit seiner malerischen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Schweizer Alpen. Die charmante Altstadt, die berühmte Kapellbrücke und die lebendige Uferpromenade laden zum Entdecken und Verweilen ein. Ob Kultur, Natur oder Genuss – Luzern ist ein Reiseziel, das unvergessliche Eindrücke schenkt.",
+        "sentenceCount": 3,
+        "expectedSentenceCount": 3,
+        "containsRequiredTerm": true,
+        "requiredTerm": "Luzern",
+        "status": "SUCCESS",
+        "failureReasons": []
+      },
+      {
+        "responseIndex": 5,
+        "rawResponse": "Luzern begeistert mit seiner malerischen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Schweizer Alpen. Die charmante Altstadt, die berühmte Kapellbrücke und das lebendige Kulturangebot machen die Stadt zu einem unvergesslichen Reiseziel. Ob für einen entspannten Spaziergang am Wasser oder spannende Ausflüge in die Natur – Luzern verbindet Erholung, Geschichte und Erlebnis auf einzigartige Weise.",
+        "rawTrimmed": "Luzern begeistert mit seiner malerischen Lage am Vierwaldstättersee und dem beeindruckenden Panorama der Schweizer Alpen. Die charmante Altstadt, die berühmte Kapellbrücke und das lebendige Kulturangebot machen die Stadt zu einem unvergesslichen Reiseziel. Ob für einen entspannten Spaziergang am Wasser oder spannende Ausflüge in die Natur – Luzern verbindet Erholung, Geschichte und Erlebnis auf einzigartige Weise.",
+        "sentenceCount": 3,
+        "expectedSentenceCount": 3,
+        "containsRequiredTerm": true,
+        "requiredTerm": "Luzern",
+        "status": "SUCCESS",
+        "failureReasons": []
+      }
+    ],
+    "syntactic": {
+      "clusters": [
+        {
+          "clusterId": 0,
+          "pairCount": 10,
+          "rougeLDistance": {
+            "count": 10,
+            "min": 0.06542056074766356,
+            "median": 0.3840579710144928,
+            "p90": 0.5445544554455446,
+            "max": 0.56,
+            "mean": 0.3710088846650391
+          },
+          "bleuDistance": {
+            "count": 10,
+            "min": 0.18079434648973336,
+            "median": 0.5495923915280164,
+            "p90": 0.6499343476246824,
+            "max": 0.69667898987957,
+            "mean": 0.507843385620136
+          }
+        }
+      ]
+    }
+  },
+  "literal": {
+    "allResponsesIdentical": false,
+    "responseCount": 5,
+    "distinctResponseCount": 5,
+    "exactMatchRate": 0.0
+  }
+}

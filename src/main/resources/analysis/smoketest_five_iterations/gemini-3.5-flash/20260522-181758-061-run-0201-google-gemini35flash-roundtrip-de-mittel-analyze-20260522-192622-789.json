@@ -1,0 +1,365 @@
+{
+  "sourceRun": "smoketest_five_iterations/gemini-3.5-flash/20260522-181758-061-run-0201-google-gemini35flash-roundtrip-de-mittel.json",
+  "analyzedAt": "2026-05-22T19:26:22.7899781+02:00",
+  "environment": {
+    "git": {
+      "commitSha": "f6a9df1e79aca3722c5457fecfc27053ef760e20",
+      "branch": "master",
+      "dirty": true,
+      "probeError": null
+    },
+    "runtime": {
+      "javaVersion": "21.0.1",
+      "javaVendor": "Oracle Corporation",
+      "osName": "Windows 11",
+      "osVersion": "10.0",
+      "osArch": "amd64"
+    },
+    "gpu": {
+      "nvidiaGpus": [
+        {
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "driverVersion": "591.55",
+          "memoryTotalMiB": 12288
+        }
+      ],
+      "cudaVersion": "13.1",
+      "probeError": null
+    }
+  },
+  "config": {
+    "promptEvaluation": "ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP",
+    "swissRoundTrip": {
+      "expectedStationCount": 5,
+      "language": "DE"
+    },
+    "bleu": {
+      "maxN": 4,
+      "smoothingEpsilon": 0.1
+    },
+    "rouge": {
+      "variant": "ROUGE_L",
+      "aggregation": "F1"
+    }
+  },
+  "run": {
+    "planName": "0201-google-gemini35flash-roundtrip-de-mittel",
+    "inferenceProvider": "GOOGLE",
+    "model": "gemini-3.5-flash",
+    "modelVersion": "gemini-3.5-flash",
+    "iterations": 5,
+    "temperature": 0.7,
+    "topP": 0.4,
+    "topK": 20,
+    "seed": null,
+    "seedSetting": null,
+    "reasoning": "off",
+    "sendReasoning": true,
+    "reasoningProviderValue": null,
+    "servingErrorCount": 0
+  },
+  "swissRoundTrip": {
+    "responseCount": 5,
+    "successfulExtractionCount": 5,
+    "partialExtractionCount": 0,
+    "failedExtractionCount": 0,
+    "unknownNameCount": 0,
+    "uniqueRoundTripCount": 2,
+    "topRoundTripShare": 0.8,
+    "extractions": [
+      {
+        "responseIndex": 1,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die in einer Schleife von Norden über den Süden und Westen zurückführt:\n\n1. **Zürich**\n   * *Grund:* Idealer Ausgangspunkt mit internationaler Anbindung, lebendiger Altstadt und direktem Seezugang.\n\n2. **Luzern**\n   * *Grund:* Bietet das klassische Schweiz-Panorama mit der historischen Kapellbrücke und der Nähe zu den Ausflugsbergen Rigi und Pilatus.\n\n3. **Zermatt**\n   * *Grund:* Autofreier Bergort am Fuße des weltberühmten Matterhorns, ideal für alpine Landschaften und frische Bergluft.\n\n4. **Montreux**\n   * *Grund:* Besticht durch sein mildes, fast mediterranes Klima am Genfersee, die berühmte Seepromenade und das historische Schloss Chillon.\n\n5. **Bern**\n   * *Grund:* Die entspannte Bundeshauptstadt fasziniert mit ihrer UNESCO-geschützten Berner Altstadt, den charakteristischen Lauben (Arkaden) und dem Bärengraben.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Zermatt",
+          "Montreux",
+          "Bern"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "ZERMATT",
+          "MONTREUX",
+          "BERN"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 2,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die in einer Schleife von Norden über den Süden und Westen zurückführt:\n\n1. **Zürich**\n   * *Grund:* Idealer Ausgangspunkt mit internationaler Anbindung, lebendiger Altstadt und direktem Seezugang.\n\n2. **Luzern**\n   * *Grund:* Bietet das klassische Schweiz-Panorama mit der historischen Kapellbrücke und der Nähe zu den Ausflugsbergen Rigi und Pilatus.\n\n3. **Zermatt**\n   * *Grund:* Autofreier Bergort am Fuße des weltberühmten Matterhorns, ideal für alpine Landschaften und frische Bergluft.\n\n4. **Montreux**\n   * *Grund:* Besticht durch sein mildes, fast mediterranes Klima am Genfersee, die berühmte Seepromenade und das historische Schloss Chillon.\n\n5. **Bern**\n   * *Grund:* Die entspannte Bundeshauptstadt fasziniert mit ihrer UNESCO-geschützten Berner Altstadt, den charakteristischen Lauben (Arkaden) und dem Bärengraben.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Zermatt",
+          "Montreux",
+          "Bern"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "ZERMATT",
+          "MONTREUX",
+          "BERN"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 3,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die in einer Schleife von Norden über den Süden und Westen zurückführt:\n\n1. **Zürich**\n   * *Grund:* Idealer Ausgangspunkt mit internationaler Anbindung, lebendiger Altstadt und direktem Seezugang.\n\n2. **Luzern**\n   * *Grund:* Bietet das klassische Schweiz-Panorama mit der historischen Kapellbrücke und der Nähe zu den Bergen Rigi und Pilatus.\n\n3. **Zermatt**\n   * *Grund:* Autofreier Bergort am Fuße des weltberühmten Matterhorns, ideal für alpine Landschaften.\n\n4. **Montreux**\n   * *Grund:* Besticht durch sein mildes, fast mediterranes Klima am Genfersee, die berühmte Seepromenade und das Schloss Chillon.\n\n5. **Bern**\n   * *Grund:* Die entspannte Bundeshauptstadt begeistert mit ihrer UNESCO-geschützten Berner Altstadt in der Aareschleife, bevor es zurück zum Startpunkt geht.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Zermatt",
+          "Montreux",
+          "Bern"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "ZERMATT",
+          "MONTREUX",
+          "BERN"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 4,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die Vielfalt, Natur und Kultur verbindet:\n\n1. **Zürich**\n   * *Grund:* Idealer Ausgangspunkt mit internationalem Flughafen, lebendiger Altstadt und direktem Seezugang.\n\n2. **Luzern**\n   * *Grund:* Das historische Herz der Schweiz mit der berühmten Kapellbrücke und der Nähe zu den Bergen Rigi und Pilatus.\n\n3. **Interlaken**\n   * *Grund:* Das ultimative Abenteuer- und Naturzentrum, perfekt gelegen zwischen zwei Seen und am Fuße des weltberühmten Dreigestirns Eiger, Mönch und Jungfrau.\n\n4. **Zermatt**\n   * *Grund:* Autofreier, idyllischer Bergort mit dem spektakulärsten Blick auf das weltberühmte Matterhorn.\n\n5. **Lugano**\n   * *Grund:* Bietet zum Abschluss der Reise mediterranes Flair, Palmen und italienischen Charme im sonnigen Süden der Schweiz.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Interlaken",
+          "Zermatt",
+          "Lugano"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "LUGANO"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      },
+      {
+        "responseIndex": 5,
+        "rawResponse": "Hier ist eine sinnvolle Route für eine Rundreise durch die Schweiz, die in einer Schleife von Norden über den Süden und Westen zurückführt:\n\n1. **Zürich**\n   * *Grund:* Idealer Ausgangspunkt mit internationaler Anbindung, lebendiger Altstadt und direktem Seezugang.\n\n2. **Luzern**\n   * *Grund:* Bietet das klassische Schweiz-Panorama mit der historischen Kapellbrücke und der Nähe zu den Ausflugsbergen Rigi und Pilatus.\n\n3. **Zermatt**\n   * *Grund:* Autofreier Bergort am Fuße des weltberühmten Matterhorns, ideal für alpine Landschaften und frische Bergluft.\n\n4. **Montreux**\n   * *Grund:* Besticht durch sein mildes, fast mediterranes Klima am Genfersee, die berühmte Seepromenade und das historische Schloss Chillon.\n\n5. **Bern**\n   * *Grund:* Die Bundeshauptstadt fasziniert mit ihrer UNESCO-geschützten Berner Altstadt, den charakteristischen Lauben (Arkadengängen) und dem Bärengraben.",
+        "rawExtractedNames": [
+          "Zürich",
+          "Luzern",
+          "Zermatt",
+          "Montreux",
+          "Bern"
+        ],
+        "normalizedRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "ZERMATT",
+          "MONTREUX",
+          "BERN"
+        ],
+        "extractionStatus": "SUCCESS",
+        "unknownNames": []
+      }
+    ],
+    "clusters": [
+      {
+        "clusterId": 0,
+        "roundTripKey": "ZURICH|LUCERNE|ZERMATT|MONTREUX|BERN",
+        "swissRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "ZERMATT",
+          "MONTREUX",
+          "BERN"
+        ],
+        "size": 4,
+        "repetitionIndices": [
+          1,
+          2,
+          3,
+          5
+        ],
+        "shareOfSuccessfulExtractions": 0.8
+      },
+      {
+        "clusterId": 1,
+        "roundTripKey": "ZURICH|LUCERNE|INTERLAKEN|ZERMATT|LUGANO",
+        "swissRoundTrip": [
+          "ZURICH",
+          "LUCERNE",
+          "INTERLAKEN",
+          "ZERMATT",
+          "LUGANO"
+        ],
+        "size": 1,
+        "repetitionIndices": [
+          4
+        ],
+        "shareOfSuccessfulExtractions": 0.2
+      }
+    ],
+    "outliers": [],
+    "stationFrequencies": [
+      {
+        "destination": "ZERMATT",
+        "count": 5,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "INTERLAKEN",
+        "count": 1,
+        "shareOfSuccessfulExtractions": 0.2
+      },
+      {
+        "destination": "LUCERNE",
+        "count": 5,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "MONTREUX",
+        "count": 4,
+        "shareOfSuccessfulExtractions": 0.8
+      },
+      {
+        "destination": "ZURICH",
+        "count": 5,
+        "shareOfSuccessfulExtractions": 1.0
+      },
+      {
+        "destination": "BERN",
+        "count": 4,
+        "shareOfSuccessfulExtractions": 0.8
+      },
+      {
+        "destination": "LUGANO",
+        "count": 1,
+        "shareOfSuccessfulExtractions": 0.2
+      }
+    ],
+    "positionDistributions": [
+      {
+        "position": 1,
+        "frequencies": [
+          {
+            "destination": "ZURICH",
+            "count": 5
+          }
+        ]
+      },
+      {
+        "position": 2,
+        "frequencies": [
+          {
+            "destination": "LUCERNE",
+            "count": 5
+          }
+        ]
+      },
+      {
+        "position": 3,
+        "frequencies": [
+          {
+            "destination": "ZERMATT",
+            "count": 4
+          },
+          {
+            "destination": "INTERLAKEN",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "position": 4,
+        "frequencies": [
+          {
+            "destination": "ZERMATT",
+            "count": 1
+          },
+          {
+            "destination": "MONTREUX",
+            "count": 4
+          }
+        ]
+      },
+      {
+        "position": 5,
+        "frequencies": [
+          {
+            "destination": "BERN",
+            "count": 4
+          },
+          {
+            "destination": "LUGANO",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "pairwiseJaccard": {
+      "count": 10,
+      "min": 0.42857142857142855,
+      "p10": 0.42857142857142855,
+      "median": 1.0,
+      "p90": 1.0,
+      "max": 1.0,
+      "mean": 0.7714285714285715
+    },
+    "syntactic": {
+      "clusters": [
+        {
+          "clusterId": 0,
+          "pairCount": 6,
+          "rougeLDistance": {
+            "count": 6,
+            "min": 0.0,
+            "median": 0.05970527464816194,
+            "p90": 0.11111111111111094,
+            "max": 0.11111111111111094,
+            "mean": 0.058322034950626454
+          },
+          "bleuDistance": {
+            "count": 6,
+            "min": 0.0,
+            "median": 0.10759952275148343,
+            "p90": 0.1787382217074558,
+            "max": 0.1787382217074558,
+            "mean": 0.10152271878556492
+          }
+        },
+        {
+          "clusterId": 1,
+          "pairCount": 0,
+          "rougeLDistance": {
+            "count": 0,
+            "min": null,
+            "median": null,
+            "p90": null,
+            "max": null,
+            "mean": null
+          },
+          "bleuDistance": {
+            "count": 0,
+            "min": null,
+            "median": null,
+            "p90": null,
+            "max": null,
+            "mean": null
+          }
+        }
+      ]
+    }
+  },
+  "literal": {
+    "allResponsesIdentical": false,
+    "responseCount": 5,
+    "distinctResponseCount": 4,
+    "exactMatchRate": 0.1
+  }
+}

@@ -1,0 +1,24 @@
+inferenceProvider: ANTHROPIC
+model: "claude-sonnet-4-6"
+description: |
+  Smoketest mit genau fünf Wiederholungen für Anthropic / claude-sonnet-4-6. Archetyp: beratend-empfehlende Rundreise. Parameter: temperature=0, topK=1, reasoning=off.
+analysis:
+  promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
+  swissRoundTrip:
+    expectedStationCount: 5
+    language: IT
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Prepara un breve itinerario per un viaggio itinerante attraverso la Svizzera con 5 tappe.
+    Ogni tappa deve corrispondere esattamente al nome di una singola località, non a una regione né a una combinazione di più località.
+    Indica solo le 5 tappe in un ordine logico e, per ciascuna, una breve motivazione della scelta.
+  iterations: 5
+  temperature: 0
+  topK: 1
+  reasoning: "off"

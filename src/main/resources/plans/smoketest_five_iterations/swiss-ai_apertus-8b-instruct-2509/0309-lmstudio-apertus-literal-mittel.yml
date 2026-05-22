@@ -1,7 +1,7 @@
-inferenceProvider: GOOGLE
-model: "gemini-3.5-flash"
+inferenceProvider: LMSTUDIO
+model: "swiss-ai_apertus-8b-instruct-2509"
 description: |
-  Smoketest mit genau einer Wiederholung für Google Gemini / gemini-3.5-flash. Archetyp: literal-formatkritische Reisendenlenkung. Parameter: temperature=0, topP=1, topK=1, reasoning=off.
+  Smoketest mit genau fünf Wiederholungen für LM Studio / swiss-ai_apertus-8b-instruct-2509. Archetyp: literal-formatkritische Reisendenlenkung. Parameter: temperature=0.7, topP=0.4, topK=20. Reasoning wird nicht gesendet, da Apertus in LM Studio keine Reasoning-Konfiguration unterstützt.
 analysis:
   promptEvaluation: LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE
   travelerGuidanceFormat:
@@ -25,8 +25,7 @@ run:
     Ziel: Zürich
     Abschnitt: Bern bis Bern Wankdorf
     Linie: S3
-  iterations: 1
-  temperature: 0
-  topP: 1
-  topK: 1
-  reasoning: "off"
+  iterations: 5
+  temperature: 0.7
+  topP: 0.4
+  topK: 20

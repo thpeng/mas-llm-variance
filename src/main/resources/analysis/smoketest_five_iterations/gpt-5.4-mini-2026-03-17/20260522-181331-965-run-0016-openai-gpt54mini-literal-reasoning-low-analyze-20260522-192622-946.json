@@ -1,0 +1,146 @@
+{
+  "sourceRun": "smoketest_five_iterations/gpt-5.4-mini-2026-03-17/20260522-181331-965-run-0016-openai-gpt54mini-literal-reasoning-low.json",
+  "analyzedAt": "2026-05-22T19:26:22.9467654+02:00",
+  "environment": {
+    "git": {
+      "commitSha": "f6a9df1e79aca3722c5457fecfc27053ef760e20",
+      "branch": "master",
+      "dirty": true,
+      "probeError": null
+    },
+    "runtime": {
+      "javaVersion": "21.0.1",
+      "javaVendor": "Oracle Corporation",
+      "osName": "Windows 11",
+      "osVersion": "10.0",
+      "osArch": "amd64"
+    },
+    "gpu": {
+      "nvidiaGpus": [
+        {
+          "name": "NVIDIA GeForce RTX 3080 Ti",
+          "driverVersion": "591.55",
+          "memoryTotalMiB": 12288
+        }
+      ],
+      "cudaVersion": "13.1",
+      "probeError": null
+    }
+  },
+  "config": {
+    "promptEvaluation": "LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE",
+    "travelerGuidanceFormat": {
+      "reference": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3."
+    }
+  },
+  "run": {
+    "planName": "0016-openai-gpt54mini-literal-reasoning-low",
+    "inferenceProvider": "OPENAI",
+    "model": "gpt-5.4-mini-2026-03-17",
+    "modelVersion": "gpt-5.4-mini-2026-03-17",
+    "iterations": 5,
+    "temperature": null,
+    "topP": null,
+    "topK": null,
+    "seed": null,
+    "seedSetting": null,
+    "reasoning": "low",
+    "sendReasoning": true,
+    "reasoningProviderValue": null,
+    "servingErrorCount": 0
+  },
+  "travelerGuidanceFormat": {
+    "responseCount": 5,
+    "exactMatchCount": 5,
+    "normalizedExactMatchCount": 0,
+    "noMatchCount": 0,
+    "exactMatchShare": 1.0,
+    "normalizedAcceptedShare": 1.0,
+    "outliers": [],
+    "forbiddenTemplateTermCounts": {},
+    "additionalSentenceCandidateCount": 0,
+    "extractions": [
+      {
+        "responseIndex": 1,
+        "rawResponse": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "rawTrimmed": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "exactMatch": true,
+        "normalizedExactMatch": true,
+        "classification": "EXACT_MATCH",
+        "hasBern": true,
+        "hasZurich": true,
+        "hasBernWankdorf": true,
+        "hasS3": true,
+        "containsForbiddenTemplateContent": false,
+        "forbiddenTemplateTerms": [],
+        "containsAdditionalSentenceCandidate": false
+      },
+      {
+        "responseIndex": 2,
+        "rawResponse": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "rawTrimmed": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "exactMatch": true,
+        "normalizedExactMatch": true,
+        "classification": "EXACT_MATCH",
+        "hasBern": true,
+        "hasZurich": true,
+        "hasBernWankdorf": true,
+        "hasS3": true,
+        "containsForbiddenTemplateContent": false,
+        "forbiddenTemplateTerms": [],
+        "containsAdditionalSentenceCandidate": false
+      },
+      {
+        "responseIndex": 3,
+        "rawResponse": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "rawTrimmed": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "exactMatch": true,
+        "normalizedExactMatch": true,
+        "classification": "EXACT_MATCH",
+        "hasBern": true,
+        "hasZurich": true,
+        "hasBernWankdorf": true,
+        "hasS3": true,
+        "containsForbiddenTemplateContent": false,
+        "forbiddenTemplateTerms": [],
+        "containsAdditionalSentenceCandidate": false
+      },
+      {
+        "responseIndex": 4,
+        "rawResponse": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "rawTrimmed": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "exactMatch": true,
+        "normalizedExactMatch": true,
+        "classification": "EXACT_MATCH",
+        "hasBern": true,
+        "hasZurich": true,
+        "hasBernWankdorf": true,
+        "hasS3": true,
+        "containsForbiddenTemplateContent": false,
+        "forbiddenTemplateTerms": [],
+        "containsAdditionalSentenceCandidate": false
+      },
+      {
+        "responseIndex": 5,
+        "rawResponse": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "rawTrimmed": "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3.",
+        "exactMatch": true,
+        "normalizedExactMatch": true,
+        "classification": "EXACT_MATCH",
+        "hasBern": true,
+        "hasZurich": true,
+        "hasBernWankdorf": true,
+        "hasS3": true,
+        "containsForbiddenTemplateContent": false,
+        "forbiddenTemplateTerms": [],
+        "containsAdditionalSentenceCandidate": false
+      }
+    ]
+  },
+  "literal": {
+    "allResponsesIdentical": true,
+    "responseCount": 5,
+    "distinctResponseCount": 1,
+    "exactMatchRate": 1.0
+  }
+}
