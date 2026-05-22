@@ -1,0 +1,22 @@
+inferenceProvider: OPENAI
+model: "gpt-5.4-mini-2026-03-17"
+description: |
+  Smoketest mit genau einer Wiederholung für OpenAI / gpt-5.4-mini-2026-03-17. Archetyp: kreativ-generativer Luzern-Werbetext. Parameter: temperature=0, topP=1, reasoning=off.
+analysis:
+  promptEvaluation: CREATIVE_GENERATIVE_LUCERNE_MARKETING
+  lucerneMarketingText:
+    expectedSentenceCount: 3
+    requiredTerm: "Luzern"
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Erstelle einen kurzen Werbetext für ein deutsches Publikum, der die Stadt Luzern in drei Sätzen positiv als Reiseziel beschreibt.
+  iterations: 1
+  temperature: 0
+  topP: 1
+  reasoning: "off"

@@ -72,4 +72,35 @@ class SwissRoundTripStationExtractorTest {
 
         assertThat(extractor.extract(response)).containsExactly("Geneve", "Lausanne", "Interlaken");
     }
+
+    @Test
+    void extractsBoldStopLabelStations() {
+        String response = """
+                # Switzerland Multi-Stop Tour
+
+                **Stop 1: Zurich**
+                Begin in Switzerland's largest city.
+
+                **Stop 2: Lucerne**
+                A short train ride southwest.
+
+                **Stop 3: Interlaken**
+                Positioned between two lakes.
+                """;
+
+        assertThat(extractor.extract(response)).containsExactly("Zurich", "Lucerne", "Interlaken");
+    }
+
+    @Test
+    void extractsKeycapNumberedStations() {
+        String response = """
+                1\uFE0F\u20E3 **Lucerne** \u2013 Point de depart emblematique.
+
+                2\uFE0F\u20E3 **Interlaken** \u2013 Ville suspendue entre deux lacs.
+
+                3\uFE0F\u20E3 **Zermatt** \u2013 Base du Cervin.
+                """;
+
+        assertThat(extractor.extract(response)).containsExactly("Lucerne", "Interlaken", "Zermatt");
+    }
 }

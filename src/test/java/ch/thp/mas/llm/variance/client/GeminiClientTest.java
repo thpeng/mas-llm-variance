@@ -111,6 +111,16 @@ class GeminiClientTest {
     }
 
     @Test
+    void rejectsSeedOutsideGeminiIntegerRangeBeforeRequest() {
+        GeminiClient client = new GeminiClient("key-1", "http://localhost:1", HttpClient.newHttpClient(), objectMapper);
+
+        assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
+                "gemini-3-flash", null, null, null, (long) Integer.MAX_VALUE + 1, Reasoning.OFF)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("signed 32-bit integer");
+    }
+
+    @Test
     void propagatesProviderErrorWithModelContext() throws Exception {
         startServer(400, """
                 {"error": {"message": "thinking level not supported"}}

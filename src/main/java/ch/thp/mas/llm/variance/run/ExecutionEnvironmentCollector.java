@@ -90,7 +90,7 @@ public class ExecutionEnvironmentCollector {
 
         String cudaVersion = null;
         String probeError = null;
-        CommandResult cudaResult = runCommand(GPU_COMMAND_TIMEOUT, "nvidia-smi");
+        CommandResult cudaResult = runCommand(GPU_COMMAND_TIMEOUT, "nvidia-smi", "--version");
         if (cudaResult.success()) {
             cudaVersion = extractCudaVersion(cudaResult.stdout());
         } else {
@@ -107,9 +107,9 @@ public class ExecutionEnvironmentCollector {
         return new GpuInfoLog(name, driverVersion, memoryTotalMiB);
     }
 
-    private static String extractCudaVersion(String text) {
+    static String extractCudaVersion(String text) {
         java.util.regex.Matcher matcher = java.util.regex.Pattern
-                .compile("CUDA Version:\\s*([0-9.]+)")
+                .compile("CUDA Version\\s*:\\s*([0-9.]+)")
                 .matcher(text);
         return matcher.find() ? matcher.group(1) : null;
     }

@@ -1,0 +1,23 @@
+inferenceProvider: LMSTUDIO
+model: "qwen/qwen3.5-9b"
+description: |
+  Smoketest mit genau einer Wiederholung für LM Studio / qwen/qwen3.5-9b. Archetyp: kreativ-generativer Luzern-Werbetext. Parameter: temperature=0, topP=1, topK=1, reasoning=off.
+analysis:
+  promptEvaluation: CREATIVE_GENERATIVE_LUCERNE_MARKETING
+  lucerneMarketingText:
+    expectedSentenceCount: 3
+    requiredTerm: "Luzern"
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Erstelle einen kurzen Werbetext für ein deutsches Publikum, der die Stadt Luzern in drei Sätzen positiv als Reiseziel beschreibt.
+  iterations: 1
+  temperature: 0
+  topP: 1
+  topK: 1
+  reasoning: "off"

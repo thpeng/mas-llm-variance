@@ -65,7 +65,7 @@ public class GeminiClient implements LlmClient {
             generationConfig.put("topK", config.topK());
         }
         if (config.seed() != null) {
-            generationConfig.put("seed", Math.toIntExact(config.seed()));
+            generationConfig.put("seed", intSeed(config.seed()));
         }
         if (config.sendReasoning() && config.reasoning() != null) {
             generationConfig.set("thinkingConfig", objectMapper.createObjectNode()
@@ -131,6 +131,13 @@ public class GeminiClient implements LlmClient {
 
     private static String stripTrailingSlash(String value) {
         return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
+    }
+
+    private static int intSeed(long seed) {
+        if (seed < Integer.MIN_VALUE || seed > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException("Gemini seed must fit into a signed 32-bit integer: " + seed);
+        }
+        return (int) seed;
     }
 
     private static String reasoningValue(LlmRequestConfig config) {

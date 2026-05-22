@@ -9,7 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class SwissRoundTripStationExtractor {
 
-    private static final Pattern NUMBERED_LINE = Pattern.compile("^\\s*#*\\s*\\d+[.)]\\s*(.+?)\\s*$");
+    private static final Pattern NUMBERED_LINE = Pattern.compile("^\\s*#*\\s*(?:\\*\\*\\s*)?"
+            + "(?:(?:stop\\s+)?\\d+\\s*(?:[.):]|\\uFE0F?\\u20E3)|stop\\s+\\d+\\s*:)\\s*(.+?)"
+            + "\\s*(?:\\*\\*)?\\s*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern BOLD_NUMBERED_LINE = Pattern.compile("^\\s*\\*\\*\\s*\\d+[.)]\\s*(.+?)\\s*\\*\\*\\s*$");
     private static final Pattern BOLD_NAME = Pattern.compile("\\*\\*\\s*(.+?)\\s*\\*\\*");
     private static final Pattern EDGE_MARKDOWN = Pattern.compile("^[\\s*_`]+|[\\s*_`,.;:!?-]+$");

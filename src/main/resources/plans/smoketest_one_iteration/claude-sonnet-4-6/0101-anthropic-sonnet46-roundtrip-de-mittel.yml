@@ -1,0 +1,22 @@
+inferenceProvider: ANTHROPIC
+model: "claude-sonnet-4-6"
+description: |
+  Smoketest mit genau einer Wiederholung für Anthropic / claude-sonnet-4-6. Archetyp: beratend-empfehlende Rundreise. Parameter: temperature=0.7, topK=20, reasoning=off. Top-p wird nicht konfiguriert, da Anthropic Temperature und Top-p nicht gemeinsam erlaubt.
+analysis:
+  promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
+  swissRoundTrip:
+    expectedStationCount: 5
+    language: DE
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Erstelle eine kurze Planung für eine Rundreise durch die Schweiz mit 5 Stationen. Jede Station muss genau ein einzelner Ortsname sein, keine Region und keine Kombination mehrerer Orte. Nenne nur die 5 Stationen in sinnvoller Reihenfolge und je einen kurzen Grund für die Auswahl.
+  iterations: 1
+  temperature: 0.7
+  topK: 20
+  reasoning: "off"

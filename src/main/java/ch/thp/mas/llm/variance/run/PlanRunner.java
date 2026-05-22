@@ -188,7 +188,7 @@ public class PlanRunner {
         if (!"RANDOM".equals(plan.seedSetting())) {
             return plan.seed();
         }
-        return randomGenerator.nextLong(0, Long.MAX_VALUE);
+        return randomGenerator.nextLong(0, (long) Integer.MAX_VALUE + 1);
     }
 
     private static boolean isBlank(String value) {

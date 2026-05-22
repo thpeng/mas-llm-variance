@@ -110,9 +110,6 @@ public class Analyzer {
                 .filter(entry -> entry.status() == ch.thp.mas.llm.variance.run.RunLogEntryStatus.SUCCESS)
                 .map(RunLogEntry::response)
                 .toList();
-        if (responses.isEmpty()) {
-            throw new AnalysisException("Run log has no successful responses: " + namedRunLog.filename());
-        }
 
         LiteralAnalysis literalAnalysis = literalAnalyzer.analyze(responses);
         return switch (config.promptEvaluation()) {

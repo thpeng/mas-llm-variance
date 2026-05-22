@@ -1,0 +1,25 @@
+inferenceProvider: OPENAI
+model: "gpt-5.4-mini-2026-03-17"
+description: |
+  Smoketest mit genau einer Wiederholung für OpenAI / gpt-5.4-mini-2026-03-17. Archetyp: faktisch-kritische Verbindung Bern-Zürich. Parameter: reasoning=high. Top-p und Temperature werden für diesen Reasoning-Test nicht konfiguriert.
+analysis:
+  promptEvaluation: FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION
+  bernZurichConnection:
+    departureFromBern: "08:02"
+    arrivalAtZurich: "09:15"
+    changes: 0
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Extrahiere aus folgendem Text die Abfahrtszeit ab Bern, die Ankunftszeit in Zürich HB und die Anzahl Umstiege.
+    Antworte in einem kurzen Satz.
+    
+    Text: Die Verbindung von Lausanne nach Zürich HB fährt um 06:45 in Lausanne ab, ab Bern um 08:02, ab Olten um 08:34, ab Brugg um 08:55 und kommt um 09:15 in Zürich HB an.
+    Es ist eine direkte Verbindung.
+  iterations: 1
+  reasoning: "high"
