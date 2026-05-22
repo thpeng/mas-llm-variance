@@ -47,13 +47,13 @@ class GeminiClientTest {
                     "candidatesTokenCount": 5,
                     "totalTokenCount": 15
                   },
-                  "modelVersion": "gemini-3.1-flash-lite"
+                  "modelVersion": "gemini-3.5-flash"
                 }
                 """);
         GeminiClient client = new GeminiClient("key-1", baseUrl(), HttpClient.newHttpClient(), objectMapper);
 
         LlmResponse response = client.call("prompt", new LlmRequestConfig(
-                "gemini-3-flash",
+                "gemini-3.5-flash",
                 0.0,
                 1.0,
                 1,
@@ -63,15 +63,15 @@ class GeminiClientTest {
 
         assertThat(response.text()).isEqualTo("Antwort eins\nAntwort zwei");
         assertThat(response.tokenUsage()).isEqualTo(new TokenUsage(10L, 5L, 15L));
-        assertThat(response.modelVersion()).isEqualTo("gemini-3.1-flash-lite");
+        assertThat(response.modelVersion()).isEqualTo("gemini-3.5-flash");
         assertThat(response.requestTrace().url())
-                .isEqualTo(baseUrl() + "/models/gemini-3-flash:generateContent?key=%3Credacted%3E");
+                .isEqualTo(baseUrl() + "/models/gemini-3.5-flash:generateContent?key=%3Credacted%3E");
         assertThat(response.requestTrace().headers())
                 .containsEntry("Content-Type", List.of("application/json"));
         assertThat(response.requestTrace().body()).contains("\"contents\"").doesNotContain("key-1");
         assertThat(response.requestTrace().responseStatusCode()).isEqualTo(200);
         assertThat(response.requestTrace().responseBody()).contains("Antwort eins");
-        assertThat(paths).containsExactly("/models/gemini-3-flash:generateContent");
+        assertThat(paths).containsExactly("/models/gemini-3.5-flash:generateContent");
         assertThat(queries).containsExactly("key=key-1");
         JsonNode request = requests.getFirst();
         assertThat(request.path("contents").get(0).path("parts").get(0).path("text").asText()).isEqualTo("prompt");
@@ -93,7 +93,7 @@ class GeminiClientTest {
                 """);
         GeminiClient client = new GeminiClient("key-1", baseUrl(), HttpClient.newHttpClient(), objectMapper);
 
-        client.call("prompt", new LlmRequestConfig("gemini-3-flash", null, null, null, null, Reasoning.OFF));
+        client.call("prompt", new LlmRequestConfig("gemini-3.5-flash", null, null, null, null, Reasoning.OFF));
 
         JsonNode generationConfig = requests.getFirst().path("generationConfig");
         assertThat(generationConfig.has("seed")).isFalse();
@@ -105,7 +105,7 @@ class GeminiClientTest {
         GeminiClient client = new GeminiClient("key-1", "http://localhost:1", HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
-                "gemini-3-flash", null, null, null, null, Reasoning.XHIGH)))
+                "gemini-3.5-flash", null, null, null, null, Reasoning.XHIGH)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("not supported for Gemini");
     }
@@ -115,7 +115,7 @@ class GeminiClientTest {
         GeminiClient client = new GeminiClient("key-1", "http://localhost:1", HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
-                "gemini-3-flash", null, null, null, (long) Integer.MAX_VALUE + 1, Reasoning.OFF)))
+                "gemini-3.5-flash", null, null, null, (long) Integer.MAX_VALUE + 1, Reasoning.OFF)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("signed 32-bit integer");
     }
@@ -128,9 +128,9 @@ class GeminiClientTest {
         GeminiClient client = new GeminiClient("key-1", baseUrl(), HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
-                "gemini-3.1-pro", null, null, null, null, Reasoning.OFF)))
+                "gemini-3.5-flash", null, null, null, null, Reasoning.OFF)))
                 .isInstanceOf(ServingException.class)
-                .hasMessageContaining("gemini-3.1-pro")
+                .hasMessageContaining("gemini-3.5-flash")
                 .hasMessageContaining("thinking level not supported");
     }
 
@@ -142,7 +142,7 @@ class GeminiClientTest {
         GeminiClient client = new GeminiClient("key-1", baseUrl(), HttpClient.newHttpClient(), objectMapper);
 
         assertThatThrownBy(() -> client.call("prompt", new LlmRequestConfig(
-                "gemini-3-flash", null, null, null, null, Reasoning.LOW)))
+                "gemini-3.5-flash", null, null, null, null, Reasoning.LOW)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("did not contain text output");
     }
