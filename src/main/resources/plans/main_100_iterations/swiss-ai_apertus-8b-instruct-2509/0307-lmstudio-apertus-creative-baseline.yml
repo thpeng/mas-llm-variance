@@ -1,0 +1,22 @@
+inferenceProvider: LMSTUDIO
+model: "swiss-ai_apertus-8b-instruct-2509"
+description: |
+  Hauptlauf mit genau 100 Wiederholungen für LM Studio / swiss-ai_apertus-8b-instruct-2509. Archetyp: kreativ-generativer Luzern-Werbetext. Parameter: temperature=0, topP=1, topK=1. Reasoning wird nicht gesendet, da Apertus in LM Studio keine Reasoning-Konfiguration unterstützt.
+analysis:
+  promptEvaluation: CREATIVE_GENERATIVE_LUCERNE_MARKETING
+  lucerneMarketingText:
+    expectedSentenceCount: 3
+    requiredTerm: "Luzern"
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Erstelle einen kurzen Werbetext für ein deutsches Publikum, der die Stadt Luzern in drei Sätzen positiv als Reiseziel beschreibt.
+  iterations: 100
+  temperature: 0
+  topP: 1
+  topK: 1

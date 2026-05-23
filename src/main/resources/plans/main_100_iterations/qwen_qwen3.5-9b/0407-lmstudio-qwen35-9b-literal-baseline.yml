@@ -1,0 +1,32 @@
+inferenceProvider: LMSTUDIO
+model: "qwen/qwen3.5-9b"
+description: |
+  Hauptlauf mit genau 100 Wiederholungen für LM Studio / qwen/qwen3.5-9b. Archetyp: literal-formatkritische Reisendenlenkung. Parameter: temperature=0, topP=1, topK=1, reasoning=off.
+analysis:
+  promptEvaluation: LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE
+  travelerGuidanceFormat:
+    reference: "Reisende ab Bern bis Zürich benützen ab Bern bis Bern Wankdorf die Linie S3."
+run:
+  prompt: |
+    Formatvorlage:
+    Reisende ab Sargans bis Chur benützen ab Sargans bis Landquart die Linien RE5
+    oder S12 und ab Landquart bis Chur die Linie S1.
+    Reisende ab Muttenz bis Basel SBB benützen ab Muttenz bis Basel, St. Jakob die
+    Busse der Linie 47 und ab Basel, St. Jakob bis Basel SBB die Ersatzbusse (EV).
+    
+    Erstelle genau eine Reisendenlenkung im Stil dieser Formatvorlage.
+    Gib nur den resultierenden Satz aus, ohne Überschrift und ohne Erklärung.
+    Übernimm keine Orte, Linien oder Verkehrsmittel aus der Formatvorlage.
+    Erfinde keine zusätzlichen Abschnitte, Verkehrsmittel oder Anschlussverbindungen.
+    Wenn nur ein Abschnitt angegeben ist, gib auch nur diesen Abschnitt aus.
+    
+    Daten für die Reisendenlenkung:
+    Start: Bern
+    Ziel: Zürich
+    Abschnitt: Bern bis Bern Wankdorf
+    Linie: S3
+  iterations: 100
+  temperature: 0
+  topP: 1
+  topK: 1
+  reasoning: "off"

@@ -1,0 +1,23 @@
+inferenceProvider: LMSTUDIO
+model: "qwen/qwen3.5-9b"
+description: |
+  Hauptlauf mit genau 100 Wiederholungen für LM Studio / qwen/qwen3.5-9b. Archetyp: beratend-empfehlende Rundreise. Parameter: temperature=0, topP=1, topK=1, reasoning=off.
+analysis:
+  promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
+  swissRoundTrip:
+    expectedStationCount: 5
+    language: DE
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Erstelle eine kurze Planung für eine Rundreise durch die Schweiz mit 5 Stationen. Jede Station muss genau ein einzelner Ortsname sein, keine Region und keine Kombination mehrerer Orte. Nenne nur die 5 Stationen in sinnvoller Reihenfolge und je einen kurzen Grund für die Auswahl.
+  iterations: 100
+  temperature: 0
+  topP: 1
+  topK: 1
+  reasoning: "off"

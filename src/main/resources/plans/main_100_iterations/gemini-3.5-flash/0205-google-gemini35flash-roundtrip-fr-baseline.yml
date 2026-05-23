@@ -1,0 +1,25 @@
+inferenceProvider: GOOGLE
+model: "gemini-3.5-flash"
+description: |
+  Hauptlauf mit genau 100 Wiederholungen für Google Gemini / gemini-3.5-flash. Archetyp: beratend-empfehlende Rundreise. Parameter: temperature=0, topP=1, topK=1, reasoning=off.
+analysis:
+  promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
+  swissRoundTrip:
+    expectedStationCount: 5
+    language: FR
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Élabore un bref itinéraire pour un circuit à travers la Suisse comprenant 5 étapes.
+    Chaque étape doit correspondre exactement à un seul nom de lieu, et non à une région ni à une combinaison de plusieurs lieux.
+    Indique uniquement les 5 étapes dans un ordre logique et donne pour chacune d'elles une brève raison justifiant ce choix.
+  iterations: 100
+  temperature: 0
+  topP: 1
+  topK: 1
+  reasoning: "off"

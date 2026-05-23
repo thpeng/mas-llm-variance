@@ -1,0 +1,24 @@
+inferenceProvider: OPENAI
+model: "gpt-5.4-mini-2026-03-17"
+description: |
+  Hauptlauf mit genau 100 Wiederholungen für OpenAI / gpt-5.4-mini-2026-03-17. Archetyp: beratend-empfehlende Rundreise. Parameter: temperature=0, topP=1, reasoning=off.
+analysis:
+  promptEvaluation: ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP
+  swissRoundTrip:
+    expectedStationCount: 5
+    language: EN
+  bleu:
+    maxN: 4
+    smoothingEpsilon: 0.1
+  rouge:
+    variant: ROUGE_L
+    aggregation: F1
+run:
+  prompt: |
+    Create a brief itinerary for a multi-stop tour of Switzerland with 5 stops.
+    Each stop must be exactly one specific place name, not a region or a combination of multiple places.
+    List only the 5 stops in a logical order and provide one brief reason for each choice.
+  iterations: 100
+  temperature: 0
+  topP: 1
+  reasoning: "off"
