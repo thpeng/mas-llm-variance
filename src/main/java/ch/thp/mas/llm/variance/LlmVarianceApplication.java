@@ -2,6 +2,7 @@ package ch.thp.mas.llm.variance;
 
 import ch.thp.mas.llm.variance.analyze.AnalyzeCommand;
 import ch.thp.mas.llm.variance.analyze.AnalysisException;
+import ch.thp.mas.llm.variance.metanalysis.MetaAnalysisCommand;
 import ch.thp.mas.llm.variance.plan.PlanBatchResolver;
 import ch.thp.mas.llm.variance.plan.ResolvedPlan;
 import ch.thp.mas.llm.variance.run.ExecutionEnvironmentCollector;
@@ -18,6 +19,7 @@ public class LlmVarianceApplication implements CommandLineRunner {
 
     private final ApplicationArguments appArgs;
     private final AnalyzeCommand analyzeCommand;
+    private final MetaAnalysisCommand metaAnalysisCommand;
     private final PlanBatchResolver planBatchResolver;
     private final PlanRunner planRunner;
     private final ExecutionEnvironmentCollector environmentCollector;
@@ -25,12 +27,14 @@ public class LlmVarianceApplication implements CommandLineRunner {
     public LlmVarianceApplication(
             ApplicationArguments appArgs,
             AnalyzeCommand analyzeCommand,
+            MetaAnalysisCommand metaAnalysisCommand,
             PlanBatchResolver planBatchResolver,
             PlanRunner planRunner,
             ExecutionEnvironmentCollector environmentCollector
     ) {
         this.appArgs = appArgs;
         this.analyzeCommand = analyzeCommand;
+        this.metaAnalysisCommand = metaAnalysisCommand;
         this.planBatchResolver = planBatchResolver;
         this.planRunner = planRunner;
         this.environmentCollector = environmentCollector;
@@ -47,8 +51,14 @@ public class LlmVarianceApplication implements CommandLineRunner {
             analyzeCommand.run(appArgs, environment);
             return;
         }
+        if (appArgs.containsOption("metanalysis")) {
+            metaAnalysisCommand.run(appArgs);
+            return;
+        }
         if (!appArgs.containsOption("run")) {
-            throw new AnalysisException("Missing command. Use --run=<plans|plans/subfolder|plan> or --analyze=<runs|runs/subfolder|run-log>.");
+            throw new AnalysisException("Missing command. Use --run=<plans|plans/subfolder|plan>, "
+                    + "--analyze=<runs|runs/subfolder|run-log> or "
+                    + "--metanalysis=<analysis|analysis/subfolder|analysis-file>.");
         }
 
         List<ResolvedPlan> plans = planBatchResolver.resolve(appArgs);

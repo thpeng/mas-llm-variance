@@ -8,11 +8,12 @@ The project is built around one core question:
 
 ## What It Does
 
-The application supports three main workflows:
+The application supports four main workflows:
 
 1. Define experiment plans as YAML files.
 2. Execute one or more plans and write run logs.
 3. Analyze completed run logs for semantic, syntactic, and literal variance.
+4. Aggregate analysis JSON files into a compact CSV for downstream statistics.
 
 Plans live in:
 
@@ -32,6 +33,12 @@ Analysis results are written to:
 src/main/resources/analysis/
 ```
 
+Meta-analysis CSV exports are written to:
+
+```text
+src/main/resources/metanalysis/
+```
+
 Run and analysis artifacts are intended to be committed manually to GitHub. The larger research workflow assumes GitHub rulesets, signed commits, linear history, deletion protection, and manual Git tags for experiment executions.
 
 ## Project Structure
@@ -43,6 +50,7 @@ src/main/java/ch/thp/mas/llm/variance/
   plan/
   run/
   analyze/
+  metanalysis/
 ```
 
 ### `client`
@@ -137,6 +145,26 @@ CLI:
 `analyze` is the command that turns run logs into analysis files. Folder selections are recursive. A single run log can be selected by file path or by basename. If a basename or folder name matches multiple files or folders, the command fails instead of guessing.
 
 Run mode and analyze mode are mutually exclusive in behavior: run mode executes plans; analyze mode evaluates existing run logs against the plan YAML named in the run log.
+
+### `metanalysis`
+
+CSV export over completed analysis files.
+
+The command reads one analysis file or a recursive folder selection under `src/main/resources/analysis`, resolves the linked run log for each analysis, and writes one CSV row per experiment series.
+
+CLI:
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis"
+./gradlew bootRun --args="--metanalysis=analysis/<subfolder>"
+./gradlew bootRun --args="--metanalysis=<analysis-file-name>"
+./gradlew bootRun --args="--metanalysis=analysis/<subfolder>/<analysis-file-name>.json"
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-output=src/main/resources/metanalysis/main_100_iterations.csv"
+```
+
+Folder selections are recursive. A single analysis can be selected by file path or by basename. If a basename or folder name matches multiple files or folders, the command fails instead of guessing.
+
+The exported CSV contains series metadata, prompt archetype, prompt language, sampling settings, success/failure counts, semantic validity/outlier rates, literal stability, largest semantic cluster share, BLEU/ROUGE distance summaries, token totals, token p10/median/p90 values, reasoning-token totals, and client-side duration totals plus p10/median/p90 values.
 
 ## Main Analysis Approach
 
