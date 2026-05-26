@@ -166,6 +166,30 @@ Folder selections are recursive. A single analysis can be selected by file path 
 
 The exported CSV contains series metadata, prompt archetype, prompt language, sampling settings, success/failure counts, semantic validity/outlier rates, literal stability, largest semantic cluster share, BLEU/ROUGE distance summaries, token totals, token p10/median/p90 values, reasoning-token totals, and client-side duration totals plus p10/median/p90 values.
 
+For the GPT-4o drift word analysis, the same command can export a word-level CSV. The implementation resolves run logs through the selected analysis files, uses the hard-coded GPT-4o drift series, lowercases Unicode letter tokens, treats whitespace and punctuation as separators, and reports the distinct word set plus mean/p10/p90 word counts per successful response. It also includes literal distinct response count, mean semantic cluster size, and pair-weighted mean ROUGE/BLEU distances.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=WORD_DRIFT"
+```
+
+Without `--metanalysis-output`, this mode writes a file named `1001-<selection>-word-analysis.csv` under `src/main/resources/metanalysis`.
+
+For the baseline scatterplot data, the command can export one row per baseline series with `literal_unique_count` on the x-axis and `semantic_valid_rate` on the y-axis. GPT-4o dated variants are grouped into the `gpt-4o` model family while individual series remain separate rows. The CSV also contains `plot_literal_unique_count` and `plot_semantic_valid_rate` with small deterministic offsets for readable plots; the original measured values remain unchanged.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=BASELINE_SCATTER"
+```
+
+Without `--metanalysis-output`, this mode writes a file named `1002-<selection>-baseline-scatter.csv` under `src/main/resources/metanalysis`.
+
+For the creative control-series quantile range data, the command exports the GPT-5.4-mini and Apertus Lucerne marketing series for `baseline`, `mittel`, and `hoch`. It recalculates pairwise ROUGE-L and BLEU-4 distances from the stored semantically valid raw responses, adds p10, and also exports median and p90 for direct use in quantile range plots. Existing analysis JSON files are not modified.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=CREATIVE_CONTROL_QUANTILES"
+```
+
+Without `--metanalysis-output`, this mode writes a file named `1003-<selection>-creative-control-quantiles.csv` under `src/main/resources/metanalysis`.
+
 ## Main Analysis Approach
 
 The analysis no longer uses a generic embedding clustering algorithm. It evaluates responses through prompt-specific evaluation paths derived from the four prompt archetypes used in the research design. These evaluations are configured with:
