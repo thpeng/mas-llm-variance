@@ -190,6 +190,14 @@ For the creative control-series quantile range data, the command exports the GPT
 
 Without `--metanalysis-output`, this mode writes a file named `1003-<selection>-creative-control-quantiles.csv` under `src/main/resources/metanalysis`.
 
+For the Swiss round-trip prompt language destination analysis, the command exports model-internal expected-vs-observed destination counts and an aggregation by BFS language region. The expected probability is computed per model as `P(destination | model)`, then compared with the observed destination share for each model and prompt language. The BFS destination language-region mapping is project reference data in Java, based on the BFS report at https://www.bfs.admin.ch/bfs/rm/home.assetdetail.23705034.html.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=ROUNDTRIP_LANGUAGE_DESTINATION"
+```
+
+Without `--metanalysis-output`, this mode writes `1004-roundtrip-language-destination-expected-vs-observed.csv` and `1004-roundtrip-language-destination-bfs-language-region-expected-vs-observed.csv` under `src/main/resources/metanalysis`.
+
 ## Main Analysis Approach
 
 The analysis no longer uses a generic embedding clustering algorithm. It evaluates responses through prompt-specific evaluation paths derived from the four prompt archetypes used in the research design. These evaluations are configured with:

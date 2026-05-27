@@ -17,6 +17,8 @@ public class MetaAnalysisCommand {
     private final BaselineScatterCsvWriter baselineScatterCsvWriter;
     private final CreativeControlQuantileExporter creativeControlQuantileExporter;
     private final CreativeControlQuantileCsvWriter creativeControlQuantileCsvWriter;
+    private final RoundTripLanguageDestinationExporter roundTripLanguageDestinationExporter;
+    private final RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter;
 
     public MetaAnalysisCommand(
             AnalysisResultReader analysisResultReader,
@@ -27,7 +29,9 @@ public class MetaAnalysisCommand {
             BaselineScatterExporter baselineScatterExporter,
             BaselineScatterCsvWriter baselineScatterCsvWriter,
             CreativeControlQuantileExporter creativeControlQuantileExporter,
-            CreativeControlQuantileCsvWriter creativeControlQuantileCsvWriter
+            CreativeControlQuantileCsvWriter creativeControlQuantileCsvWriter,
+            RoundTripLanguageDestinationExporter roundTripLanguageDestinationExporter,
+            RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter
     ) {
         this.analysisResultReader = analysisResultReader;
         this.metaAnalysisExporter = metaAnalysisExporter;
@@ -38,6 +42,8 @@ public class MetaAnalysisCommand {
         this.baselineScatterCsvWriter = baselineScatterCsvWriter;
         this.creativeControlQuantileExporter = creativeControlQuantileExporter;
         this.creativeControlQuantileCsvWriter = creativeControlQuantileCsvWriter;
+        this.roundTripLanguageDestinationExporter = roundTripLanguageDestinationExporter;
+        this.roundTripLanguageDestinationCsvWriter = roundTripLanguageDestinationCsvWriter;
     }
 
     public Path run(ApplicationArguments appArgs) {
@@ -60,6 +66,10 @@ public class MetaAnalysisCommand {
             case CREATIVE_CONTROL_QUANTILES -> {
                 List<CreativeControlQuantileRow> rows = creativeControlQuantileExporter.exportRows(analyses);
                 yield creativeControlQuantileCsvWriter.write(rows, selection, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case ROUNDTRIP_LANGUAGE_DESTINATION -> {
+                RoundTripLanguageDestinationExport export = roundTripLanguageDestinationExporter.exportRows(analyses);
+                yield roundTripLanguageDestinationCsvWriter.write(export, selection, optionalValue(appArgs, "metanalysis-output"));
             }
         };
     }
