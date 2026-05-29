@@ -19,6 +19,10 @@ public class MetaAnalysisCommand {
     private final CreativeControlQuantileCsvWriter creativeControlQuantileCsvWriter;
     private final RoundTripLanguageDestinationExporter roundTripLanguageDestinationExporter;
     private final RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter;
+    private final RoundTripStationModelCountExporter roundTripStationModelCountExporter;
+    private final RoundTripStationModelCountCsvWriter roundTripStationModelCountCsvWriter;
+    private final RoundTripRouteModelCountExporter roundTripRouteModelCountExporter;
+    private final RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter;
 
     public MetaAnalysisCommand(
             AnalysisResultReader analysisResultReader,
@@ -31,7 +35,11 @@ public class MetaAnalysisCommand {
             CreativeControlQuantileExporter creativeControlQuantileExporter,
             CreativeControlQuantileCsvWriter creativeControlQuantileCsvWriter,
             RoundTripLanguageDestinationExporter roundTripLanguageDestinationExporter,
-            RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter
+            RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter,
+            RoundTripStationModelCountExporter roundTripStationModelCountExporter,
+            RoundTripStationModelCountCsvWriter roundTripStationModelCountCsvWriter,
+            RoundTripRouteModelCountExporter roundTripRouteModelCountExporter,
+            RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter
     ) {
         this.analysisResultReader = analysisResultReader;
         this.metaAnalysisExporter = metaAnalysisExporter;
@@ -44,6 +52,10 @@ public class MetaAnalysisCommand {
         this.creativeControlQuantileCsvWriter = creativeControlQuantileCsvWriter;
         this.roundTripLanguageDestinationExporter = roundTripLanguageDestinationExporter;
         this.roundTripLanguageDestinationCsvWriter = roundTripLanguageDestinationCsvWriter;
+        this.roundTripStationModelCountExporter = roundTripStationModelCountExporter;
+        this.roundTripStationModelCountCsvWriter = roundTripStationModelCountCsvWriter;
+        this.roundTripRouteModelCountExporter = roundTripRouteModelCountExporter;
+        this.roundTripRouteModelCountCsvWriter = roundTripRouteModelCountCsvWriter;
     }
 
     public Path run(ApplicationArguments appArgs) {
@@ -70,6 +82,14 @@ public class MetaAnalysisCommand {
             case ROUNDTRIP_LANGUAGE_DESTINATION -> {
                 RoundTripLanguageDestinationExport export = roundTripLanguageDestinationExporter.exportRows(analyses);
                 yield roundTripLanguageDestinationCsvWriter.write(export, selection, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case ROUNDTRIP_STATION_MODEL_COUNTS -> {
+                List<RoundTripStationModelCountRow> rows = roundTripStationModelCountExporter.exportRows(analyses);
+                yield roundTripStationModelCountCsvWriter.write(rows, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case ROUNDTRIP_ROUTE_MODEL_COUNTS -> {
+                List<RoundTripRouteModelCountRow> rows = roundTripRouteModelCountExporter.exportRows(analyses);
+                yield roundTripRouteModelCountCsvWriter.write(rows, optionalValue(appArgs, "metanalysis-output"));
             }
         };
     }

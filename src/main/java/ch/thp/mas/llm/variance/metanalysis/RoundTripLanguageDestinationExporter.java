@@ -85,7 +85,7 @@ public class RoundTripLanguageDestinationExporter {
         }
         return new Series(
                 dataset(analysis.sourceRun()),
-                analysis.run().inferenceProvider(),
+                analysis.run().inferenceProvider().name(),
                 analysis.run().model(),
                 analysis.run().modelVersion(),
                 analysis.config().swissRoundTrip().language().name(),

@@ -198,6 +198,22 @@ For the Swiss round-trip prompt language destination analysis, the command expor
 
 Without `--metanalysis-output`, this mode writes `1004-roundtrip-language-destination-expected-vs-observed.csv` and `1004-roundtrip-language-destination-bfs-language-region-expected-vs-observed.csv` under `src/main/resources/metanalysis`.
 
+For station-by-model round-trip heatmaps, the command exports one row per model and observed round-trip destination, excluding `gpt-4o-*` models. Counts are summed across all Swiss round-trip series in the selected analysis set, and zero rows are included for model-destination combinations without mentions so the CSV can be pivoted directly into a heatmap.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=ROUNDTRIP_STATION_MODEL_COUNTS"
+```
+
+Without `--metanalysis-output`, this mode writes `1006-roundtrip-station-model-counts.csv` under `src/main/resources/metanalysis`.
+
+For route-by-model round-trip heatmaps, the command exports one row per model and ordered route, excluding `gpt-4o-*` models. Unlike the station count export, route order is preserved in the `route_key`.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=ROUNDTRIP_ROUTE_MODEL_COUNTS"
+```
+
+Without `--metanalysis-output`, this mode writes `1006-roundtrip-route-model-counts.csv` under `src/main/resources/metanalysis`.
+
 ## Main Analysis Approach
 
 The analysis no longer uses a generic embedding clustering algorithm. It evaluates responses through prompt-specific evaluation paths derived from the four prompt archetypes used in the research design. These evaluations are configured with:
