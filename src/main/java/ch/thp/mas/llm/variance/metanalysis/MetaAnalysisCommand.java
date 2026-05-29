@@ -41,8 +41,7 @@ public class MetaAnalysisCommand {
             RoundTripStationModelCountExporter roundTripStationModelCountExporter,
             RoundTripStationModelCountCsvWriter roundTripStationModelCountCsvWriter,
             RoundTripRouteModelCountExporter roundTripRouteModelCountExporter,
-            RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter
-            RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter,
+            RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter,
             FirstResponseEffectExporter firstResponseEffectExporter,
             FirstResponseEffectCsvWriter firstResponseEffectCsvWriter
     ) {
