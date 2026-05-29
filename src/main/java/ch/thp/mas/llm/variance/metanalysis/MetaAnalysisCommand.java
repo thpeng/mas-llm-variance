@@ -19,6 +19,8 @@ public class MetaAnalysisCommand {
     private final CreativeControlQuantileCsvWriter creativeControlQuantileCsvWriter;
     private final RoundTripLanguageDestinationExporter roundTripLanguageDestinationExporter;
     private final RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter;
+    private final FirstResponseEffectExporter firstResponseEffectExporter;
+    private final FirstResponseEffectCsvWriter firstResponseEffectCsvWriter;
 
     public MetaAnalysisCommand(
             AnalysisResultReader analysisResultReader,
@@ -31,7 +33,9 @@ public class MetaAnalysisCommand {
             CreativeControlQuantileExporter creativeControlQuantileExporter,
             CreativeControlQuantileCsvWriter creativeControlQuantileCsvWriter,
             RoundTripLanguageDestinationExporter roundTripLanguageDestinationExporter,
-            RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter
+            RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter,
+            FirstResponseEffectExporter firstResponseEffectExporter,
+            FirstResponseEffectCsvWriter firstResponseEffectCsvWriter
     ) {
         this.analysisResultReader = analysisResultReader;
         this.metaAnalysisExporter = metaAnalysisExporter;
@@ -44,6 +48,8 @@ public class MetaAnalysisCommand {
         this.creativeControlQuantileCsvWriter = creativeControlQuantileCsvWriter;
         this.roundTripLanguageDestinationExporter = roundTripLanguageDestinationExporter;
         this.roundTripLanguageDestinationCsvWriter = roundTripLanguageDestinationCsvWriter;
+        this.firstResponseEffectExporter = firstResponseEffectExporter;
+        this.firstResponseEffectCsvWriter = firstResponseEffectCsvWriter;
     }
 
     public Path run(ApplicationArguments appArgs) {
@@ -70,6 +76,10 @@ public class MetaAnalysisCommand {
             case ROUNDTRIP_LANGUAGE_DESTINATION -> {
                 RoundTripLanguageDestinationExport export = roundTripLanguageDestinationExporter.exportRows(analyses);
                 yield roundTripLanguageDestinationCsvWriter.write(export, selection, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case FIRST_RESPONSE_EFFECT -> {
+                List<FirstResponseEffectRow> rows = firstResponseEffectExporter.exportRows(analyses);
+                yield firstResponseEffectCsvWriter.write(rows, selection, optionalValue(appArgs, "metanalysis-output"));
             }
         };
     }

@@ -198,6 +198,14 @@ For the Swiss round-trip prompt language destination analysis, the command expor
 
 Without `--metanalysis-output`, this mode writes `1004-roundtrip-language-destination-expected-vs-observed.csv` and `1004-roundtrip-language-destination-bfs-language-region-expected-vs-observed.csv` under `src/main/resources/metanalysis`.
 
+For the first-response effect analysis, the command exports one row per selected local baseline run. Apertus and Qwen include only baseline series; GPT-OSS includes only `reasoning-low-baseline` series. The export classifies literal raw-response patterns as `ALL_SAME`, `FIRST_DIFF_REST_SAME`, or `OTHER` and includes compact variant counts and position ranges.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=FIRST_RESPONSE_EFFECT"
+```
+
+Without `--metanalysis-output`, this mode writes a file named `1005-<selection>-first-response-effect.csv` under `src/main/resources/metanalysis`.
+
 ## Main Analysis Approach
 
 The analysis no longer uses a generic embedding clustering algorithm. It evaluates responses through prompt-specific evaluation paths derived from the four prompt archetypes used in the research design. These evaluations are configured with:
