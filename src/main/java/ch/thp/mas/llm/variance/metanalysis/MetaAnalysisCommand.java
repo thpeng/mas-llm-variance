@@ -21,6 +21,10 @@ public class MetaAnalysisCommand {
     private final RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter;
     private final FirstResponseEffectExporter firstResponseEffectExporter;
     private final FirstResponseEffectCsvWriter firstResponseEffectCsvWriter;
+    private final RoundTripStationModelCountExporter roundTripStationModelCountExporter;
+    private final RoundTripStationModelCountCsvWriter roundTripStationModelCountCsvWriter;
+    private final RoundTripRouteModelCountExporter roundTripRouteModelCountExporter;
+    private final RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter;
 
     public MetaAnalysisCommand(
             AnalysisResultReader analysisResultReader,
@@ -33,6 +37,11 @@ public class MetaAnalysisCommand {
             CreativeControlQuantileExporter creativeControlQuantileExporter,
             CreativeControlQuantileCsvWriter creativeControlQuantileCsvWriter,
             RoundTripLanguageDestinationExporter roundTripLanguageDestinationExporter,
+            RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter,
+            RoundTripStationModelCountExporter roundTripStationModelCountExporter,
+            RoundTripStationModelCountCsvWriter roundTripStationModelCountCsvWriter,
+            RoundTripRouteModelCountExporter roundTripRouteModelCountExporter,
+            RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter
             RoundTripLanguageDestinationCsvWriter roundTripLanguageDestinationCsvWriter,
             FirstResponseEffectExporter firstResponseEffectExporter,
             FirstResponseEffectCsvWriter firstResponseEffectCsvWriter
@@ -50,6 +59,10 @@ public class MetaAnalysisCommand {
         this.roundTripLanguageDestinationCsvWriter = roundTripLanguageDestinationCsvWriter;
         this.firstResponseEffectExporter = firstResponseEffectExporter;
         this.firstResponseEffectCsvWriter = firstResponseEffectCsvWriter;
+        this.roundTripStationModelCountExporter = roundTripStationModelCountExporter;
+        this.roundTripStationModelCountCsvWriter = roundTripStationModelCountCsvWriter;
+        this.roundTripRouteModelCountExporter = roundTripRouteModelCountExporter;
+        this.roundTripRouteModelCountCsvWriter = roundTripRouteModelCountCsvWriter;
     }
 
     public Path run(ApplicationArguments appArgs) {
@@ -80,6 +93,14 @@ public class MetaAnalysisCommand {
             case FIRST_RESPONSE_EFFECT -> {
                 List<FirstResponseEffectRow> rows = firstResponseEffectExporter.exportRows(analyses);
                 yield firstResponseEffectCsvWriter.write(rows, selection, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case ROUNDTRIP_STATION_MODEL_COUNTS -> {
+                List<RoundTripStationModelCountRow> rows = roundTripStationModelCountExporter.exportRows(analyses);
+                yield roundTripStationModelCountCsvWriter.write(rows, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case ROUNDTRIP_ROUTE_MODEL_COUNTS -> {
+                List<RoundTripRouteModelCountRow> rows = roundTripRouteModelCountExporter.exportRows(analyses);
+                yield roundTripRouteModelCountCsvWriter.write(rows, optionalValue(appArgs, "metanalysis-output"));
             }
         };
     }
