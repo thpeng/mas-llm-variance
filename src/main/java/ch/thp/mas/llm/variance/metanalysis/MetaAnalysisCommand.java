@@ -25,6 +25,8 @@ public class MetaAnalysisCommand {
     private final RoundTripStationModelCountCsvWriter roundTripStationModelCountCsvWriter;
     private final RoundTripRouteModelCountExporter roundTripRouteModelCountExporter;
     private final RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter;
+    private final RoundTripMiddlePositionSummaryExporter roundTripMiddlePositionSummaryExporter;
+    private final RoundTripMiddlePositionSummaryCsvWriter roundTripMiddlePositionSummaryCsvWriter;
     private final ManualEvaluationSampleExporter manualEvaluationSampleExporter;
     private final ManualEvaluationSampleWriter manualEvaluationSampleWriter;
     private final ManualCreativeEvaluationSummaryExporter manualCreativeEvaluationSummaryExporter;
@@ -46,6 +48,8 @@ public class MetaAnalysisCommand {
             RoundTripStationModelCountCsvWriter roundTripStationModelCountCsvWriter,
             RoundTripRouteModelCountExporter roundTripRouteModelCountExporter,
             RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter,
+            RoundTripMiddlePositionSummaryExporter roundTripMiddlePositionSummaryExporter,
+            RoundTripMiddlePositionSummaryCsvWriter roundTripMiddlePositionSummaryCsvWriter,
             FirstResponseEffectExporter firstResponseEffectExporter,
             FirstResponseEffectCsvWriter firstResponseEffectCsvWriter,
             ManualEvaluationSampleExporter manualEvaluationSampleExporter,
@@ -70,6 +74,8 @@ public class MetaAnalysisCommand {
         this.roundTripStationModelCountCsvWriter = roundTripStationModelCountCsvWriter;
         this.roundTripRouteModelCountExporter = roundTripRouteModelCountExporter;
         this.roundTripRouteModelCountCsvWriter = roundTripRouteModelCountCsvWriter;
+        this.roundTripMiddlePositionSummaryExporter = roundTripMiddlePositionSummaryExporter;
+        this.roundTripMiddlePositionSummaryCsvWriter = roundTripMiddlePositionSummaryCsvWriter;
         this.manualEvaluationSampleExporter = manualEvaluationSampleExporter;
         this.manualEvaluationSampleWriter = manualEvaluationSampleWriter;
         this.manualCreativeEvaluationSummaryExporter = manualCreativeEvaluationSummaryExporter;
@@ -112,6 +118,10 @@ public class MetaAnalysisCommand {
             case ROUNDTRIP_ROUTE_MODEL_COUNTS -> {
                 List<RoundTripRouteModelCountRow> rows = roundTripRouteModelCountExporter.exportRows(analyses);
                 yield roundTripRouteModelCountCsvWriter.write(rows, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case ROUNDTRIP_MIDDLE_POSITION_SUMMARY -> {
+                List<RoundTripMiddlePositionSummaryRow> rows = roundTripMiddlePositionSummaryExporter.exportRows(analyses);
+                yield roundTripMiddlePositionSummaryCsvWriter.write(rows, optionalValue(appArgs, "metanalysis-output"));
             }
             case MANUAL_EVALUATION_SAMPLE -> {
                 ManualEvaluationSampleExport export = manualEvaluationSampleExporter.exportSample(analyses);
