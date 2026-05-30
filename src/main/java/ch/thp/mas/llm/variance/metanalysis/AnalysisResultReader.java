@@ -121,6 +121,7 @@ public class AnalysisResultReader {
             return stream
                     .filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".json"))
+                    .filter(this::isAnalysisResultFile)
                     .sorted(Comparator.comparing(this::relativeName))
                     .toList();
         } catch (IOException e) {
@@ -152,6 +153,10 @@ public class AnalysisResultReader {
 
     private String relativeName(Path path) {
         return analysisDirectory.relativize(path.normalize()).toString().replace('\\', '/');
+    }
+
+    private boolean isAnalysisResultFile(Path path) {
+        return !relativeName(path).startsWith("manual_review/");
     }
 
     private String displayPath(Path path) {

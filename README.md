@@ -206,6 +206,14 @@ For the first-response effect analysis, the command exports one row per selected
 
 Without `--metanalysis-output`, this mode writes a file named `1005-<selection>-first-response-effect.csv` under `src/main/resources/metanalysis`.
 
+For manual blind evaluation of potential hallucinations, the command exports two JSON files with deterministic random samples from selected main series. The round-trip sample contains only hallucination fields; the creative sample additionally contains tourism and Lucerne reference fields. The samples contain no model or series metadata, only stable blind IDs, wrapped response lines, and empty manual evaluation fields. The IDs can be reproduced from the source series and repetition index by the exporter.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=MANUAL_EVALUATION_SAMPLE"
+```
+
+Without `--metanalysis-output`, this mode writes `1007-main-manual-evaluation-roundtrip-sample.json` and `1007-main-manual-evaluation-creative-sample.json` under `src/main/resources/analysis/manual_review`.
+
 For station-by-model round-trip heatmaps, the command exports one row per model and observed round-trip destination, excluding `gpt-4o-*` models. Counts are summed across all Swiss round-trip series in the selected analysis set, and zero rows are included for model-destination combinations without mentions so the CSV can be pivoted directly into a heatmap.
 
 ```bash

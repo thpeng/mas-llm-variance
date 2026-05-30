@@ -25,6 +25,8 @@ public class MetaAnalysisCommand {
     private final RoundTripStationModelCountCsvWriter roundTripStationModelCountCsvWriter;
     private final RoundTripRouteModelCountExporter roundTripRouteModelCountExporter;
     private final RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter;
+    private final ManualEvaluationSampleExporter manualEvaluationSampleExporter;
+    private final ManualEvaluationSampleWriter manualEvaluationSampleWriter;
 
     public MetaAnalysisCommand(
             AnalysisResultReader analysisResultReader,
@@ -43,7 +45,9 @@ public class MetaAnalysisCommand {
             RoundTripRouteModelCountExporter roundTripRouteModelCountExporter,
             RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter,
             FirstResponseEffectExporter firstResponseEffectExporter,
-            FirstResponseEffectCsvWriter firstResponseEffectCsvWriter
+            FirstResponseEffectCsvWriter firstResponseEffectCsvWriter,
+            ManualEvaluationSampleExporter manualEvaluationSampleExporter,
+            ManualEvaluationSampleWriter manualEvaluationSampleWriter
     ) {
         this.analysisResultReader = analysisResultReader;
         this.metaAnalysisExporter = metaAnalysisExporter;
@@ -62,6 +66,8 @@ public class MetaAnalysisCommand {
         this.roundTripStationModelCountCsvWriter = roundTripStationModelCountCsvWriter;
         this.roundTripRouteModelCountExporter = roundTripRouteModelCountExporter;
         this.roundTripRouteModelCountCsvWriter = roundTripRouteModelCountCsvWriter;
+        this.manualEvaluationSampleExporter = manualEvaluationSampleExporter;
+        this.manualEvaluationSampleWriter = manualEvaluationSampleWriter;
     }
 
     public Path run(ApplicationArguments appArgs) {
@@ -100,6 +106,10 @@ public class MetaAnalysisCommand {
             case ROUNDTRIP_ROUTE_MODEL_COUNTS -> {
                 List<RoundTripRouteModelCountRow> rows = roundTripRouteModelCountExporter.exportRows(analyses);
                 yield roundTripRouteModelCountCsvWriter.write(rows, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case MANUAL_EVALUATION_SAMPLE -> {
+                ManualEvaluationSampleExport export = manualEvaluationSampleExporter.exportSample(analyses);
+                yield manualEvaluationSampleWriter.write(export, optionalValue(appArgs, "metanalysis-output"));
             }
         };
     }
