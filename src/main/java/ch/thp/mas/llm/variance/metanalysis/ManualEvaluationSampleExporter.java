@@ -219,7 +219,6 @@ public class ManualEvaluationSampleExporter {
         sizes.put("0107-anthropic-sonnet46-creative-baseline", 20);
         sizes.put("0201-google-gemini35flash-roundtrip-de-mittel", 20);
         sizes.put("0209-google-gemini35flash-creative-baseline", 20);
-        sizes.put("0001-openai-gpt4o-20240513-roundtrip-de-mittel", 20);
         sizes.put("0005-openai-gpt54mini-roundtrip-de-mittel", 20);
         sizes.put("0020-openai-gpt54mini-creative-baseline", 20);
         sizes.put("0023-openai-gpt54mini-creative-mittel", 20);

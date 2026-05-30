@@ -5,8 +5,8 @@
   "instructions" : "Blind bewerten. Die ID ist deterministisch aus Versuchsreihe und Wiederholungsindex abgeleitet; das Datenprodukt enthaelt bewusst keine Modell- oder Reihenangaben. Fuer kreative Luzern-Texte tourismusbezug und luzernbezug mit true/false sowie halluzination mit Nein, Ja oder nicht bestimmbar eintragen.",
   "allowedValues" : {
     "tourismusbezug" : [ "true", "false" ],
-    "luzernbezug" : [ "true", "false" ],
-    "halluzination" : [ "Nein", "Ja", "nicht bestimmbar" ]
+    "halluzination" : [ "Nein", "Ja", "nicht bestimmbar" ],
+    "luzernbezug" : [ "true", "false" ]
   },
   "itemCount" : 340,
   "items" : [ {
