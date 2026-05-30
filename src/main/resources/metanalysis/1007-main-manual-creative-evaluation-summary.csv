@@ -1,0 +1,11 @@
+series_id,model,setting,sample_size,sample_literal_unique_count,analysis_lucerne_found_count,analysis_three_sentences_count,manual_tourism_reference_count,manual_place_reference_count,manual_hallucination_count
+0020-openai-gpt54mini-creative-baseline,gpt-5.4-mini-2026-03-17,baseline,20,15,20,20,20,20,0
+0023-openai-gpt54mini-creative-mittel,gpt-5.4-mini-2026-03-17,mittel,20,13,20,20,20,20,0
+0024-openai-gpt54mini-creative-hoch,gpt-5.4-mini-2026-03-17,hoch,50,50,50,50,50,50,0
+0107-anthropic-sonnet46-creative-baseline,claude-sonnet-4-6,baseline,20,9,20,20,20,20,1
+0209-google-gemini35flash-creative-baseline,gemini-3.5-flash,baseline,20,1,20,20,20,20,0
+0307-lmstudio-apertus-creative-baseline,swiss-ai_apertus-8b-instruct-2509,baseline,20,1,20,20,20,20,0
+0310-lmstudio-apertus-creative-mittel,swiss-ai_apertus-8b-instruct-2509,mittel,50,50,50,50,49,49,3
+0311-lmstudio-apertus-creative-hoch,swiss-ai_apertus-8b-instruct-2509,hoch,100,100,98,75,100,94,26
+0408-lmstudio-qwen35-9b-creative-baseline,qwen/qwen3.5-9b,baseline,20,1,20,20,20,20,20
+0507-lmstudio-gptoss20b-creative-reasoning-low-baseline,openai/gpt-oss-20b,baseline,20,1,20,20,20,20,0

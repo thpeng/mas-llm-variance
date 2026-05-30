@@ -36,7 +36,6 @@ public class ManualEvaluationSampleWriter {
         Path targetDirectory = output == null || output.isBlank() ? DEFAULT_OUTPUT : Path.of(output.trim()).normalize();
         try {
             Files.createDirectories(targetDirectory);
-            writeOne(targetDirectory.resolve("1007-main-manual-evaluation-roundtrip-sample.json"), export.roundTrip());
             writeOne(targetDirectory.resolve("1007-main-manual-evaluation-creative-sample.json"), export.creative());
             return targetDirectory;
         } catch (Exception e) {

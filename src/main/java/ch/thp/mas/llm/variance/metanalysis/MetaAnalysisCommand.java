@@ -27,6 +27,8 @@ public class MetaAnalysisCommand {
     private final RoundTripRouteModelCountCsvWriter roundTripRouteModelCountCsvWriter;
     private final ManualEvaluationSampleExporter manualEvaluationSampleExporter;
     private final ManualEvaluationSampleWriter manualEvaluationSampleWriter;
+    private final ManualCreativeEvaluationSummaryExporter manualCreativeEvaluationSummaryExporter;
+    private final ManualCreativeEvaluationSummaryCsvWriter manualCreativeEvaluationSummaryCsvWriter;
 
     public MetaAnalysisCommand(
             AnalysisResultReader analysisResultReader,
@@ -47,7 +49,9 @@ public class MetaAnalysisCommand {
             FirstResponseEffectExporter firstResponseEffectExporter,
             FirstResponseEffectCsvWriter firstResponseEffectCsvWriter,
             ManualEvaluationSampleExporter manualEvaluationSampleExporter,
-            ManualEvaluationSampleWriter manualEvaluationSampleWriter
+            ManualEvaluationSampleWriter manualEvaluationSampleWriter,
+            ManualCreativeEvaluationSummaryExporter manualCreativeEvaluationSummaryExporter,
+            ManualCreativeEvaluationSummaryCsvWriter manualCreativeEvaluationSummaryCsvWriter
     ) {
         this.analysisResultReader = analysisResultReader;
         this.metaAnalysisExporter = metaAnalysisExporter;
@@ -68,6 +72,8 @@ public class MetaAnalysisCommand {
         this.roundTripRouteModelCountCsvWriter = roundTripRouteModelCountCsvWriter;
         this.manualEvaluationSampleExporter = manualEvaluationSampleExporter;
         this.manualEvaluationSampleWriter = manualEvaluationSampleWriter;
+        this.manualCreativeEvaluationSummaryExporter = manualCreativeEvaluationSummaryExporter;
+        this.manualCreativeEvaluationSummaryCsvWriter = manualCreativeEvaluationSummaryCsvWriter;
     }
 
     public Path run(ApplicationArguments appArgs) {
@@ -110,6 +116,10 @@ public class MetaAnalysisCommand {
             case MANUAL_EVALUATION_SAMPLE -> {
                 ManualEvaluationSampleExport export = manualEvaluationSampleExporter.exportSample(analyses);
                 yield manualEvaluationSampleWriter.write(export, optionalValue(appArgs, "metanalysis-output"));
+            }
+            case MANUAL_CREATIVE_EVALUATION_SUMMARY -> {
+                List<ManualCreativeEvaluationSummaryRow> rows = manualCreativeEvaluationSummaryExporter.exportRows(analyses);
+                yield manualCreativeEvaluationSummaryCsvWriter.write(rows, optionalValue(appArgs, "metanalysis-output"));
             }
         };
     }

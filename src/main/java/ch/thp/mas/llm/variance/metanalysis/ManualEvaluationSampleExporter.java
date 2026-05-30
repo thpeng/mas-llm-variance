@@ -8,7 +8,6 @@ import ch.thp.mas.llm.variance.run.RunLog;
 import ch.thp.mas.llm.variance.run.RunLogEntry;
 import ch.thp.mas.llm.variance.run.RunLogEntryStatus;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,8 +22,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class ManualEvaluationSampleExporter {
 
-    static final long SAMPLE_SEED = 20260529L;
-    private static final String SCHEMA = "manual-hallucination-evaluation-sample-v1";
     private static final int WRAP_AT = 100;
     private static final Map<String, Integer> SAMPLE_SIZES = sampleSizes();
 
@@ -46,15 +43,6 @@ public class ManualEvaluationSampleExporter {
                 .sorted(Comparator.comparing(SampleCandidate::seriesId))
                 .toList();
 
-        ManualEvaluationSample roundTrip = buildSample(
-                candidates,
-                PromptEvaluation.ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP,
-                "1007-main-manual-evaluation-roundtrip-sample",
-                "Blind bewerten. Die ID ist deterministisch aus Versuchsreihe und Wiederholungsindex abgeleitet; "
-                        + "das Datenprodukt enthaelt bewusst keine Modell- oder Reihenangaben. "
-                        + "Fuer Rundreisen nur halluzination mit Nein, Ja oder nicht bestimmbar eintragen.",
-                Map.of("halluzination", List.of("Nein", "Ja", "nicht bestimmbar"))
-        );
         ManualEvaluationSample creative = buildSample(
                 candidates,
                 PromptEvaluation.CREATIVE_GENERATIVE_LUCERNE_MARKETING,
@@ -69,7 +57,7 @@ public class ManualEvaluationSampleExporter {
                         "halluzination", List.of("Nein", "Ja", "nicht bestimmbar")
                 )
         );
-        return new ManualEvaluationSampleExport(roundTrip, creative);
+        return new ManualEvaluationSampleExport(creative);
     }
 
     private SampleCandidate candidate(NamedAnalysisResult namedAnalysis) {
@@ -91,7 +79,7 @@ public class ManualEvaluationSampleExporter {
                 selected.addAll(sample(candidate));
             }
         }
-        Collections.shuffle(selected, new Random(SAMPLE_SEED + promptEvaluation.ordinal()));
+        Collections.shuffle(selected, new Random(ManualEvaluationId.SAMPLE_SEED + promptEvaluation.ordinal()));
 
         List<ManualEvaluationSampleItem> numbered = new ArrayList<>();
         for (int i = 0; i < selected.size(); i++) {
@@ -105,9 +93,9 @@ public class ManualEvaluationSampleExporter {
         }
 
         return new ManualEvaluationSample(
-                SCHEMA,
+                ManualEvaluationId.SCHEMA,
                 sampleId,
-                SAMPLE_SEED,
+                ManualEvaluationId.SAMPLE_SEED,
                 instructions,
                 allowedValues,
                 numbered.size(),
@@ -156,10 +144,7 @@ public class ManualEvaluationSampleExporter {
     }
 
     private Object evaluationFields(String seriesId) {
-        if (seriesId.contains("-creative-")) {
-            return ManualCreativeEvaluationFields.empty();
-        }
-        return ManualRoundTripEvaluationFields.empty();
+        return ManualCreativeEvaluationFields.empty();
     }
 
     private List<String> wrap(String text) {
@@ -185,49 +170,26 @@ public class ManualEvaluationSampleExporter {
     }
 
     private String id(String seriesId, int index) {
-        return "bms-" + letterHash(SCHEMA + "|" + SAMPLE_SEED + "|" + seriesId + "|" + index, 24);
+        return ManualEvaluationId.id(seriesId, index);
     }
 
     private long seriesSeed(String seriesId) {
-        long seed = SAMPLE_SEED;
+        long seed = ManualEvaluationId.SAMPLE_SEED;
         for (byte b : seriesId.getBytes(StandardCharsets.UTF_8)) {
             seed = seed * 31 + b;
         }
         return seed;
     }
 
-    private String letterHash(String value, int length) {
-        try {
-            String alphabet = "abcdef";
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(value.getBytes(StandardCharsets.UTF_8));
-            StringBuilder builder = new StringBuilder(length);
-            int index = 0;
-            while (builder.length() < length) {
-                int valueByte = hash[index % hash.length] & 0xff;
-                builder.append(alphabet.charAt(valueByte % alphabet.length()));
-                index++;
-            }
-            return builder.toString();
-        } catch (Exception e) {
-            throw new MetaAnalysisException("Could not hash manual evaluation sample id.", e);
-        }
-    }
-
     private static Map<String, Integer> sampleSizes() {
         Map<String, Integer> sizes = new LinkedHashMap<>();
         sizes.put("0107-anthropic-sonnet46-creative-baseline", 20);
-        sizes.put("0201-google-gemini35flash-roundtrip-de-mittel", 20);
         sizes.put("0209-google-gemini35flash-creative-baseline", 20);
-        sizes.put("0005-openai-gpt54mini-roundtrip-de-mittel", 20);
         sizes.put("0020-openai-gpt54mini-creative-baseline", 20);
         sizes.put("0023-openai-gpt54mini-creative-mittel", 20);
         sizes.put("0024-openai-gpt54mini-creative-hoch", 50);
-        sizes.put("0501-lmstudio-gptoss20b-roundtrip-de-reasoning-low-mittel", 50);
         sizes.put("0507-lmstudio-gptoss20b-creative-reasoning-low-baseline", 20);
-        sizes.put("0401-lmstudio-qwen35-9b-roundtrip-de-mittel", 100);
         sizes.put("0408-lmstudio-qwen35-9b-creative-baseline", 20);
-        sizes.put("0301-lmstudio-apertus-roundtrip-de-mittel", 100);
         sizes.put("0307-lmstudio-apertus-creative-baseline", 20);
         sizes.put("0310-lmstudio-apertus-creative-mittel", 50);
         sizes.put("0311-lmstudio-apertus-creative-hoch", 100);

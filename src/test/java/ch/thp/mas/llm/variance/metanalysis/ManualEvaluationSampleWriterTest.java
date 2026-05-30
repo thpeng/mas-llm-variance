@@ -18,20 +18,6 @@ class ManualEvaluationSampleWriterTest {
     void writesManualEvaluationSampleJsonFiles() throws Exception {
         ManualEvaluationSampleWriter writer = new ManualEvaluationSampleWriter();
         Path output = tempDir.resolve("manual-review");
-        ManualEvaluationSample roundTrip = new ManualEvaluationSample(
-                "schema",
-                "roundtrip",
-                123L,
-                "instructions",
-                Map.of("halluzination", List.of("Nein", "Ja", "nicht bestimmbar")),
-                1,
-                List.of(new ManualEvaluationSampleItem(
-                        "bms-abc",
-                        1,
-                        List.of("erste Zeile", "zweite Zeile"),
-                        ManualRoundTripEvaluationFields.empty()
-                ))
-        );
         ManualEvaluationSample creative = new ManualEvaluationSample(
                 "schema",
                 "creative",
@@ -51,14 +37,10 @@ class ManualEvaluationSampleWriterTest {
                 ))
         );
 
-        writer.write(new ManualEvaluationSampleExport(roundTrip, creative), output.toString());
+        writer.write(new ManualEvaluationSampleExport(creative), output.toString());
 
-        String roundTripJson = Files.readString(output.resolve("1007-main-manual-evaluation-roundtrip-sample.json"));
         String creativeJson = Files.readString(output.resolve("1007-main-manual-evaluation-creative-sample.json"));
-        assertThat(roundTripJson).contains("\"id\" : \"bms-abc\"");
-        assertThat(roundTripJson).doesNotContain("tourismusbezug");
-        assertThat(roundTripJson).contains("\"halluzination\" : null");
-        assertThat(roundTripJson).contains("\"responseLines\"");
+        assertThat(output.resolve("1007-main-manual-evaluation-roundtrip-sample.json")).doesNotExist();
         assertThat(creativeJson).contains("\"id\" : \"bms-def\"");
         assertThat(creativeJson).contains("\"tourismusbezug\" : null");
         assertThat(creativeJson).contains("\"luzernbezug\" : null");
