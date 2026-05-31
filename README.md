@@ -230,6 +230,14 @@ For route-by-model round-trip heatmaps, the command exports one row per model an
 
 Without `--metanalysis-output`, this mode writes `1006-roundtrip-route-model-counts.csv` under `src/main/resources/metanalysis`.
 
+For the DE baseline archetype variance table, the command exports one row per prompt archetype. It includes only German baseline series and aggregates series count, mean literal unique response count, median literal unique response count, and maximum literal unique response count.
+
+```bash
+./gradlew bootRun --args="--metanalysis=analysis/main_100_iterations --metanalysis-kind=DE_BASELINE_ARCHETYPE_VARIANCE"
+```
+
+Without `--metanalysis-output`, this mode writes `1009-main-de-baseline-archetype-variance-summary.csv` under `src/main/resources/metanalysis`.
+
 ## Main Analysis Approach
 
 The analysis no longer uses a generic embedding clustering algorithm. It evaluates responses through prompt-specific evaluation paths derived from the four prompt archetypes used in the research design. These evaluations are configured with:

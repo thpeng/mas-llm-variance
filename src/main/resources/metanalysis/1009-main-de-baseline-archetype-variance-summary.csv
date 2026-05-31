@@ -1,0 +1,5 @@
+archetype,archetype_label,prompt_language,setting,series_count,mean_literal_unique_count,median_literal_unique_count,max_literal_unique_count,median_bleu_distance
+CREATIVE_GENERATIVE_LUCERNE_MARKETING,Kreativ-generativ,DE,baseline,6,12.500,2.000,45,0.000
+ADVISORY_RECOMMENDATION_SWISS_ROUND_TRIP,Beratend-empfehlend,DE,baseline,6,20.000,2.000,84,0.000
+FACTUAL_CRITICAL_BERN_ZURICH_CONNECTION,Faktisch-kritisch,DE,baseline,6,1.667,1.000,4,0.000
+LITERAL_FORMAT_CRITICAL_TRAVELER_GUIDANCE,Literal-formatkritisch,DE,baseline,6,1.000,1.000,1,
