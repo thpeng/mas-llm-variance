@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 public class RoundTripRouteModelCountCsvWriter {
 
     private static final Path DEFAULT_OUTPUT_DIRECTORY = Path.of("src", "main", "resources", "metanalysis");
-    private static final String DEFAULT_FILENAME = "1006-roundtrip-route-model-counts.csv";
+    private static final String DEFAULT_FILENAME = "1010-roundtrip-route-model-counts.csv";
     private static final String HEADER = String.join(",",
             "model",
             "route_key",
